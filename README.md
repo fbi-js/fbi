@@ -84,6 +84,18 @@ product your project.
 
 ## changelog
 
+**v 1.2.3**
+
+2015-10-8 16:50:00
+
+add react template.
+
+add react mission supports:
+
+eslint, common.js (react and react-router)
+
+...
+
 **v 1.2.1**
 
 2015-8-7 10:05:00

@@ -1,3 +1,15 @@
+**v 1.2.3**
+
+2015-10-8 16:50:00
+
+add react template.
+
+add react mission supports:
+
+eslint, common.js (react and react-router)
+
+...
+
 **v 1.1.11**
 
 2015-8-2 15:50:00
@@ -114,34 +126,34 @@ fixed bug in 'browserSync'.
 
 **v 1.0.7**
 
-2015-7-20 00:56:11 
+2015-7-20 00:56:11
 
-Separate templates mission from the package, it will download automatically, 
+Separate templates mission from the package, it will download automatically,
 or you can just run `fbi install`
 and run `fbi update` at any time.
 
 **v 1.0.6**
 
-2015-7-19 20:58:00 
+2015-7-19 20:58:00
 
 add v command, and show current version.
 
 **v 1.0.5**
 
-2015-7-19 20:47:00 
+2015-7-19 20:47:00
 
 fixed bug in bower install.
 fixed bug in set current project path.
 
 **v 1.0.4**
 
-2015-7-19 20:21:00 
+2015-7-19 20:21:00
 
 README.md updated.
 
 **v 1.0.3**
 
-2015-7-19 20:00:00 
+2015-7-19 20:00:00
 
 use the config file in current project root.
 
