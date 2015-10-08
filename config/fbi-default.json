@@ -1,0 +1,70 @@
+{
+  "name": "",
+  "version": "",
+  "template": "default",
+  "author": "",
+  "meta": {
+    "src": "src",
+    "dist": "dist",
+    "tmp": ".tmp",
+    "zip": "zip",
+    "gzip": "gzip",
+    "css": {
+      "src": "style",
+      "dist": "css"
+    },
+    "img": {
+      "src": "image",
+      "dist": "img"
+    },
+    "js": {
+      "src": "script",
+      "dist": "js"
+    },
+    "html": {
+      "src": "template",
+      "dist": "html"
+    },
+    "vendor": {
+      "src": "vendor",
+      "dist": "lib",
+      "flat": false
+    },
+    "extra": {
+      "src": "extra",
+      "dist": ""
+    },
+    "zip_src": {
+      "static": "css, img, js, vendor",
+      "html": "html",
+      "flat": false
+    },
+    "nginx": {
+      "src": "dist",
+      "dist": "/absolute/path/to/nginx/folder"
+    }
+  },
+  "hashVersion": true,
+  "htmlmin": true,
+  "imgSuffix": "jpg,png,gif,svg",
+  "browserSync": {
+    "server": {
+      "baseDir": "dist",
+      "index": "html/index.html"
+    },
+    "port": 9000,
+    "open": true
+  },
+  "webpack": true,
+  "webpack_entryId": ".main",
+  "webpack_ingore": ["script/extra.js"],
+  "webpack_loaders": {},
+  "vendor": {},
+  "ftp": {
+    "host": "",
+    "user": "",
+    "pass": "",
+    "remotePath": ""
+  },
+  "editor": "sublime text"
+}

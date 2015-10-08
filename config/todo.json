@@ -1,0 +1,21 @@
+{
+  "todos": [{
+    "message": "api mock",
+  	"checked": false
+  },{
+    "message": "style guide(markdown)",
+  	"checked": false
+  },{
+    "message": "open in finder",
+    "checked": true
+  },{
+    "message": "open in editor",
+    "checked": true
+  },{
+    "message": "doc server(word, txt, image, pdf)",
+  	"checked": false
+  },{
+    "message": "template type",
+  	"checked": true
+  }]
+}

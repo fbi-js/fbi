@@ -1,0 +1,54 @@
+{
+  "missions": [{
+    "value": "new",
+    "short": "n",
+    "name": "new project"
+  }, {
+    "value": "open",
+    "short": "o",
+    "name": "open project in editor"
+  }, {
+    "value": "find",
+    "short": "f",
+    "name": "open project in finder"
+  }, {
+    "value": "version",
+    "short": "v",
+    "name": "show version"
+  }, {
+    "value": "install",
+    "short": "i",
+    "name": "install missions & templates"
+  }, {
+    "value": "update",
+    "short": "u",
+    "name": "update missions & templates"
+  }, {
+    "value": "npminstall",
+    "short": "ni",
+    "name": "install gulp modules"
+  }, {
+    "value": "bowerinstall",
+    "short": "bi",
+    "name": "install bower dependencies"
+  }, {
+    "value": "help",
+    "short": "h",
+    "name": "show help"
+  }, {
+    "value": "todo",
+    "short": "",
+    "name": "show todos",
+    "private": true
+  }, {
+    "value": "blog",
+    "short": "",
+    "name": "start blog",
+    "private": true
+  }, {
+    "value": "chblog",
+    "short": "",
+    "name": "change blog location",
+    "private": true
+  }]
+}

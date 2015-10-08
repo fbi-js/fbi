@@ -1,0 +1,12 @@
+{
+  "templates": [{
+    "name": "default",
+    "link": "https://github.com/neikvon/fbi-template/archive/master.zip"
+  }, {
+    "name": "simple",
+    "link": "https://github.com/neikvon/fbi-template-simple/archive/master.zip"
+  }, {
+    "name": "react",
+    "link": "https://github.com/neikvon/fbi-template-react/archive/master.zip"
+  }]
+}

@@ -1,0 +1,7 @@
+*.log
+coverage
+node_modules
+.DS_Store
+demo*
+template
+mission
