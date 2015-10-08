@@ -1,3 +1,10 @@
+**v 1.2.4**
+
+2015-10-8 20:00:00
+
+auto install dependencies in project folder.
+
+
 **v 1.2.3**
 
 2015-10-8 16:50:00
