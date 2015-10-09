@@ -84,6 +84,19 @@ product your project.
 
 ## changelog
 
+**v 1.2.5**
+
+2015-10-9 10:50:00
+
+add api CORS support.
+
+fbi.json:
+"browserSync": {
+  ...
+  "cors": "http://yousite.com/api"
+}
+
+
 **v 1.2.3**
 
 2015-10-8 16:50:00

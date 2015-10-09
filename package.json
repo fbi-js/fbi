@@ -1,6 +1,6 @@
 {
   "name": "fbi",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "front-end develop scaffold and workflow",
   "bin": {
     "fbi": "./bin/fbi"
