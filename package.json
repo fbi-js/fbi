@@ -1,6 +1,6 @@
 {
   "name": "fbi",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "description": "Front-end & Back-end(node.js) Intelligence",
   "bin": {
     "fbi": "./bin/fbi"

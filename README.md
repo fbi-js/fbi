@@ -11,7 +11,7 @@
 $	npm install -g fbi
 ```
 
-## useage
+## usage
 
 ```bash
 Usage:
@@ -77,11 +77,23 @@ $ fbi t
 
 ## changelog
 
-**v 1.3.0**
+**v 1.3.2**
 
 2015-11-7 03:00:00
 
 upgrade node to v5.0.0 and npm to 3.3.6
+
+change:
+    src/handlebars.config.js
+
+    Handlebars = require(path.join(process.env.FBI_NODEMODULES_PATH, 'gulp-compile-handlebars', 'node_modules', 'handlebars'));
+    
+    ==>
+  
+    Handlebars = require(path.join(process.env.FBI_NODEMODULES_PATH, 'handlebars'))
+
+
+if "Error: Cannot find module ...", run "fbi ni".
 
 
 **v 1.2.5**
