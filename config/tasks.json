@@ -1,40 +1,41 @@
 {
-  "missions": [{
+  "commands": [{
     "value": "new",
     "short": "n",
-    "name": "new project"
-  }, {
-    "value": "open",
-    "short": "o",
-    "name": "open project in editor"
-  }, {
-    "value": "find",
-    "short": "f",
-    "name": "open project in finder"
-  }, {
-    "value": "version",
-    "short": "v",
-    "name": "show version"
+    "name": "New project"
   }, {
     "value": "install",
     "short": "i",
-    "name": "install missions & templates"
-  }, {
-    "value": "update",
-    "short": "u",
-    "name": "update missions & templates"
+    "name": "Install missions & templates"
   }, {
     "value": "npminstall",
     "short": "ni",
-    "name": "install gulp modules"
+    "name": "Install node dependencies"
   }, {
     "value": "bowerinstall",
     "short": "bi",
-    "name": "install bower dependencies"
+    "name": "Install bower dependencies"
+  }, {
+    "value": "find",
+    "short": "f",
+    "name": "Open project via finder"
+  }, {
+    "value": "open",
+    "short": "o",
+    "name": "Open project via editor"
   }, {
     "value": "help",
     "short": "h",
-    "name": "show help"
+    "name": "Show help"
+  }, {
+    "value": "version",
+    "short": "v",
+    "name": "Show version"
+  }, {
+    "value": "update",
+    "short": "u",
+    "name": "update missions & templates",
+    "private": true
   }, {
     "value": "todo",
     "short": "",

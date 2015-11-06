@@ -29,49 +29,58 @@ var opts = cli.flags,
   args = cli.input,
   cmd = args[0];
 
-function start() {
-  var public_missions = [];
-  var choices;
+// function start() {
+//   var public_missions = [];
+//   var choices;
 
-  for (var i = 0, len = tasksJson.missions.length; i < len; i++) {
-    if (!tasksJson.missions[i]['private']) {
-      public_missions.push(tasksJson.missions[i]);
-    }
-  }
+//   for (var i = 0, len = tasksJson.missions.length; i < len; i++) {
+//     if (!tasksJson.missions[i]['private']) {
+//       public_missions.push(tasksJson.missions[i]);
+//     }
+//   }
 
-  choices = {
-    type: 'list',
-    name: 'cmd',
-    message: 'so ?',
-    choices: public_missions
-  };
+//   choices = {
+//     type: 'list',
+//     name: 'cmd',
+//     message: 'so ?',
+//     choices: public_missions
+//   };
 
-  inquirer.prompt(choices, function(answer) {
-    task.runTask(answer.cmd);
-    if (answer.whatNext === 'exit') return;
-  });
+//   inquirer.prompt(choices, function(answer) {
+//     task.runTask(answer.cmd);
+//     if (answer.whatNext === 'exit') return;
+//   });
+// }
+
+if (!cmd || cmd === '') {
+  cmd = 'h';
 }
-
-fs.access(path.join(__dirname, '../mission/node_modules'), fs.R_OK, function(err) {
-  if (err) {
-    inquirer.prompt({
-      type: "confirm",
-      name: "install",
-      message: "Install mission modules?",
-      default: true
-    }, function(answer) {
-      if (answer.install) {
-        task.installModules();
-      } else {
-        start();
-      }
-      if (answer.whatNext === 'exit') return;
-    });
-  } else {
-    if (cmd && cmd !== '') {
-      task.runTask(cmd);
-    } else {
-      start();
-    }
-  }
-});
+task.runTask(cmd);
+    
+// fs.access(path.join(__dirname, '../mission/node_modules'), fs.R_OK, function(err) {
+//   if (err) {
+//     inquirer.prompt({
+//       type: "confirm",
+//       name: "install",
+//       message: "Install mission modules?",
+//       default: true
+//     }, function(answer) {
+//       if (answer.install) {
+//         task.installModules();
+//       } else {
+//         start();
+//       }
+//       if (answer.whatNext === 'exit') return;
+//     });
+//   } else {
+//     if (!cmd || cmd === '') {
+//       cmd = 'h';
+//     }
+//     task.runTask(cmd);
+//     // if (cmd && cmd !== '') {
+//     //   task.runTask(cmd);
+//     // } else {
+//     //   start();
+//     // }
+//   }
+// });

@@ -14,42 +14,40 @@ $	npm install -g fbi
 ## useage
 
 ```bash
-$ fbi <mission>
-Available Missions:
-  ----------------------------- main missions -----------------------------
-  new, n             -- new project
-  open, o            -- open project in editor
-  find, f            -- open project in finder
-  version, v         -- show version
-  install, i         -- install missions & templates
-  update, u          -- update missions & templates
-  npminstall, ni     -- install gulp modules
-  bowerinstall, bi   -- install bower dependencies
-  help, h            -- show help
-  ----------------------------- gulp missions -----------------------------
-  build, b           -- build project
-  run, r             -- run project
-  prod, p            -- product project
-  server, s          -- start server
-  watch, w           -- start server and watch files change
-  zip, z             -- zip the build files, separate to static and html package
-  gzip, g            -- gzip the static files
-  ftp, t             -- deploy by ftp
-  vendor             -- copy vendor files, config from fbi.json `vendor`
-  check
-  clean
-  clean-dist
-  clean-zip
-  clean-gzip
-  image
-  replace
-  revision
-  script
-  style
-  template
-  zip-all
-  zip-static
-  zip-html
+Usage:
+  fbi n       New project
+  fbi r       Serve project or copy dist files to nginx folder
+  fbi p       Make production files
+  fbi t       Deploy via sftp
+  fbi w       Local server and Watch files change
+  fbi c       Clean dist files
+  fbi z       Zip dist files, separate to static and html package
+  fbi g       Gzip the static files
+  fbi ng      Copy dist files to `nginx`
+  fbi i       Install missions & templates
+  fbi ni      Install node dependencies
+  fbi bi      Install bower dependencies
+  fbi f       Open project via finder
+  fbi o       Open project via editor
+  fbi h       Show help
+  fbi v       Show version
+
+Also:
+  fbi server      Start server
+  fbi vendor      Copy vendor files, config from fbi.json `vendor`
+  fbi check       Jshint Eslint
+  fbi clean-dist
+  fbi clean-zip
+  fbi clean-gzip
+  fbi image
+  fbi replace
+  fbi revision
+  fbi script
+  fbi style
+  fbi template
+  fbi zip-all
+  fbi zip-static
+  fbi zip-html
 ```
 
 ## quick start
@@ -63,26 +61,28 @@ $ fbi n
 run the new project
 
 ```bash
+$ cd your_project
 $ fbi r
 ```
 
-it will open <http://localhost:9000> by default.
-
+production
 ```bash
 $ fbi p
 ```
 
-product your project.
-
-
-## TODO
-
-1. api mock
-2. doc view
-...
-
+deploy
+```bash
+$ fbi t
+```
 
 ## changelog
+
+**v 1.3.0**
+
+2015-11-7 03:00:00
+
+upgrade node to v5.0.0 and npm to 3.3.6
+
 
 **v 1.2.5**
 

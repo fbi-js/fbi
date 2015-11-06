@@ -1,7 +1,7 @@
 {
   "name": "fbi",
-  "version": "1.2.5",
-  "description": "front-end develop scaffold and workflow",
+  "version": "1.3.0",
+  "description": "Front-end & Back-end(node.js) Intelligence",
   "bin": {
     "fbi": "./bin/fbi"
   },
@@ -24,26 +24,26 @@
     "watch"
   ],
   "dependencies": {
-    "bower": "^1.4.1",
-    "chalk": "^1.1.0",
-    "download": "^4.1.4",
-    "inquirer": "^0.9.0",
-    "meow": "^3.3.0",
+    "bower": "^1.6.5",
+    "chalk": "^1.1.1",
+    "download": "^4.4.1",
+    "inquirer": "^0.11.0",
+    "meow": "^3.5.0",
     "ncp": "^2.0.0",
-    "npm": "^2.13.2",
-    "open": "0.0.5",
+    "npm": "^3.3.12",
+    "open": "^0.0.5",
     "respawn": "^2.0.0",
     "update-notifier": "^0.5.0"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
-    "gulp-bump": "^0.3.1",
-    "gulp-istanbul": "^0.10.0",
-    "gulp-jscs": "^1.6.0",
-    "gulp-jshint": "^1.11.2",
+    "gulp-bump": "^1.0.0",
+    "gulp-istanbul": "^0.10.2",
+    "gulp-jscs": "^3.0.2",
+    "gulp-jshint": "^1.12.0",
     "gulp-mocha": "^2.1.3",
     "gulp-plumber": "^1.0.1",
-    "gulp-util": "^3.0.6",
+    "gulp-util": "^3.0.7",
     "jshint-stylish": "^2.0.1"
   }
 }
