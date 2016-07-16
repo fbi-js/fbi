@@ -1,13 +1,19 @@
 {
   "name": "fbi",
-  "version": "1.3.2",
+  "version": "2.0.0",
   "description": "Front-end & Back-end(node.js) Intelligence",
+  "engines": {
+    "node": ">=6.0",
+    "npm": ">= 3.0"
+  },
   "bin": {
     "fbi": "./bin/fbi"
   },
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -rf ./dist",
+    "build": "./node_modules/.bin/babel src --out-dir dist --source-maps",
+    "watch": "watch 'npm run build' src "
   },
   "repository": {
     "type": "git",
@@ -24,26 +30,17 @@
     "watch"
   ],
   "dependencies": {
-    "bower": "^1.6.5",
-    "chalk": "^1.1.1",
-    "download": "^4.4.1",
-    "inquirer": "^0.11.0",
-    "meow": "^3.5.0",
-    "ncp": "^2.0.0",
-    "npm": "^3.3.12",
-    "open": "^0.0.5",
-    "respawn": "^2.0.0",
-    "update-notifier": "^0.5.0"
+    "babel-runtime": "^6.9.2",
+    "koa": "^2.0.0",
+    "koa-static": "^3.0.0",
+    "koa-viewer": "0.0.5"
   },
   "devDependencies": {
-    "gulp": "^3.9.0",
-    "gulp-bump": "^1.0.0",
-    "gulp-istanbul": "^0.10.2",
-    "gulp-jscs": "^3.0.2",
-    "gulp-jshint": "^1.12.0",
-    "gulp-mocha": "^2.1.3",
-    "gulp-plumber": "^1.0.1",
-    "gulp-util": "^3.0.7",
-    "jshint-stylish": "^2.0.1"
+    "babel-cli": "^6.2.0",
+    "babel-core": "^6.2.1",
+    "babel-plugin-transform-runtime": "^6.9.0",
+    "babel-preset-es2015": "^6.1.18",
+    "babel-preset-stage-0": "^6.1.18",
+    "watch": "^0.16.0"
   }
 }

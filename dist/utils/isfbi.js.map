@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../src/utils/isfbi.js"],"names":[],"mappings":";;;;;kBAEwB,K;;AAFxB;;;;;;AAEe,SAAS,KAAT,GAAkB;AAC/B,qBAAI,QAAJ;;AAEA,qBAAI,EAAC,GAAG,CAAJ,EAAM,GAAG,CAAT,EAAJ;AACD","file":"isfbi.js","sourcesContent":["import log from './log'\n\nexport default function isfbi () {\n  log('is fbi')\n\n  log({a: 1,b: 2})\n}\n"]}
