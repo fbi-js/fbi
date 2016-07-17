@@ -34,17 +34,17 @@ export const fsp = {
 }
 
 export function merge(target) {
-  var sources = [].slice.call(arguments, 1);
+  var sources = [].slice.call(arguments, 1)
   sources.forEach(function(source) {
     for (var p in source)
       if (typeof source[p] === 'object') {
-        target[p] = target[p] || (Array.isArray(source[p]) ? [] : {});
-        merge(target[p], source[p]);
+        target[p] = target[p] || (Array.isArray(source[p]) ? [] : {})
+        merge(target[p], source[p])
       } else {
-        target[p] = source[p];
+        target[p] = source[p]
       }
   })
-  return target;
+  return target
 }
 
 export async function isfbi (src) {

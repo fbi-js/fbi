@@ -30,114 +30,119 @@ exports.default = function () {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            console.log(cmds);
-
             if (!(cmds.length === 0)) {
-              _context.next = 4;
+              _context.next = 3;
               break;
             }
 
             _index2.default.help();
             return _context.abrupt('return');
 
-          case 4:
+          case 3:
             stop = false;
             _iteratorNormalCompletion = true;
             _didIteratorError = false;
             _iteratorError = undefined;
-            _context.prev = 8;
+            _context.prev = 7;
             _iterator = (0, _getIterator3.default)(cmds);
 
-          case 10:
+          case 9:
             if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-              _context.next = 33;
+              _context.next = 35;
               break;
             }
 
             cmd = _step.value;
 
             if (!stop) {
-              _context.next = 14;
+              _context.next = 13;
               break;
             }
 
-            return _context.abrupt('continue', 30);
+            return _context.abrupt('continue', 32);
 
-          case 14:
+          case 13:
             _context.t0 = cmd;
-            _context.next = _context.t0 === 's' ? 17 : _context.t0 === 'serve' ? 17 : _context.t0 === 'w' ? 20 : _context.t0 === 'watch' ? 20 : _context.t0 === '-v' ? 22 : _context.t0 === '-V' ? 22 : _context.t0 === '--version' ? 22 : _context.t0 === '-h' ? 25 : _context.t0 === '--help' ? 25 : 28;
+            _context.next = _context.t0 === 'n' ? 16 : _context.t0 === 'new' ? 16 : _context.t0 === 's' ? 19 : _context.t0 === 'serve' ? 19 : _context.t0 === 'w' ? 22 : _context.t0 === 'watch' ? 22 : _context.t0 === '-v' ? 24 : _context.t0 === '-V' ? 24 : _context.t0 === '--version' ? 24 : _context.t0 === '-h' ? 27 : _context.t0 === '--help' ? 27 : 30;
             break;
 
-          case 17:
-            _context.next = 19;
-            return _index2.default.serve();
+          case 16:
+            _context.next = 18;
+            return _index2.default.new();
+
+          case 18:
+            return _context.abrupt('break', 32);
 
           case 19:
-            return _context.abrupt('break', 30);
+            _context.next = 21;
+            return _index2.default.serve();
 
-          case 20:
-            _index2.default.watch();
-            return _context.abrupt('break', 30);
+          case 21:
+            return _context.abrupt('break', 32);
 
           case 22:
+            _index2.default.watch();
+            return _context.abrupt('break', 32);
+
+          case 24:
             stop = true;
             _index2.default.version();
-            return _context.abrupt('break', 30);
+            return _context.abrupt('break', 32);
 
-          case 25:
+          case 27:
             stop = true;
             _index2.default.help();
-            return _context.abrupt('break', 30);
-
-          case 28:
-            _index2.default.run();
-            return _context.abrupt('break', 30);
+            return _context.abrupt('break', 32);
 
           case 30:
-            _iteratorNormalCompletion = true;
-            _context.next = 10;
-            break;
+            _index2.default.run();
+            return _context.abrupt('break', 32);
 
-          case 33:
-            _context.next = 39;
+          case 32:
+            _iteratorNormalCompletion = true;
+            _context.next = 9;
             break;
 
           case 35:
-            _context.prev = 35;
-            _context.t1 = _context['catch'](8);
+            _context.next = 41;
+            break;
+
+          case 37:
+            _context.prev = 37;
+            _context.t1 = _context['catch'](7);
             _didIteratorError = true;
             _iteratorError = _context.t1;
 
-          case 39:
-            _context.prev = 39;
-            _context.prev = 40;
+          case 41:
+            _context.prev = 41;
+            _context.prev = 42;
 
             if (!_iteratorNormalCompletion && _iterator.return) {
               _iterator.return();
             }
 
-          case 42:
-            _context.prev = 42;
+          case 44:
+            _context.prev = 44;
 
             if (!_didIteratorError) {
-              _context.next = 45;
+              _context.next = 47;
               break;
             }
 
             throw _iteratorError;
 
-          case 45:
-            return _context.finish(42);
-
-          case 46:
-            return _context.finish(39);
-
           case 47:
+            return _context.finish(44);
+
+          case 48:
+            return _context.finish(41);
+
+          case 49:
           case 'end':
             return _context.stop();
         }
       }
-    }, _callee, undefined, [[8, 35, 39, 47], [40,, 42, 46]]);
+    }, _callee, undefined, [[7, 37, 41, 49], [42,, 44, 48]]);
   }));
 
   return function (_x) {

@@ -1,0 +1,26 @@
+{
+  "parser": "babel-eslint",
+  "env": {
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 7,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "globals": {},
+  "rules": {
+    "indent": [2, 2, {
+      "SwitchCase": 1, // switch
+      "VariableDeclarator": { "var": 2, "let": 2, "const": 3 } // var let const
+    }],
+    "linebreak-style": [2, "unix"],
+    "quotes": [2, "single"],
+    "semi": [2, "never"],
+    "comma-dangle": [2, "never"],
+    "no-cond-assign": [2, "always"],
+    "no-console": "off"
+  }
+}

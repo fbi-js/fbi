@@ -1,7 +1,7 @@
 import fbi from './index'
 
 export default async (cmds) => {
-  console.log(cmds)
+  // console.log(cmds)
   if (cmds.length === 0) {
     fbi.help()
     return
@@ -13,6 +13,10 @@ export default async (cmds) => {
       continue
     }
     switch (cmd) {
+      case 'n':
+      case 'new':
+        await fbi.new()
+        break
       case 's':
       case 'serve':
         await fbi.serve()
