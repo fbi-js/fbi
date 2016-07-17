@@ -4,138 +4,179 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _regenerator = require('babel-runtime/regenerator');
+var _getIterator2 = require('babel-runtime/core-js/get-iterator');
 
-var _regenerator2 = _interopRequireDefault(_regenerator);
+var _getIterator3 = _interopRequireDefault(_getIterator2);
 
-var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
 
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
 
-var _utils = require('./utils');
+var _createClass2 = require('babel-runtime/helpers/createClass');
+
+var _createClass3 = _interopRequireDefault(_createClass2);
+
+var _fs = require('fs');
+
+var _fs2 = _interopRequireDefault(_fs);
 
 var _config = require('./config');
 
 var _config2 = _interopRequireDefault(_config);
 
+var _utils = require('./utils');
+
+var _ = _interopRequireWildcard(_utils);
+
+var _help = require('./tasks/help');
+
+var _help2 = _interopRequireDefault(_help);
+
+var _create = require('./tasks/create');
+
+var _create2 = _interopRequireDefault(_create);
+
+var _serve = require('./tasks/serve');
+
+var _serve2 = _interopRequireDefault(_serve);
+
+var _build = require('./tasks/build');
+
+var _build2 = _interopRequireDefault(_build);
+
+var _version = require('./tasks/version');
+
+var _version2 = _interopRequireDefault(_version);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var _help = '\n  Usage: fbi [command] [command] [command] ...\n\n  Commands:\n\n    n, new            new project\n    b, build          build project\n    s, serve          serve project or files\n\n  Options:\n\n    -h, --help        output usage information\n    -v, --version     output the version number\n';
+var defTasks = [{
+  name: '--help',
+  short: '-h',
+  fn: _help2.default
+}, {
+  name: '--version',
+  short: '-v',
+  fn: _version2.default
+}, {
+  name: 'new',
+  short: 'n',
+  fn: _create2.default
+}, {
+  name: 'build',
+  short: 'b',
+  fn: _build2.default
+}, {
+  name: 'serve',
+  short: 's',
+  fn: _serve2.default
+}];
+// fbi tasks
 
-var usrConfig = void 0;
+// fbi assets
 
-var fbi = {
-  addTask: function addTask() {
-    (0, _utils.log)('add task');
-  },
-  new: function () {
-    var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee() {
-      return _regenerator2.default.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              _context.prev = 0;
-              _context.t0 = usrConfig;
 
-              if (_context.t0) {
-                _context.next = 6;
-                break;
-              }
+var Fbi = function () {
+  function Fbi() {
+    (0, _classCallCheck3.default)(this, Fbi);
 
-              _context.next = 5;
-              return (0, _utils.isfbi)(_config2.default.paths.config);
+    this._ = _;
+    this.cfg = _config2.default;
+    this.help = _help2.default;
+    this.tasks = [];
 
-            case 5:
-              _context.t0 = _context.sent;
-
-            case 6:
-              usrConfig = _context.t0;
-              _context.next = 9;
-              return require('./lib/new').default(usrConfig);
-
-            case 9:
-              _context.next = 14;
-              break;
-
-            case 11:
-              _context.prev = 11;
-              _context.t1 = _context['catch'](0);
-
-              (0, _utils.log)(_context.t1);
-
-            case 14:
-            case 'end':
-              return _context.stop();
-          }
-        }
-      }, _callee, undefined, [[0, 11]]);
-    }));
-
-    return function _new() {
-      return _ref.apply(this, arguments);
-    };
-  }(),
-  serve: function () {
-    var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2() {
-      return _regenerator2.default.wrap(function _callee2$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              _context2.prev = 0;
-              _context2.t0 = usrConfig;
-
-              if (_context2.t0) {
-                _context2.next = 6;
-                break;
-              }
-
-              _context2.next = 5;
-              return (0, _utils.isfbi)(_config2.default.paths.config);
-
-            case 5:
-              _context2.t0 = _context2.sent;
-
-            case 6:
-              usrConfig = _context2.t0;
-              _context2.next = 9;
-              return require('./lib/serve').default(usrConfig);
-
-            case 9:
-              _context2.next = 14;
-              break;
-
-            case 11:
-              _context2.prev = 11;
-              _context2.t1 = _context2['catch'](0);
-
-              (0, _utils.log)(_context2.t1);
-
-            case 14:
-            case 'end':
-              return _context2.stop();
-          }
-        }
-      }, _callee2, undefined, [[0, 11]]);
-    }));
-
-    return function serve() {
-      return _ref2.apply(this, arguments);
-    };
-  }(),
-  watch: function watch() {
-    (0, _utils.log)('watch');
-  },
-  run: function run() {
-    (0, _utils.log)('run');
-  },
-  help: function help() {
-    (0, _utils.log)(_help);
-  },
-  version: function version() {
-    var v = require('../package.json').version;
-    (0, _utils.log)(v);
+    // (async function() {
+    //   console.log('async in')
+    //   await _this.mergeCfg()
+    // }())
+    this.init();
+    this.addTask(defTasks);
   }
-};
 
-exports.default = fbi;
+  (0, _createClass3.default)(Fbi, [{
+    key: 'run',
+    value: function run(argvs) {
+      var _this = this;
+
+      var cmds = [];
+      if (!argvs.length) {
+        this.help(this);
+        return;
+      }
+
+      if (typeof argvs === 'string') {
+        cmds.push(argvs);
+      } else {
+        cmds = argvs;
+      }
+
+      var utilTasks = ['-h', '--help', '-v', '--verison']; // don't log
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        var _loop = function _loop() {
+          var cmd = _step.value;
+
+          _this.tasks.map(function (task) {
+            if (cmd === task.name || cmd === task.short) {
+              if (!utilTasks.includes(task.name) && !utilTasks.includes(task.short)) {
+                console.log('Running task \'' + task.name + '\'');
+              }
+              task.fn(_this);
+            }
+          });
+        };
+
+        for (var _iterator = (0, _getIterator3.default)(cmds), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          _loop();
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+  }, {
+    key: 'init',
+    value: function init() {
+      // is fbi or not
+      // get user config
+      try {
+        var _path = this._.cwd(this.cfg.paths.options);
+        _fs2.default.accessSync(_path, _fs2.default.R_OK | _fs2.default.W_OK);
+        this.isFbi = true;
+        var usrCfg = require(_path);
+        this._.merge(this.cfg, usrCfg);
+      } catch (e) {
+        this.isFbi = false;
+      }
+    }
+  }, {
+    key: 'addTask',
+    value: function addTask(task) {
+      if (Array.isArray(task)) {
+        this.tasks = this.tasks.concat(task);
+      } else {
+        this.tasks.push(task);
+      }
+    }
+  }]);
+  return Fbi;
+}();
+
+exports.default = Fbi;
 //# sourceMappingURL=index.js.map

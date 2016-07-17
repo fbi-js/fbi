@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../src/utils/log.js"],"names":[],"mappings":";;;;;;kBAAe,UAAC,GAAD,EAAS;AACtB,UAAQ,GAAR,CAAY,GAAZ;AACD,C","file":"log.js","sourcesContent":["export default (msg) => {\n  console.log(msg)\n}\n"]}
