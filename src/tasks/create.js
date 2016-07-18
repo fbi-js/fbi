@@ -1,4 +1,3 @@
-
-export default (Fbi) => {
-  console.log(Fbi)
+export default (ctx) => {
+  console.log('this is create')
 }

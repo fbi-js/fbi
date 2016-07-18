@@ -66,7 +66,7 @@ var _path2 = _interopRequireDefault(_path);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function log(msg) {
-  console.log(msg);
+  console.log(typeof msg === 'string' ? 'FBI: ' + msg : msg);
 }
 
 function cwd() {

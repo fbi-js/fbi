@@ -3,23 +3,11 @@ import fs from 'fs'
 import config from './config'
 import * as _ from './utils'
 // fbi tasks
-import help from './tasks/help'
 import create from './tasks/create'
 import serve from './tasks/serve'
 import build from './tasks/build'
-import version from './tasks/version'
 
 const defTasks = [
-  {
-    name: '--help',
-    short: '-h',
-    fn: help
-  },
-  {
-    name: '--version',
-    short: '-v',
-    fn: version
-  },
   {
     name: 'new',
     short: 'n',
@@ -39,26 +27,17 @@ const defTasks = [
 
 class Fbi {
 
-  constructor () {
+  constructor (...args) {
     this._ = _
-    this.cfg = config
-    this.help = help
+    this.config = config
     this.tasks = []
-
-    // (async function() {
-    //   console.log('async in')
-    //   await _this.mergeCfg()
-    // }())
-    this.init()
     this.addTask(defTasks)
   }
 
-  run (argvs) {
+  run (uCmds) {
+    const argvs = uCmds || this.argvs
     let cmds = []
-    if (!argvs.length) {
-      this.help(this)
-      return
-    }
+    let cmdsExecuted = []
 
     if (typeof argvs === 'string') {
       cmds.push(argvs)
@@ -66,31 +45,19 @@ class Fbi {
       cmds = argvs
     }
 
-    const utilTasks = ['-h', '--help', '-v', '--verison'] // don't log
-
     for (let cmd of cmds) {
       this.tasks.map(task => {
         if (cmd === task.name || cmd === task.short) {
-          if (!utilTasks.includes(task.name) && !utilTasks.includes(task.short)) {
-            console.log(`Running task '${task.name}'`)
-          }
+          cmdsExecuted.push(cmd)
+          this._.log(`Running task '${task.name}'`)
           task.fn(this)
         }
       })
     }
-  }
 
-  init () {
-    // is fbi or not
-    // get user config
-    try {
-      let _path = this._.cwd(this.cfg.paths.options)
-      fs.accessSync(_path, fs.R_OK | fs.W_OK)
-      this.isFbi = true
-      let usrCfg = require(_path)
-      this._.merge(this.cfg, usrCfg)
-    } catch(e) {
-      this.isFbi = false
+    let difference = cmds.concat(cmdsExecuted).filter(v => !cmds.includes(v) || !cmdsExecuted.includes(v))
+    if (difference.length) {
+      this._.log(`Error: Commands '${difference}' not found.`)
     }
   }
 
@@ -105,3 +72,15 @@ class Fbi {
 }
 
 export default Fbi
+
+// constructor(){
+//   (async function() {
+//     console.log('async in')
+//     await _this.mergeCfg()
+//   }())
+//   this.init()
+// }
+
+// static staticMethod () {
+//   return 'static method'
+// }

@@ -1,5 +1,3 @@
 #!/usr/bin/env node
-
-var Fbi = require('../dist/index').default
-var fbi = new Fbi()
-fbi.run(process.argv.slice(2))
+var Cli = require('../dist/cli').default
+new Cli(process.argv.slice(2))

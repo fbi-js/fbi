@@ -28,10 +28,6 @@ var _utils = require('./utils');
 
 var _ = _interopRequireWildcard(_utils);
 
-var _help = require('./tasks/help');
-
-var _help2 = _interopRequireDefault(_help);
-
 var _create = require('./tasks/create');
 
 var _create2 = _interopRequireDefault(_create);
@@ -44,23 +40,11 @@ var _build = require('./tasks/build');
 
 var _build2 = _interopRequireDefault(_build);
 
-var _version = require('./tasks/version');
-
-var _version2 = _interopRequireDefault(_version);
-
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var defTasks = [{
-  name: '--help',
-  short: '-h',
-  fn: _help2.default
-}, {
-  name: '--version',
-  short: '-v',
-  fn: _version2.default
-}, {
   name: 'new',
   short: 'n',
   fn: _create2.default
@@ -83,36 +67,25 @@ var Fbi = function () {
     (0, _classCallCheck3.default)(this, Fbi);
 
     this._ = _;
-    this.cfg = _config2.default;
-    this.help = _help2.default;
+    this.config = _config2.default;
     this.tasks = [];
-
-    // (async function() {
-    //   console.log('async in')
-    //   await _this.mergeCfg()
-    // }())
-    this.init();
     this.addTask(defTasks);
   }
 
   (0, _createClass3.default)(Fbi, [{
     key: 'run',
-    value: function run(argvs) {
+    value: function run(uCmds) {
       var _this = this;
 
+      var argvs = uCmds || this.argvs;
       var cmds = [];
-      if (!argvs.length) {
-        this.help(this);
-        return;
-      }
+      var cmdsExecuted = [];
 
       if (typeof argvs === 'string') {
         cmds.push(argvs);
       } else {
         cmds = argvs;
       }
-
-      var utilTasks = ['-h', '--help', '-v', '--verison']; // don't log
 
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -124,9 +97,8 @@ var Fbi = function () {
 
           _this.tasks.map(function (task) {
             if (cmd === task.name || cmd === task.short) {
-              if (!utilTasks.includes(task.name) && !utilTasks.includes(task.short)) {
-                console.log('Running task \'' + task.name + '\'');
-              }
+              cmdsExecuted.push(cmd);
+              _this._.log('Running task \'' + task.name + '\'');
               task.fn(_this);
             }
           });
@@ -149,20 +121,12 @@ var Fbi = function () {
           }
         }
       }
-    }
-  }, {
-    key: 'init',
-    value: function init() {
-      // is fbi or not
-      // get user config
-      try {
-        var _path = this._.cwd(this.cfg.paths.options);
-        _fs2.default.accessSync(_path, _fs2.default.R_OK | _fs2.default.W_OK);
-        this.isFbi = true;
-        var usrCfg = require(_path);
-        this._.merge(this.cfg, usrCfg);
-      } catch (e) {
-        this.isFbi = false;
+
+      var difference = cmds.concat(cmdsExecuted).filter(function (v) {
+        return !cmds.includes(v) || !cmdsExecuted.includes(v);
+      });
+      if (difference.length) {
+        this._.log('Error: Commands \'' + difference + '\' not found.');
       }
     }
   }, {
@@ -179,4 +143,16 @@ var Fbi = function () {
 }();
 
 exports.default = Fbi;
+
+// constructor(){
+//   (async function() {
+//     console.log('async in')
+//     await _this.mergeCfg()
+//   }())
+//   this.init()
+// }
+
+// static staticMethod () {
+//   return 'static method'
+// }
 //# sourceMappingURL=index.js.map

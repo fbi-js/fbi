@@ -4,10 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _getIterator2 = require('babel-runtime/core-js/get-iterator');
-
-var _getIterator3 = _interopRequireDefault(_getIterator2);
-
 var _getPrototypeOf = require('babel-runtime/core-js/object/get-prototype-of');
 
 var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
@@ -24,17 +20,21 @@ var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstru
 
 var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
 
+var _get2 = require('babel-runtime/helpers/get');
+
+var _get3 = _interopRequireDefault(_get2);
+
 var _inherits2 = require('babel-runtime/helpers/inherits');
 
 var _inherits3 = _interopRequireDefault(_inherits2);
 
+var _fs = require('fs');
+
+var _fs2 = _interopRequireDefault(_fs);
+
 var _index = require('./index');
 
 var _index2 = _interopRequireDefault(_index);
-
-var _help = require('./tasks/help');
-
-var _help2 = _interopRequireDefault(_help);
 
 var _package = require('../package.json');
 
@@ -42,65 +42,66 @@ var _package2 = _interopRequireDefault(_package);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var cli = function (_Fbi) {
-  (0, _inherits3.default)(cli, _Fbi);
+var Cli = function (_Fbi) {
+  (0, _inherits3.default)(Cli, _Fbi);
 
-  function cli(argvs) {
-    (0, _classCallCheck3.default)(this, cli);
+  function Cli(argvs) {
+    (0, _classCallCheck3.default)(this, Cli);
 
-    var _this = (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(cli).call(this));
+    var _this = (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(Cli).call(this));
 
     _this.argvs = argvs;
-    _this.tasks = {};
 
-    _this.run();
+    _this.init();
     return _this;
   }
 
-  (0, _createClass3.default)(cli, [{
-    key: 'run',
-    value: function run() {
-      if (!this.argvs.length) {
-        return (0, _help2.default)();
+  (0, _createClass3.default)(Cli, [{
+    key: 'init',
+    value: function init() {
+      this.initConfig();
+
+      // help
+      if (!this.argvs.length || this.argvs[0] === '-h' || this.argvs[0] === '--help') {
+        help();
+        return;
       }
 
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+      // show version
+      if (this.argvs[0] === '-v' || this.argvs[0] === '--verison') {
+        version();
+        return;
+      }
 
+      (0, _get3.default)((0, _getPrototypeOf2.default)(Cli.prototype), 'run', this).call(this);
+    }
+  }, {
+    key: 'initConfig',
+    value: function initConfig() {
       try {
-        for (var _iterator = (0, _getIterator3.default)(this.argvs), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var cmd = _step.value;
-
-          switch (cmd) {
-            case '-v':
-              fbi.utils.log(_package2.default.version);
-              break;
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
+        var _path = this._.cwd(this.config.paths.options);
+        _fs2.default.accessSync(_path, _fs2.default.R_OK | _fs2.default.W_OK);
+        this.isFbi = true;
+        var usrCfg = require(_path);
+        this._.merge(this.config, usrCfg);
+      } catch (e) {
+        this.isFbi = false;
       }
-
-      console.log('run: ');
-      // console.log(this.argv)
-      console.log(this.cfg);
-      console.log(this.isFbi);
     }
   }]);
-  return cli;
+  return Cli;
 }(_index2.default);
 
-exports.default = cli;
+exports.default = Cli;
+
+
+var helpTxt = '\n  Usage: fbi [command] [command] [command] ...\n\n  Commands:\n\n    n, new            new project\n    b, build          build project\n    s, serve          serve project or files\n\n  Options:\n\n    -h, --help        output usage information\n    -v, --version     output the version number\n';
+
+function help() {
+  console.log(helpTxt);
+}
+
+function version() {
+  console.log(_package2.default.version);
+}
 //# sourceMappingURL=cli.js.map
