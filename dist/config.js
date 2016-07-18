@@ -6,11 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = {
   type: '',
   paths: {
-    config: 'fbi/config.js',
-    templates: '/templates'
+    config: 'fbi/config.js'
   },
   server: {
-    ip: 'localhost',
     port: 9999
   }
 };

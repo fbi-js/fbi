@@ -15,26 +15,17 @@ const help = `
     -h, --help        output usage information
     -v, --version     output the version number
 `
-
 let usrConfig
 
 let fbi = {
   addTask: () => {
     log('add task')
   },
-  new: async () => {
-    try {
-      usrConfig = usrConfig || await isfbi(cfg.paths.config)
-      await require('./lib/new').default(usrConfig)
-    } catch (e) {
-      log(e)
-    }
-  },
-  serve: async () => {
-    try {
-      usrConfig = usrConfig || await isfbi(cfg.paths.config)
+  serve: async() => {
+    try{
+      usrConfig = await isfbi(cfg.paths.config)
       await require('./lib/serve').default(usrConfig)
-    } catch (e) {
+    }catch(e){
       log(e)
     }
   },
