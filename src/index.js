@@ -25,7 +25,7 @@ const defTasks = [
   }
 ]
 
-class Fbi {
+export default class Fbi {
 
   constructor (...args) {
     this._ = _
@@ -39,11 +39,9 @@ class Fbi {
     let cmds = []
     let cmdsExecuted = []
 
-    if (typeof argvs === 'string') {
+    typeof argvs === 'string' ?
       cmds.push(argvs)
-    } else {
-      cmds = argvs
-    }
+      : cmds = argvs
 
     for (let cmd of cmds) {
       this.tasks.map(task => {
@@ -62,25 +60,8 @@ class Fbi {
   }
 
   addTask (task) {
-    if (Array.isArray(task)) {
-      this.tasks = this.tasks.concat(task)
-    } else {
-      this.tasks.push(task)
-    }
+    Array.isArray(task)
+      ? this.tasks = this.tasks.concat(task)
+      : this.tasks.push(task)
   }
-
 }
-
-export default Fbi
-
-// constructor(){
-//   (async function() {
-//     console.log('async in')
-//     await _this.mergeCfg()
-//   }())
-//   this.init()
-// }
-
-// static staticMethod () {
-//   return 'static method'
-// }

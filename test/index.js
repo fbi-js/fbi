@@ -15,6 +15,7 @@ fbi.addTask([{
   }
 }])
 
+fbi.run('c')
 fbi.run(['c', 'caaa'])
 
 // const a = fbi.publicMethod()

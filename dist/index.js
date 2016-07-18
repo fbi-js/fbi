@@ -81,11 +81,7 @@ var Fbi = function () {
       var cmds = [];
       var cmdsExecuted = [];
 
-      if (typeof argvs === 'string') {
-        cmds.push(argvs);
-      } else {
-        cmds = argvs;
-      }
+      typeof argvs === 'string' ? cmds.push(argvs) : cmds = argvs;
 
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -132,27 +128,11 @@ var Fbi = function () {
   }, {
     key: 'addTask',
     value: function addTask(task) {
-      if (Array.isArray(task)) {
-        this.tasks = this.tasks.concat(task);
-      } else {
-        this.tasks.push(task);
-      }
+      Array.isArray(task) ? this.tasks = this.tasks.concat(task) : this.tasks.push(task);
     }
   }]);
   return Fbi;
 }();
 
 exports.default = Fbi;
-
-// constructor(){
-//   (async function() {
-//     console.log('async in')
-//     await _this.mergeCfg()
-//   }())
-//   this.init()
-// }
-
-// static staticMethod () {
-//   return 'static method'
-// }
 //# sourceMappingURL=index.js.map
