@@ -1,22 +1,50 @@
 const Fbi = require('fbi').default
-const fbi = new Fbi({type: 'vue', config: 'config.jss'})
+const fbi = new Fbi({ type: 'vue', config: 'config.jss' })
 
-fbi.addTask([{
-  name: 'custom',
-  short: 'c',
-  fn: function (ctx) {
-    // console.log(ctx)
+var tasks = {
+  custom: {
+    short: 'c',
+    fn: function (ctx) {
+      // console.log(ctx)
+    }
+  },
+  customA: {
+    short: 'caaa',
+    fn: function (ctx) {
+      ctx.log(ctx)
+    }
+  },
+  customB: {
+    short: 'bbb',
+    module: 'slash'
   }
-}, {
-  name: 'custom-aaa',
-  short: 'caaa',
-  fn: function (ctx) {
-    console.log(ctx)
-  }
-}])
+}
 
-fbi.run('c')
-fbi.run(['c', 'caaa'])
+var tmpls = {
+  cusT1: 'http://google.com/h5pc',
+  cusT2: 'http://google.com/h5pc'
+}
+
+// var nothing = {
+//   a: 1,
+//   b: 2,
+//   c: 3
+// }
+
+// var nothing2 = 'this is nothing 2'
+
+
+fbi.add(tasks)
+fbi.add(tmpls)
+
+// fbi.add(nothing)
+// fbi.add(nothing2)
+
+// fbi.run('c')
+// fbi.run(['c', 'caaa'])
 
 // const a = fbi.publicMethod()
-// console.log(a)
+// console.log(fbi)
+
+
+fbi.run('customA')

@@ -1,7 +1,7 @@
 {
   "name": "fbi",
   "version": "2.0.0",
-  "description": "Front-end & Back-end(node.js) Intelligence",
+  "description": "Tasks & Templates Management",
   "engines": {
     "node": ">=6.0",
     "npm": ">= 3.0"
@@ -12,7 +12,7 @@
   "main": "dist/index.js",
   "scripts": {
     "clean": "rm -rf ./dist",
-    "build": "./node_modules/.bin/babel src --out-dir dist --source-maps",
+    "build": "./node_modules/.bin/babel src --out-dir dist",
     "watch": "watch 'npm run build' src "
   },
   "repository": {
@@ -31,9 +31,7 @@
   ],
   "dependencies": {
     "babel-runtime": "^6.9.2",
-    "koa": "^2.0.0",
-    "koa-static": "^3.0.0",
-    "koa-viewer": "0.0.5"
+    "colors": "^1.1.2"
   },
   "devDependencies": {
     "babel-cli": "^6.2.0",

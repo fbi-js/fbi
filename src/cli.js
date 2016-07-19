@@ -3,14 +3,16 @@ import Fbi from './index'
 import pkg from '../package.json'
 
 export default class Cli extends Fbi {
-  constructor (argvs) {
+  constructor(argvs) {
     super()
     this.argvs = argvs
 
     this.init()
+
+    // log('sjhsfjhfjfjdf' ,1)
   }
 
-  init () {
+  init() {
     this.initConfig()
 
     // help
@@ -31,14 +33,14 @@ export default class Cli extends Fbi {
     super.run()
   }
 
-  initConfig () {
+  initConfig() {
     try {
       let _path = this._.cwd(this.config.paths.options)
       fs.accessSync(_path, fs.R_OK | fs.W_OK)
       this.isFbi = true
       let usrCfg = require(_path)
       this._.merge(this.config, usrCfg)
-    } catch(e) {
+    } catch (e) {
       this.isFbi = false
     }
   }
@@ -59,10 +61,10 @@ const helpTxt = `
     -v, --version     output the version number
 `
 
-function help () {
+function help() {
   console.log(helpTxt)
 }
 
-function version () {
+function version() {
   console.log(pkg.version)
 }

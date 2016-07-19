@@ -1,8 +1,17 @@
 import fs from 'fs'
 import path from 'path'
+import colors from 'colors'
 
-export function log (msg) {
-  console.log(typeof msg === 'string' ? 'FBI: ' + msg : msg)
+export function log(msg, type) { // type: 0-error, 1-succ
+  if (typeof msg === 'string') {
+    if (type !== undefined) {
+      // msg = 'FBI=> '.grey + (type ? msg.cyan : msg.red)
+      msg = type
+        ? 'FBI=> '.grey + msg.cyan
+        : 'FBI Error=> '.grey + msg.red
+    }
+  }
+  console.log(msg)
 }
 
 export function cwd(...args) {
@@ -16,7 +25,6 @@ export function join(...args) {
 }
 
 export function dir(...args) {
-  console.log('__dirname: ' + __dirname)
   const arr = [].slice.call(args || [])
   return path.join.apply(null, [__dirname].concat(arr))
 }
@@ -31,7 +39,7 @@ export function exist(src) {
 
 export function merge(target) {
   var sources = [].slice.call(arguments, 1)
-  sources.forEach(function(source) {
+  sources.forEach(function (source) {
     for (var p in source)
       if (typeof source[p] === 'object') {
         target[p] = target[p] || (Array.isArray(source[p]) ? [] : {})
@@ -43,7 +51,28 @@ export function merge(target) {
   return target
 }
 
-export async function isfbi (src) {
+export async function isfbi(src) {
   let ret = await fsp.exist(src)
   return ret ? require(cwd(src)) : ret
+}
+
+export function validJson(data) {
+  try {
+    var o = JSON.parse(data);
+    // JSON.parse(null) returns null, and typeof null === "object"
+    if (o && typeof o === 'object') {
+      return o;
+    }
+  }
+  catch (e) { }
+
+  return false;
+}
+
+export function write(cnt){
+  try {
+    fs.writeFileSync(cwd('data'), cnt)
+  } catch(e) {
+    throw e
+  }
 }

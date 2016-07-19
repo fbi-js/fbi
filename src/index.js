@@ -1,37 +1,50 @@
 // fbi assets
 import config from './config'
 import * as _ from './utils'
-// fbi tasks
-import create from './tasks/create'
-import serve from './tasks/serve'
-import build from './tasks/build'
+import Store from './store'
 
-const defTasks = [
-  {
+const dbTasks = new Store('tasks')
+const dbTemplates = new Store('templates')
+
+const defs = {
+  new: {
     name: 'new',
-    short: 'n',
-    fn: create
+    module: 'create'
   },
-  {
+  build: {
     name: 'build',
     short: 'b',
-    fn: build
+    module: 'build'
   },
-  {
+  serve: {
     name: 'serve',
     short: 's',
-    fn: serve
+    module: 'serve'
   }
-]
+}
+
+const tdefs = {
+  h5pc: 'http://google.com/h5pc',
+  h5mobile: 'http://google.com/h5pc',
+  vue: 'http://google.com/h5pc',
+  react: 'http://google.com/h5pc',
+  angular: 'http://google.com/h5pc'
+}
 
 export default class Fbi {
 
   constructor() {
     this._ = _
     this.config = config
-    this.tasks = []
-    this.templates = []
-    this.addTask(defTasks)
+    global.log = this.log = _.log
+    delete _.log
+    this.user = []
+
+    dbTasks.set(defs)
+    this.tasks = dbTasks.all() || {}
+
+    dbTemplates.set(tdefs)
+    this.templates = dbTemplates.all() || {}
   }
 
   run(uCmds) {
@@ -44,26 +57,52 @@ export default class Fbi {
       : cmds = argvs
 
     for (let cmd of cmds) {
-      this.tasks.map(task => {
-        if (cmd === task.name || cmd === task.short) {
+      let task = this.tasks[cmd]
+      if(task){
+        if (task.fn) {
           cmdsExecuted.push(cmd)
-          this._.log(`Running task '${task.name}'`)
-          task.fn(this)
+          log(`Running task '${cmd}'...`, 1)
+
+          try {
+              task.fn(this)
+          } catch (e) {
+            log(`Task function error`, 0)
+          }
+        }else if (task.module) {
+          cmdsExecuted.push(cmd)
+          log(`Running task '${cmd}'...`, 1)
+
+          try {
+              require(task.module)(this)
+          } catch (e) {
+            log(`Module not found: '${task.module}'`, 0)
+          }
         }
-      })
+      }
     }
 
     let diff = cmds.concat(cmdsExecuted).filter(v => {
       return !cmds.includes(v) || !cmdsExecuted.includes(v)
     })
     if (diff.length) {
-      this._.log(`Error: Commands '${diff}' not found.`)
+      log(`Commands not found: '${diff}'`, 0)
     }
   }
 
-  addTask(task) {
-    Array.isArray(task)
-      ? this.tasks = this.tasks.concat(task)
-      : this.tasks.push(task)
+  // add anything
+  add(any) {
+    Object.keys(any).map(a => {
+      // tasks
+      if(any[a].fn || any[a].module){
+        this.tasks[a] = any[a] // deepth: 1
+      }
+
+      if(typeof any[a] === 'string'){
+        this.templates[a] = any[a]
+      }
+    })
+
+
   }
+
 }
