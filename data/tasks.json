@@ -1,1 +1,1 @@
-{"new":{"name":"new","module":"create"},"build":{"name":"build","short":"b","module":"build"},"serve":{"name":"serve","short":"s","module":"serve"}}
+{"new":{"desc":"create a fbi project","short":"n","module":"fbi-create"},"build":{"desc":"build the fbi project","short":"b","module":"fbi-build"},"serve":{"desc":"serve the project or files","short":"s","module":"gulp"}}

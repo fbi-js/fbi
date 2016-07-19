@@ -2,24 +2,28 @@
 import config from './config'
 import * as _ from './utils'
 import Store from './store'
+import install from './utils/install'
+// import fbc from 'fbi-create'
+// console.log(fbc)
 
 const dbTasks = new Store('tasks')
 const dbTemplates = new Store('templates')
 
 const defs = {
   new: {
-    name: 'new',
-    module: 'create'
+    desc: 'create a fbi project',
+    short: 'n',
+    module: 'fbi-create'
   },
   build: {
-    name: 'build',
+    desc: 'build the fbi project',
     short: 'b',
-    module: 'build'
+    module: 'fbi-build'
   },
   serve: {
-    name: 'serve',
+    desc: 'serve the project or files',
     short: 's',
-    module: 'serve'
+    module: 'gulp'
   }
 }
 
@@ -58,24 +62,31 @@ export default class Fbi {
 
     for (let cmd of cmds) {
       let task = this.tasks[cmd]
-      if(task){
+      if (task) {
         if (task.fn) {
           cmdsExecuted.push(cmd)
           log(`Running task '${cmd}'...`, 1)
 
           try {
-              task.fn(this)
+            task.fn(this)
           } catch (e) {
             log(`Task function error`, 0)
           }
-        }else if (task.module) {
+        } else if (task.module) {
           cmdsExecuted.push(cmd)
           log(`Running task '${cmd}'...`, 1)
 
           try {
-              require(task.module)(this)
+            let target = require(task.module)
+            if (typeof target === 'function') { // es5
+              target(this)
+            } else if (typeof target === 'object'
+              && typeof target.default === 'function') { // es6
+              target.default(this)
+            }
           } catch (e) {
-            log(`Module not found: '${task.module}'`, 0)
+            log(`Module not found: '${task.module}'`)
+            install(this, task.module)
           }
         }
       }
@@ -93,11 +104,11 @@ export default class Fbi {
   add(any) {
     Object.keys(any).map(a => {
       // tasks
-      if(any[a].fn || any[a].module){
+      if (any[a].fn || any[a].module) {
         this.tasks[a] = any[a] // deepth: 1
       }
 
-      if(typeof any[a] === 'string'){
+      if (typeof any[a] === 'string') {
         this.templates[a] = any[a]
       }
     })

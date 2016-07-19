@@ -3,13 +3,12 @@ import Fbi from './index'
 import pkg from '../package.json'
 
 export default class Cli extends Fbi {
+
   constructor(argvs) {
     super()
+
     this.argvs = argvs
-
     this.init()
-
-    // log('sjhsfjhfjfjdf' ,1)
   }
 
   init() {
@@ -19,15 +18,18 @@ export default class Cli extends Fbi {
     if (!this.argvs.length
       || this.argvs[0] === '-h'
       || this.argvs[0] === '--help') {
-      help()
-      return
+      return help()
     }
 
     // show version
     if (this.argvs[0] === '-v'
       || this.argvs[0] === '--verison') {
-      version()
-      return
+      return version()
+    }
+
+    // show tasks & templates
+    if (this.argvs[0] === 'ls') {
+      return show(this)
     }
 
     super.run()
@@ -51,9 +53,7 @@ const helpTxt = `
 
   Commands:
 
-    n, new            new project
-    b, build          build project
-    s, serve          serve project or files
+    check available commands use: fbi ls
 
   Options:
 
@@ -67,4 +67,40 @@ function help() {
 
 function version() {
   console.log(pkg.version)
+}
+
+function show(ctx) {
+
+  let msg = `
+  Tasks:
+  `
+  const tasks = ctx.tasks
+  const tmpls = ctx.templates
+
+  if (!tasks) {
+    ctx.log('No available task.')
+  } else {
+    Object.keys(tasks).map(t => {
+      msg += `
+    ${t}${tasks[t].short ? ',' + tasks[t].short : ''}:     ${tasks[t].desc}`
+    })
+  }
+
+  msg += `
+
+  Templates:
+  `
+  if (!tmpls) {
+    ctx.log('No available template.')
+  } else {
+    Object.keys(tmpls).map(t => {
+      msg += `
+    ${t}:      ${tmpls[t]}`
+    })
+  }
+  msg += `
+
+  `
+
+  ctx.log(msg)
 }
