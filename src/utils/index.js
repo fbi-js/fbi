@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 export function log (msg) {
-  console.log(msg)
+  console.log(typeof msg === 'string' ? 'FBI: ' + msg : msg)
 }
 
 export function cwd(...args) {
