@@ -1,50 +1,37 @@
-const Fbi = require('fbi').default
-const fbi = new Fbi({ type: 'vue', config: 'config.jss' })
+const Fbi = require('../dist/').default
+const fbi = new Fbi()
 
-var tasks = {
+// let n = parseInt(process.env.MW || '1', 10);
+// console.log(`  ${n} middleware`);
+
+const tasks = {
   custom: {
+    desc:'custom command',
     short: 'c',
     fn: function (ctx) {
       // console.log(ctx)
     }
   },
   customA: {
+    desc:'custom command',
     short: 'caaa',
     fn: function (ctx) {
       ctx.log(ctx)
     }
   },
   customB: {
+    desc:'custom command',
     short: 'bbb',
     module: 'slash'
   }
 }
 
-var tmpls = {
+const tmpls = {
   cusT1: 'http://google.com/h5pc',
   cusT2: 'http://google.com/h5pc'
 }
 
-// var nothing = {
-//   a: 1,
-//   b: 2,
-//   c: 3
-// }
-
-// var nothing2 = 'this is nothing 2'
-
-
 fbi.add(tasks)
 fbi.add(tmpls)
-
-// fbi.add(nothing)
-// fbi.add(nothing2)
-
-// fbi.run('c')
-// fbi.run(['c', 'caaa'])
-
-// const a = fbi.publicMethod()
-// console.log(fbi)
-
 
 fbi.run('customA')

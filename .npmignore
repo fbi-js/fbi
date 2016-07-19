@@ -12,7 +12,7 @@ npm-debug.log
 .Ulysses-Group.plist
 demo*
 test*
-mission
-template
+data
+bench
 coverage
 test
