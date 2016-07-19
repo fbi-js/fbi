@@ -1,4 +1,3 @@
-import fs from 'fs'
 // fbi assets
 import config from './config'
 import * as _ from './utils'
@@ -31,6 +30,7 @@ export default class Fbi {
     this._ = _
     this.config = config
     this.tasks = []
+    this.templates = []
     this.addTask(defTasks)
   }
 
@@ -53,9 +53,11 @@ export default class Fbi {
       })
     }
 
-    let difference = cmds.concat(cmdsExecuted).filter(v => !cmds.includes(v) || !cmdsExecuted.includes(v))
-    if (difference.length) {
-      this._.log(`Error: Commands '${difference}' not found.`)
+    let diff = cmds.concat(cmdsExecuted).filter(v => {
+      return !cmds.includes(v) || !cmdsExecuted.includes(v)
+    })
+    if (diff.length) {
+      this._.log(`Error: Commands '${diff}' not found.`)
     }
   }
 
