@@ -1,2 +1,5 @@
 #!/usr/bin/env node
-module.exports = require('../dist/cli').default(process.argv.slice(2));
+
+var Fbi = require('../dist/index').default
+var fbi = new Fbi()
+fbi.run(process.argv.slice(2))
