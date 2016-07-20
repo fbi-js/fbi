@@ -7,16 +7,15 @@ const fbi = new Fbi()
 const tasks = {
   custom: {
     desc:'custom command',
-    fn: function (ctx) {
-      ctx.log('Success !!! custom', 1)
-      // console.log(ctx)
+    fn: function () {
+      this.log('Success !!! custom', 1)
     }
   },
   customA: {
     desc:'custom command',
-    fn: function (ctx) {
-      ctx.log('Success !!! ', 1)
-      ctx.log(ctx)
+    fn: function () {
+      this.log('Success !!! ', 1)
+      this.log(this)
     }
   },
   customB: {
@@ -30,7 +29,7 @@ const tmpls = {
   cusT2: 'http://google.com/h5pc'
 }
 
-fbi.add(tasks)
+fbi.add(tasks, true)
 fbi.add(tmpls)
 
 fbi.run('custom')

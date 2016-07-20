@@ -1,9 +1,10 @@
 export default {
   paths: {
-    tasks: './data/tasks',
+    data: './data',
+    options: 'fbi/config.js',
+    tasks: 'fbi/tasks.js',
     starters: '../tmpls/starters/',
-    settings: 'default.config.js',
-    options: 'fbi/config.js'
+    settings: 'default.config.js'
   },
   meta: {
     src: {

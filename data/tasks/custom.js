@@ -1,4 +1,3 @@
-module.exports = function (ctx) {
-      ctx.log('Success !!! custom', 1)
-      // console.log(ctx)
+module.exports = function () {
+      this.log('Success !!! custom', 1)
     }

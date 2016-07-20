@@ -18,7 +18,8 @@ export default class Cli extends Fbi {
   }
 
   init () {
-    this.make()
+    this.makeConfig()
+    this.makeTasks()
     this.help()
     this.version()
     this.remove()
@@ -26,16 +27,27 @@ export default class Cli extends Fbi {
     if (this.next) super.run()
   }
 
-  make () {
+  makeConfig () {
     try {
-      let _path = this._.cwd(this.config.paths.options)
+      // access user config
+      const _path = this._.cwd(this.config.paths.options)
       this._.fs.accessSync(_path, this._.fs.R_OK | this._.fs.W_OK)
       this.isFbi = true
-      let usrCfg = require(_path)
+      const usrCfg = require(_path)
       this._.merge(this.config, usrCfg)
     } catch (e) {
       this.isFbi = false
     }
+  }
+
+  makeTasks () {
+    try {
+      // access user tasks
+      const _path = this._.cwd(this.config.paths.tasks)
+      this._.fs.accessSync(_path, this._.fs.R_OK | this._.fs.W_OK)
+      const usrTasks = require(_path)
+      this.add(usrTasks, false)
+    } catch (e) {}
   }
 
   help () {
