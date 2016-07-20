@@ -13,17 +13,14 @@ const dbTemplates = new Store('templates')
 const defs = {
   new: {
     desc: 'create a fbi project',
-    short: 'n',
     module: 'pm2'
   },
   build: {
     desc: 'build the fbi project',
-    short: 'b',
     module: 'fbi-build'
   },
   serve: {
     desc: 'serve the project or files',
-    short: 's',
     module: 'gulp'
   }
 }
@@ -45,10 +42,10 @@ export default class Fbi {
     delete _.log
     this.user = []
 
-    dbTasks.set(defs)
+    // dbTasks.set(defs)
     this.tasks = dbTasks.all() || {}
 
-    dbTemplates.set(tdefs)
+    // dbTemplates.set(tdefs)
     this.templates = dbTemplates.all() || {}
   }
 
@@ -86,7 +83,7 @@ export default class Fbi {
               target.default(this)
             }
           } catch (e) {
-            log(__dirname)
+            // log(__dirname)
             log(`Module not found: '${task.module}'`)
             // install(this, task.module)
           }
@@ -105,8 +102,6 @@ export default class Fbi {
   // add anything
   add(any) {
 
-    log(__dirname)
-
     const tasks_path = this._.dir(this.config.paths.tasks)
 
     Object.keys(any).map(a => {
@@ -120,11 +115,13 @@ export default class Fbi {
         this.tasks[a] = any[a]
         fs.writeFileSync(name, cnt)
 
-      } else if (any[a].module) { // task require a npm nodule
+      } else if (any[a].module) { // task require a npm module
         this.tasks[a] = any[a]
+
       } else if (typeof any[a] === 'string') { // templates
         this.templates[a] = any[a]
       }
+
     })
 
     // sync tasks

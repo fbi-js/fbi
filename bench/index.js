@@ -7,7 +7,6 @@ const fbi = new Fbi()
 const tasks = {
   custom: {
     desc:'custom command',
-    short: 'c',
     fn: function (ctx) {
       ctx.log('Success !!! custom', 1)
       // console.log(ctx)
@@ -15,7 +14,6 @@ const tasks = {
   },
   customA: {
     desc:'custom command',
-    short: 'caaa',
     fn: function (ctx) {
       ctx.log('Success !!! ', 1)
       ctx.log(ctx)
@@ -23,7 +21,6 @@ const tasks = {
   },
   customB: {
     desc:'custom command',
-    short: 'bbb',
     module: 'slash'
   }
 }

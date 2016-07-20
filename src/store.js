@@ -1,6 +1,7 @@
 import fs from 'fs'
 import * as _ from './utils'
 
+// json files storage
 export default class Store {
 
   constructor(name) {

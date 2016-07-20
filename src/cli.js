@@ -1,97 +1,35 @@
-import fs from 'fs'
+import colors from 'colors'
 import Fbi from './index'
+import Store from './store'
 import pkg from '../package.json'
+
+const dbTasks = new Store('tasks')
+const dbTemplates = new Store('templates')
 
 export default class Cli extends Fbi {
 
-  constructor(argvs) {
+  constructor (argvs) {
     super()
 
     this.argvs = argvs
     global.log = this.log
-      // this.init()
-
-      (async function (ctx) {
-        log('async in')
-        log(ctx.init)
-        let a = await ctx.init()
-        console.log(a)
-      } (this))
-
-      // (async () => {
-      //   log('async in')
-      //   log(this.init)
-      //   let a = await this.init()
-      //   console.log(a)
-      // })()
+    this.next = true
+    this.init()
   }
 
-  async init() {
-    log(this)
+  init () {
+    this.make()
+    this.help()
+    this.version()
+    this.remove()
 
-    // return Promise.resolve('hahahahah')
-
-    // return new Promise((resolve, reject) => {
-    //   resolve('succ')
-    // })
-
-    this.initConfig()
-
-    // help
-    if (!this.argvs.length
-      || this.argvs[0] === '-h'
-      || this.argvs[0] === '--help') {
-      return help()
-    }
-
-    // show version
-    if (this.argvs[0] === '-v'
-      || this.argvs[0] === '--verison') {
-      return version()
-    }
-
-    // show tasks & templates
-    if (this.argvs[0] === 'ls') {
-      return show(this)
-    }
-
-    // remove a task or template
-    if (this.argvs[0] === 'rm') {
-      const mods = this.argvs.slice(1)
-      for (const mod of mods) {
-        if (this.tasks[mod]) {
-
-          try {
-            // del task
-            const _path = this.tasks[mod].module
-            log(_path)
-            const aaa = await this._.exist(this._.dir(_path))
-            log('------------', 1)
-            log(aaa)
-            // if()){
-            //   log('Mod found !!!!')
-            // }
-          } catch (e) {
-            reject(e)
-          }
-
-        } else if (this.templates[mod]) {
-          // del template
-        }
-      }
-
-      // log(this)
-
-      return
-    }
-
-    super.run()
+    if (this.next) super.run()
   }
 
-  initConfig() {
+  make () {
     try {
       let _path = this._.cwd(this.config.paths.options)
-      fs.accessSync(_path, fs.R_OK | fs.W_OK)
+      this._.fs.accessSync(_path, this._.fs.R_OK | this._.fs.W_OK)
       this.isFbi = true
       let usrCfg = require(_path)
       this._.merge(this.config, usrCfg)
@@ -99,61 +37,117 @@ export default class Cli extends Fbi {
       this.isFbi = false
     }
   }
+
+  help () {
+    if (!this.next) return
+
+    if (!this.argvs.length
+      || this.argvs[0] === '-h'
+      || this.argvs[0] === '--help') {
+      this.next = false
+      show(this)
+    }
+  }
+
+  version () {
+    if (!this.next) return
+
+    if (this.argvs[0] === '-v'
+      || this.argvs[0] === '--verison') {
+      this.next = false
+      this.log(pkg.version)
+    }
+  }
+
+  remove () {
+    if (!this.next) return
+
+    if (this.argvs[0] === 'rm'
+      || this.argvs[0] === 'remove') {
+      this.next = false
+      const mods = this.argvs.slice(1)
+      for (const mod of mods) {
+        if (this.tasks[mod]) {
+          if (this.tasks[mod].module.indexOf('.js') > 0) { // fn task
+            // del task
+            const _path = this._.dir(this.tasks[mod].module.replace('../', ''))
+            const exist = this._.existSync(_path)
+            if (exist) {
+              this._.fs.unlinkSync(_path)
+              dbTasks.del(mod)
+              log(`Task module '${mod}' removed`, 1)
+            } else {
+              log(`Task module '${mod}' not found`, 0)
+            }
+          } else {
+            dbTasks.del(mod)
+            // TODO: uninstall?
+            log(`Task module '${mod}' removed`, 1)
+          }
+        } else if (this.templates[mod]) {
+          // del template
+          dbTemplates.del(mod)
+          log(`Template '${mod}' removed`, 1)
+        } else {
+          log(`Module '${mod}' not found`, 0)
+        }
+      }
+    }
+  }
+
 }
 
-const helpTxt = `
-  Usage: fbi [command] [command] [command] ...
-
-  Commands:
-
-    check available commands use: fbi ls
-
-  Options:
-
-    -h, --help        output usage information
-    -v, --version     output the version number
-`
-
-function help() {
-  console.log(helpTxt)
-}
-
-function version() {
-  console.log(pkg.version)
-}
-
-function show(ctx) {
-
-  let msg = `
-  Tasks:
+let helps = [
   `
+   Usage:
+
+     fbi [task]
+     fbi new [template]
+
+`,
+  `
+
+   Options:
+
+     -h, --help        output usage information
+     -v, --version     output the version number
+     rm, remove        remove tasks or templates
+`
+]
+// show tasks & templates
+function show (ctx) {
+  let msg = helps[0]
+  msg += `
+     Tasks:`
+
   const tasks = ctx.tasks
   const tmpls = ctx.templates
 
-  if (!tasks) {
-    ctx.log('No available task.')
+  if (!Object.keys(tasks).length) {
+    msg += `
+       No available task.
+    `
   } else {
     Object.keys(tasks).map(t => {
       msg += `
-    ${t}${tasks[t].short ? ',' + tasks[t].short : ''}:     ${tasks[t].desc}`
+       ${t}:  ${tasks[t].desc}`
     })
   }
 
   msg += `
+     Templates:`
 
-  Templates:
-  `
-  if (!tmpls) {
-    ctx.log('No available template.')
+  if (!Object.keys(tmpls).length) {
+    msg += `
+       No available template.
+    `
   } else {
     Object.keys(tmpls).map(t => {
       msg += `
-    ${t}:      ${tmpls[t]}`
+       ${t}:  ${tmpls[t]}`
     })
   }
-  msg += `
-
-  `
+  msg += helps[1]
 
   ctx.log(msg)
 }
