@@ -26,12 +26,12 @@ export function join(...args) {
 
 export function dir(...args) {
   const arr = [].slice.call(args || [])
-  return path.join.apply(null, [__dirname].concat(arr))
+  return path.join.apply(null, [__dirname, '../../'].concat(arr))
 }
 
 export function exist(src) {
   return new Promise((resolve, reject) => {
-    fs.access(cwd(src), fs.R_OK | fs.W_OK, err => {
+    fs.access(src, fs.R_OK | fs.W_OK, err => {
       return err ? resolve(false) : resolve(true)
     })
   })

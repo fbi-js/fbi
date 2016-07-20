@@ -9,6 +9,7 @@ const tasks = {
     desc:'custom command',
     short: 'c',
     fn: function (ctx) {
+      ctx.log('Success !!! custom', 1)
       // console.log(ctx)
     }
   },
@@ -16,6 +17,7 @@ const tasks = {
     desc:'custom command',
     short: 'caaa',
     fn: function (ctx) {
+      ctx.log('Success !!! ', 1)
       ctx.log(ctx)
     }
   },
@@ -34,4 +36,4 @@ const tmpls = {
 fbi.add(tasks)
 fbi.add(tmpls)
 
-fbi.run('customA')
+fbi.run('custom')

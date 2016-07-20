@@ -29,7 +29,7 @@ export default (ctx, mod) => {
 
 
 
-  const ls = spawn('npm', ['i', '--save-dev'], {
+  const ls = spawn('tnpm', ['i', '--save-dev'], {
     cwd: process.cwd(),
     stdio: [0, 1, 2] // 设置子进程 log颜色
   })

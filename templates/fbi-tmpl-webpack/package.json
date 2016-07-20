@@ -1,0 +1,16 @@
+{
+  "name": "fbi-tmpl-webpack",
+  "version": "1.0.0",
+  "description": "fbi template webpack",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "shawnnxiao",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-loader": "^6.2.4",
+    "webpack": "^2.1.0-beta.19",
+    "webpack-dev-server": "^1.14.1"
+  }
+}

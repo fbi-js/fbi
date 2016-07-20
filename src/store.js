@@ -5,7 +5,7 @@ export default class Store {
 
   constructor(name) {
     this.name = name
-    this.root = _.dir('../../data')
+    this.root = _.dir('data')
     this.path = _.join(this.root, this.name + '.json')
     this.init()
   }
@@ -15,9 +15,19 @@ export default class Store {
   }
 
   set(obj) { // { attr: 'val', attr2: 'val2' }
-    Object.keys(obj).map(o => {
-      this.db[o] = obj[o] // deepth: 1
-    })
+
+    if (Array.isArray(obj)) {
+      for (const item of obj) {
+        Object.keys(item).map(o => {
+          this.db[o] = obj[o] // deepth: 1
+        })
+      }
+    } else {
+      Object.keys(obj).map(o => {
+        this.db[o] = obj[o] // deepth: 1
+      })
+    }
+
     this.sync()
   }
 

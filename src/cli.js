@@ -8,10 +8,33 @@ export default class Cli extends Fbi {
     super()
 
     this.argvs = argvs
-    this.init()
+    global.log = this.log
+      // this.init()
+
+      (async function (ctx) {
+        log('async in')
+        log(ctx.init)
+        let a = await ctx.init()
+        console.log(a)
+      } (this))
+
+      // (async () => {
+      //   log('async in')
+      //   log(this.init)
+      //   let a = await this.init()
+      //   console.log(a)
+      // })()
   }
 
-  init() {
+  async init() {
+    log(this)
+
+    // return Promise.resolve('hahahahah')
+
+    // return new Promise((resolve, reject) => {
+    //   resolve('succ')
+    // })
+
     this.initConfig()
 
     // help
@@ -30,6 +53,36 @@ export default class Cli extends Fbi {
     // show tasks & templates
     if (this.argvs[0] === 'ls') {
       return show(this)
+    }
+
+    // remove a task or template
+    if (this.argvs[0] === 'rm') {
+      const mods = this.argvs.slice(1)
+      for (const mod of mods) {
+        if (this.tasks[mod]) {
+
+          try {
+            // del task
+            const _path = this.tasks[mod].module
+            log(_path)
+            const aaa = await this._.exist(this._.dir(_path))
+            log('------------', 1)
+            log(aaa)
+            // if()){
+            //   log('Mod found !!!!')
+            // }
+          } catch (e) {
+            reject(e)
+          }
+
+        } else if (this.templates[mod]) {
+          // del template
+        }
+      }
+
+      // log(this)
+
+      return
     }
 
     super.run()

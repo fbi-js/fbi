@@ -1,3 +1,4 @@
+import fs from 'fs'
 // fbi assets
 import config from './config'
 import * as _ from './utils'
@@ -13,7 +14,7 @@ const defs = {
   new: {
     desc: 'create a fbi project',
     short: 'n',
-    module: 'fbi-create'
+    module: 'pm2'
   },
   build: {
     desc: 'build the fbi project',
@@ -85,8 +86,9 @@ export default class Fbi {
               target.default(this)
             }
           } catch (e) {
+            log(__dirname)
             log(`Module not found: '${task.module}'`)
-            install(this, task.module)
+            // install(this, task.module)
           }
         }
       }
@@ -102,18 +104,32 @@ export default class Fbi {
 
   // add anything
   add(any) {
-    Object.keys(any).map(a => {
-      // tasks
-      if (any[a].fn || any[a].module) {
-        this.tasks[a] = any[a] // deepth: 1
-      }
 
-      if (typeof any[a] === 'string') {
+    log(__dirname)
+
+    const tasks_path = this._.dir(this.config.paths.tasks)
+
+    Object.keys(any).map(a => {
+
+      if (any[a].fn) { // task require a function
+        const name = `${tasks_path}/${a}.js`
+        const cnt = 'module.exports = ' + any[a].fn.toString() // to commonJS
+
+        delete any[a].fn
+        any[a]['module'] = `.${this.config.paths.tasks}/${a}.js`
+        this.tasks[a] = any[a]
+        fs.writeFileSync(name, cnt)
+
+      } else if (any[a].module) { // task require a npm nodule
+        this.tasks[a] = any[a]
+      } else if (typeof any[a] === 'string') { // templates
         this.templates[a] = any[a]
       }
     })
 
-
+    // sync tasks
+    dbTasks.set(this.tasks)
+    dbTemplates.set(this.templates)
   }
 
 }
