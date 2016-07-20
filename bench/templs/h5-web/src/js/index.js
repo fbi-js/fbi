@@ -1,3 +1,8 @@
+var mod = require('./mod')
+
 function test(){
-  console.log('test')
+  console.log('fm index.js')
 }
+
+test()
+mod()
