@@ -1,6 +1,8 @@
 export default {
   paths: {
     data: './data',
+    data_tasks: './data/tasks',
+    data_templates: './data/templates',
     options: 'fbi/config.js',
     tasks: 'fbi/tasks.js',
     starters: '../tmpls/starters/',
@@ -25,6 +27,6 @@ export default {
   },
   server: {
     protocol: 'localhost',
-    port: 6666
+    port: 9999
   }
 }

@@ -1,14 +1,1 @@
-{
-  "custom": {
-    "desc": "custom command",
-    "module": "../data/tasks/custom.js"
-  },
-  "customA": {
-    "desc": "custom command",
-    "module": "../data/tasks/customA.js"
-  },
-  "customB": {
-    "desc": "custom command",
-    "module": "slash"
-  }
-}
+{"serve":{"desc":"serve static files"}}
