@@ -1,73 +1,62 @@
-import fs from 'fs'
-import path from 'path'
-import colors from 'colors'
-import Fbi from './index'
-import Store from './store'
-import copy from './utils/copy'
-import pkg from '../package.json'
+import config from './config/index'
+import { read, exist } from './helpers/file'
+import * as _ from './helpers/utils'
+import Store from './helpers/store'
 
 const dbTasks = new Store('tasks')
 const dbTemplates = new Store('templates')
 
-export default class Cli extends Fbi {
+export default class Fbi {
+  constructor() {
+    this.config = config
 
-  constructor(argvs) {
-    super()
-
-    this.argvs = argvs
-    global.log = this.log
-    this.next = true
-    this.init()
-
-    // (async function (ctx) {
-    //   log('async in')
-    //   log(ctx.init)
-    //   let a = await ctx.init()
-    //   console.log(a)
-    // } (this))
+    this.tasks = dbTasks.all() || {}
+    this.templates = dbTemplates.all() || {}
   }
 
-  init() {
-    this.makeConfig()
+  async cli(argvs) {
+    this.argvs = argvs
+    this.next = true
+    await this.makeConfig()
     this.makeTasks()
+    console.log(1)
     this.help()
     this.version()
     this.remove()
     this.create()
-
-    if (this.next) super.run()
   }
 
-  makeConfig() {
+  async makeConfig() {
     try {
       // access user config
-      const _path = this._.cwd(this.config.paths.options)
-      fs.accessSync(_path, fs.R_OK | fs.W_OK)
-      this.isFbi = true
-      const usrCfg = require(_path)
-      this._.merge(this.config, usrCfg)
+      const _path = _.cwd(this.config.paths.options)
+      this.isFbi = await exist(_path)
+      if (this.isFbi) {
+        const usrCfg = require(_path)
+        _.merge(this.config, usrCfg)
+      }
     } catch (e) {
-      this.isFbi = false
+      _.log(e)
     }
   }
 
   makeTasks() {
     try {
       // access user tasks
-      // const _path = this._.cwd(this.config.paths.tasks)
-      // log(_path)
-      // fs.accessSync(_path, fs.R_OK | fs.W_OK)
-      // const usrTasks = require(_path)
-      const usrTasks = require(this._.dir(`${this.config.paths.data_templates}/${this.config.template || 'basic'}/${this.config.paths.tasks}`))
+      const usrTasks = require(_.dir(`${this.config.paths.data_templates}/${this.config.template || 'basic'}/${this.config.paths.tasks}`))
       this.add(usrTasks, false)
     } catch (e) {
-      log(e)
+      _.log(e)
       // if(e.code === 'MODULE_NOT_FOUND'){
       //   log(e.message)
       //   this.makeTasks()
       // }
     }
   }
+
+  // get Cli(){
+  //   return Cli
+  // }
 
   help() {
     if (!this.next) return
@@ -161,6 +150,40 @@ export default class Cli extends Fbi {
     }
   }
 
+
+  // add anything
+  add(any, globally) {
+    const tasks_path = _.dir(this.config.paths.data, 'tasks')
+
+    Object.keys(any).map(a => {
+
+      if (any[a].fn) { // task require a function
+        if (globally) {
+          const name = `${tasks_path}/${a}.js`
+          const cnt = 'module.exports = ' + any[a].fn.toString() // to commonJS
+
+          delete any[a].fn
+          any[a]['module'] = `.${this.config.paths.data}/tasks/${a}.js`
+          fs.writeFileSync(name, cnt)
+        }
+        this.tasks[a] = any[a]
+      } else if (any[a].module) { // task require a npm module
+        this.tasks[a] = any[a]
+      } else if (typeof any[a] === 'string') { // templates
+        this.templates[a] = any[a]
+      }
+    })
+
+    // sync tasks
+    if (globally) {
+      dbTasks.set(this.tasks)
+    }
+    if (globally) {
+      dbTemplates.set(this.templates)
+    }
+  }
+
+
 }
 
 let helps = [
@@ -188,6 +211,8 @@ function show(ctx) {
 
   const tasks = ctx.tasks
   const tmpls = ctx.templates
+
+  console.log(tasks)
 
   if (!Object.keys(tasks).length) {
     msg += `
