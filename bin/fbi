@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 var Fbi = require('../dst/fbi')
-var fbi = new Fbi()
-fbi.cli(process.argv.slice(2))
-// new fbi.Cli(process.argv.slice(2))
+// var fbi = new Fbi()
+// console.log(fbi)
+new Fbi.cli(process.argv.slice(2))
+// new fbi.cli(process.argv.slice(2))
+// new fbi()
+
+// fbi.runCli(process.argv.slice(2))

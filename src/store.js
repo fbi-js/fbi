@@ -1,14 +1,25 @@
 import fs from 'fs'
-import * as _ from './utils'
+import {dir, join} from './helpers/utils'
 
 // json files storage
 export default class Store {
 
   constructor(name) {
     this.name = name
-    this.root = _.dir('data')
-    this.path = _.join(this.root, this.name + '.json')
+    this.root = dir('data')
+    this.path = join(this.root, this.name + '.json')
     this.init()
+  }
+
+  init() {
+    let data
+    try {
+      data = require(this.path)
+    } catch (e) {
+      data = {}
+      fs.writeFileSync(this.path, JSON.stringify(data))
+    }
+    this.db = data
   }
 
   get(attr) {
@@ -39,17 +50,6 @@ export default class Store {
 
   all() {
     return this.db
-  }
-
-  init() {
-    let data
-    try {
-      data = require(this.path)
-    } catch (e) {
-      data = {}
-      fs.writeFileSync(this.path, JSON.stringify(data))
-    }
-    this.db = data
   }
 
   sync() {
