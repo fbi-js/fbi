@@ -14,7 +14,13 @@ export default class Fbi {
     this.templates = dbTemplates.all() || {}
   }
 
+  static test(){
+    console.log('test a a ')
+  }
+
   async cli(argvs) {
+    // this.test()
+
     this.argvs = argvs
     this.next = true
     await this.makeConfig()
@@ -182,7 +188,6 @@ export default class Fbi {
       dbTemplates.set(this.templates)
     }
   }
-
 
 }
 

@@ -256,6 +256,8 @@ var Fbi = function () {
       var _this2 = this;
 
       return Promise.resolve().then(function () {
+        // this.test()
+
         _this2.argvs = argvs;
         _this2.next = true;
         return _this2.makeConfig();
@@ -464,6 +466,11 @@ var Fbi = function () {
       if (globally) {
         dbTemplates.set(this.templates);
       }
+    }
+  }], [{
+    key: 'test',
+    value: function test() {
+      console.log('test a a ');
     }
   }]);
   return Fbi;
