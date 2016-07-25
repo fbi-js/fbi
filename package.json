@@ -9,10 +9,11 @@
   "bin": {
     "fbi": "./bin/fbi"
   },
-  "main": "dst/fbi.js",
+  "main": "dst/Fbi.js",
   "scripts": {
-    "build": "rollup -c",
-    "watch": "rollup -c -w"
+    "build": "rollup -c --environment entry:fbi",
+    "watch": "rollup -c -w --environment entry:fbi",
+    "test": "ava"
   },
   "repository": {
     "type": "git",
@@ -28,13 +29,23 @@
     "gulp",
     "watch"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "acorn": "^3.2.0",
+    "estree-walker": "^0.2.1"
+  },
   "devDependencies": {
+    "ava": "^0.15.2",
     "babel-plugin-async-to-promises": "^1.0.5",
     "babel-preset-es2015-rollup": "^1.1.1",
     "npm-run-all": "^2.3.0",
     "rollup": "^0.34.1",
     "rollup-plugin-babel": "^2.6.1",
+    "rollup-plugin-json": "^2.0.1",
     "rollup-watch": "^2.5.0"
+  },
+  "ava": {
+    "files": [
+      "test/*.js"
+    ]
   }
 }

@@ -1,20 +1,52 @@
+const http = require('http')
 const Koa = require('koa')
 const serve = require('koa-static')
+const abc = require('pm2')
 
 module.exports = {
+  build: {
+    desc: 'build fo em',
+    fn: function () {
+      this.log('hahahahahah')
+    }
+  },
   serve: {
     desc: 'serve static files',
     fn: function () {
-      const svrCfg = this.config.server
+      const svrCfg = this.options.server
+      var start = svrCfg.port || 8888
       const app = new Koa()
+
+      // serve static
       app.use(serve(process.cwd()))
-      // 监听
-      app.listen(svrCfg.port || 3000, err => {
-        if (err) {
-          this.log(err)
-          return
-        }
-        this.log(`Server runing at http://${svrCfg.protocol}:${svrCfg.port}`, 1)
+
+      // auto selected a valid port & start server
+      function autoPortServer(cb) {
+        var port = start
+        start += 1
+        var server = http.createServer(app.callback())
+
+        server.listen(port, err => {
+          server.once('close', () => {
+            app.listen(port, err => {
+              if (err) {
+                this.log(err)
+                return
+              }
+              cb(port)
+            })
+
+          })
+          server.close()
+        })
+        server.on('error', err => {
+          autoPortServer(cb)
+        })
+      }
+
+      // listen
+      autoPortServer(port => {
+        this.log(`Server runing at http://${svrCfg.protocol}:${port}`, 1)
       })
     }
   }

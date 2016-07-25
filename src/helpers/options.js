@@ -1,4 +1,7 @@
-export default {
+import {merge} from './utils'
+
+export const defaultOptions = {
+  template: 'basic',
   paths: {
     data: './data',
     data_tasks: './data/tasks',
@@ -29,4 +32,8 @@ export default {
     protocol: 'localhost',
     port: 9999
   }
+}
+
+export function getOptions(opts) {
+  return merge(defaultOptions, opts || {})
 }

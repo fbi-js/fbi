@@ -1,5 +1,7 @@
+import fs from 'fs'
 import util from 'util'
 import path from 'path'
+import {exec} from 'child_process'
 
 // util.inspect.styles
 
@@ -95,4 +97,56 @@ export function validJson(data) {
   } catch (e) {
     return false
   }
+}
+
+export function read(_p, charset) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(_p, charset || 'utf8', (err, data) => {
+      return err ? reject(err) : resolve(data)
+    })
+  })
+}
+
+export function exist(_p, opts) {
+  return new Promise((resolve, reject) => {
+    fs.access(_p, opts || (fs.R_OK | fs.W_OK), err => {
+      return err ? resolve(false) : resolve(true)
+    })
+  })
+}
+
+export function existSync(src) {
+  try {
+    fs.accessSync(src, fs.R_OK | fs.W_OK)
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+export function install(source, rootPath, command, opts) {
+  const prevDir = process.cwd()
+  let pkgs = ''
+
+  Object.keys(source).map(item => {
+    pkgs += `${item}@${source[item]} `
+  })
+
+  process.chdir(rootPath)
+  const cmd = `${command} install ${pkgs} ${opts ? opts : ''}`
+  log(cmd + '...')
+  log('install dest: ' + rootPath)
+  return new Promise((resolve, reject) => {
+    exec(cmd, (error, stdout, stderr) => {
+      process.chdir(prevDir)
+      if (error) {
+        const msg = stderr.toString()
+        log(msg, 0)
+        return reject(msg)
+      }
+
+      log(stdout)
+      resolve(stdout)
+    })
+  })
 }

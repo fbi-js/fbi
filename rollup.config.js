@@ -1,12 +1,13 @@
 import babel from 'rollup-plugin-babel'
+import json from 'rollup-plugin-json'
 
 let pkg = require('./package.json');
-let external = Object.keys(pkg.dependencies);
+let external = Object.keys(pkg.dependencies).concat(['./fbi']);
 
 export default {
-  entry: 'src/fbi.js',
+  entry: `src/${process.env.entry}.js`,
   format: 'cjs',
-  plugins: [babel()],
+  plugins: [json(), babel()],
   external: external,
-  dest: 'dst/fbi.js'
+  dest: `dst/${process.env.entry}.js`
 }
