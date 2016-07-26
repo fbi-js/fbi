@@ -107,6 +107,14 @@ export function read(_p, charset) {
   })
 }
 
+export function write(file, data) {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(file, data, (err) => {
+      return err ? reject(err) : resolve(true)
+    })
+  })
+}
+
 export function exist(_p, opts) {
   return new Promise((resolve, reject) => {
     fs.access(_p, opts || (fs.R_OK | fs.W_OK), err => {
@@ -147,6 +155,25 @@ export function install(source, rootPath, command, opts) {
 
       log(stdout)
       resolve(stdout)
+    })
+  })
+}
+
+export function copyFile(source, target) {
+  return new Promise((resolve, reject) => {
+    var rd = fs.createReadStream(source)
+    rd.on('error', reject)
+    var wr = fs.createWriteStream(target)
+    wr.on('error', reject)
+    wr.on('finish', resolve)
+    rd.pipe(wr)
+  })
+}
+
+export function readDir(folder, opts) {
+  return new Promise((resolve, reject) => {
+    fs.readdir(folder, opts, (err, ret) => {
+      return err ? reject(err) : resolve(ret)
     })
   })
 }

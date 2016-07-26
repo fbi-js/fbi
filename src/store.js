@@ -53,7 +53,7 @@ export default class Store {
   }
 
   sync() {
-    const data = JSON.stringify(this.db)
+    const data = JSON.stringify(this.db, null, 2)
     fs.writeFileSync(this.path, data)
   }
 

@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import {getOptions} from './helpers/options'
-import { read, exist } from './helpers/file'
 import {dir} from './helpers/utils'
 import options from './helpers/options'
 // classes

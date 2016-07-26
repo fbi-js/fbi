@@ -1,1 +1,11 @@
-{"build":{"desc":"build fo em"},"serve":{"desc":"serve static files"}}
+{
+  "build": {
+    "desc": "build fo em"
+  },
+  "serve": {
+    "desc": "serve static files"
+  },
+  "serve2": {
+    "desc": "serve static files 22"
+  }
+}
