@@ -29,12 +29,13 @@ export const defaultOptions = {
     archive: 'archive'
   },
   server: {
-    protocol: 'localhost',
-    port: 9999
+    host: 'localhost',
+    port: 8888
   },
   npm:{
     alias:'npm',
-    options: '--save-dev --registry=https://registry.npm.taobao.org'
+    // options:'--save-dev --registry=https://registry.npm.taobao.org'
+    options:'--save-dev'
   }
 }
 

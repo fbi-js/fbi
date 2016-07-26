@@ -1,26 +1,43 @@
 import path from 'path'
 import {version} from '../package.json'
-// import Module from './module'
 import Store from './store'
 import Parser from './parser'
+import Task from './task'
 import {getOptions} from './helpers/options'
 import {cwd, dir, join, exist, existSync, log, merge, read, write, install, copyFile} from './helpers/utils'
-import copy from './helpers/copy'
+
+const task = new Task()
+
+let helps =
+  `
+    Usage:
+
+      fbi [command]         run command
+      fbi [task]            run a local preference task
+      fbi [task] -g         run a global task
+      fbi new [template]    init a new template
+
+    Commands:
+
+      -h, --help            output usage information
+      -v, --version         output the version number
+      rm, remove            remove tasks or templates
+`
 
 export default class Cli {
   constructor(argvs) {
     this.argvs = argvs
     this.next = true
     this.log = log
-
-    this.version()
-    this.help()
+    this.dependencies = {}
 
       ; (async () => {
+
+        this.version()
+        await this.help()
         await this.config()
-        await this.task()
-        this.create()
-        this.run()
+        await this.install()
+        await this.run()
       })()
   }
 
@@ -34,14 +51,33 @@ export default class Cli {
     }
   }
 
-  help() {
+  async help() {
     if (!this.next) return
 
     if (!this.argvs.length
       || this.argvs[0] === '-h'
       || this.argvs[0] === '--help') {
       this.next = false
-      console.log(helps.join(''))
+
+      const all = await task.all(true)
+      helps += `
+    Tasks:
+    `
+      if (all.globals.length) {
+        all.globals.map(item => {
+          helps += `
+      ${item} <global>`
+        })
+      }
+      if (all.locals.length) {
+        all.locals.map(item => {
+          helps += `
+      ${item} <local>`
+        })
+      }
+      helps += `
+      `
+      console.log(helps)
     }
   }
 
@@ -59,116 +95,20 @@ export default class Cli {
     }
   }
 
-  async task() {
+  async install() {
     if (!this.next) return
 
-    try {
-      const dbTasks = new Store('tasks')
+    if (this.argvs[0] === 'i' || this.argvs[0] === 'install') {
+      this.next = false
+
       let needinstall = {}
-      const templateDir = dir('data/templates/', this.options.template)
-      const existTemplate = await exist(templateDir)
-      const templateTasksPath = join(templateDir, 'fbi/tasks.js')
+      let userPks
+      // 1. local dependencies
+      // parser task files
+      // write deps into fbi/config.js => dependencies
+      // install dependencies
 
-      // template default tasks
-      if (existTemplate) {
-        const hasDefaultTasks = await exist(templateTasksPath)
-        if (hasDefaultTasks) {
-          const source = await read(templateTasksPath)
-          const parser = new Parser(source)
-          const deps = parser.splitDependencies()
-          deps.globals.map(dep => {
-            // try {
-            //   // require(join(templateDir, 'node_modules', dep)) // test module installed
-            //   return require.resolve(join(templateDir, 'node_modules', dep))
-            // } catch (err) {
-            //   // if (err.code === 'MODULE_NOT_FOUND') {
-            //   needinstall[dep] = '*'
-            //   // }
-            // }
-
-            try {
-              // native module or global module
-              return require.resolve(dep)
-            } catch (err) {
-              try {
-                // require.resolve(join(templateDir, 'node_modules', dep))
-                // require(join(templateDir, 'node_modules', dep)) // if local modules installed
-                return require.resolve(join(templateDir, 'node_modules', dep))
-              } catch (e) {
-                needinstall[dep] = '*'
-              }
-            }
-          })
-          // dbTasks.set(require(templateTasksPath))
-        }
-      }
-
-      // user tasks
-      const userDir = cwd()
-      const userTasksPath = join(userDir, 'fbi/tasks.js')
-      const hasUserTasks = await exist(userTasksPath)
-      let userPkgs
-
-      if (hasUserTasks) {
-        userPkgs = require(join(userDir, 'package.json'))
-        const source = await read(userTasksPath)
-        const parser = new Parser(source)
-        const deps = parser.splitDependencies()
-        deps.globals.map(dep => {
-          if (!userPkgs['dependencies'][dep]) {
-            userPkgs['dependencies'][dep] = '*'
-          }
-
-          try {
-            // native module or global module
-            return require.resolve(dep)
-          } catch (err) {
-            try {
-              // require.resolve(join(templateDir, 'node_modules', dep))
-              // require(join(templateDir, 'node_modules', dep)) // if local modules installed
-              return require.resolve(join(templateDir, 'node_modules', dep))
-            } catch (e) {
-              needinstall[dep] = userPkgs['dependencies'][dep]
-            }
-          }
-
-
-        })
-        // dbTasks.set(require(userTasksPath))
-      }
-
-      // log(needinstall)
-      // write
-      write(join(userDir, 'package.json'), JSON.stringify(userPkgs, null, 2))
-
-      // TODO: split globals & locals, globals=> --save; locals=> ''
-      // log(Module)
-      if (Object.keys(needinstall).length) {
-        await install(needinstall, templateDir, this.options.npm.alias, this.options.npm.options)
-      }
-
-      // add tasks
-      if (existTemplate) {
-        dbTasks.set(require(templateTasksPath))
-      }
-
-      if (hasUserTasks) {
-        // TODO: deal with user tasks's `require`
-
-        // or Copy to template folder
-        const dest = dir(`data/templates/${this.options.template}/fbi/tmp/`)
-        // copy(userTasksPath, dest)
-        await copyFile(userTasksPath, join(dest, path.basename(userTasksPath)))
-        const tmp = join(dest, path.basename(userTasksPath))
-        // log(tmp)
-        const t = require(tmp)
-        dbTasks.set(t)
-      }
-
-      this.tasks = dbTasks.all()
-
-    } catch (e) {
-      log(e)
+      // 2. global dependencies
     }
   }
 
@@ -248,80 +188,255 @@ export default class Cli {
     }
   }
 
-  run() {
+  async run() {
     if (!this.next) return
 
-    const cmds = this.argvs
-    try {
-      cmds.map(cmd => {
-        if (this.tasks[cmd]) {
-          this.tasks[cmd].fn.call(this)
-        }
-      })
-    } catch (e) {
-      log(`Task function error`, 0)
-      log(e)
+    let cmds = this.argvs
+    if (this.argvs.length > 0) {
+      let isGlobal
+      if (this.argvs[1] === '-g') {
+        isGlobal = true
+      }
+      try {
+        cmds = cmds.filter(isTask)
+        cmds.map(async (cmd) => {
+          const taskObj = await task.get(cmd, isGlobal)
+          if (taskObj.cnt) {
+            log(`Running ${taskObj.type} task '${cmd}'...`, 1)
+            task.run(cmd, this, taskObj.cnt)
+          } else {
+            log(`Task not found: '${cmd}${isGlobal ? ' <global>' : ''}'`, 0)
+          }
+        })
+      } catch (e) {
+        log(`Task function error`, 0)
+        log(e)
+      }
     }
-    this.next = false
   }
 
 }
 
+function isTask(item) {
+  return !['-g'].includes(item)
+}
 
-let helps = [
-  `
-   Usage:
+// async task() {
+//   if (!this.next) return
 
-     fbi [task]
-     fbi new [template]
+//   try {
+//     const dbTasks = new Store('tasks')
+//     // let needinstall = {}
+//     // let userPks
+//     const templateDir = dir('data/templates/', this.options.template)
+//     const existTemplate = await exist(templateDir)
+//     const templateTasksPath = join(templateDir, 'fbi/tasks.js')
 
-`,
-  `
+//     // // template default tasks
+//     // if (existTemplate) {
+//     //   const hasDefaultTasks = await exist(templateTasksPath)
+//     //   if (hasDefaultTasks) {
+//     //     const source = await read(templateTasksPath)
+//     //     const parser = new Parser(source)
+//     //     const deps = parser.splitDependencies()
+//     //     deps.globals.map(dep => {
 
-   Options:
+//     //       try {
+//     //         require.resolve(dep)
+//     //       } catch (err) {
+//     //         try {
+//     //           // require(join(templateDir, 'node_modules', dep)) // test module installed
+//     //           require.resolve(join(templateDir, 'node_modules', dep))
+//     //         } catch (e) {
+//     //           needinstall[dep] = '*'
+//     //         }
+//     //       }
 
-     -h, --help        output usage information
-     -v, --version     output the version number
-     rm, remove        remove tasks or templates
-`
-]
-// show tasks & templates
-function show(ctx) {
-  let msg = helps[0]
-  msg += `
-     Tasks:`
+//     //     })
+//     //   }
+//     // }
 
-  const tasks = ctx.tasks
-  const tmpls = ctx.templates
+//     // // user tasks
+//     const userDir = cwd()
+//     // try {
+//     //   userPks = require(join(userDir, 'package.json'))
+//     // } catch (e) {
+//     //   userPks = {
+//     //     dependencies: {}
+//     //   }
+//     // }
+//     const userTasksPath = join(userDir, 'fbi/tasks.js')
+//     // const hasUserTasks = await exist(userTasksPath)
+//     // if (hasUserTasks) {
+//     //   const source = await read(userTasksPath)
+//     //   const parser = new Parser(source)
+//     //   const deps = parser.splitDependencies()
+//     //   deps.globals.map(dep => {
+//     //     try {
+//     //       require.resolve(dep) // global or native module
+//     //     } catch (err) {
+//     //       try {
+//     //         // require(join(templateDir, 'node_modules', dep)) // test module installed
+//     //         require.resolve(join(templateDir, 'node_modules', dep))
+//     //         userPks['dependencies'][dep] = '*'
+//     //       } catch (e) {
+//     //         if (userPks['dependencies'][dep]) {
+//     //           needinstall[dep] = userPks['dependencies'][dep]
+//     //         } else {
+//     //           userPks['dependencies'][dep] = '*'
+//     //           needinstall[dep] = '*'
+//     //         }
+//     //       }
+//     //     }
+//     //   })
+//     // }
 
-  console.log(tasks)
+//     // if (Object.keys(needinstall).length) {
+//     //   await install(needinstall, templateDir, this.options.npm.alias, this.options.npm.options)
+//     // }
 
-  if (!Object.keys(tasks).length) {
-    msg += `
-       No available task.
-    `
-  } else {
-    Object.keys(tasks).map(t => {
-      msg += `
-       ${t}:  ${tasks[t].desc}`
-    })
+//     // add tasks
+//     log(templateTasksPath)
+//     if (existTemplate) {
+//       dbTasks.set(require(templateTasksPath))
+//     }
+
+//     if (hasUserTasks) {
+//       // copy
+//       const dest = join(templateDir, 'fbi/tmp', path.basename(userTasksPath))
+//       log(userTasksPath)
+//       log(dest)
+//       await copyFile(userTasksPath, dest)
+//       dbTasks.set(require(dest))
+//     }
+
+//     this.tasks = dbTasks.all()
+//     log(this)
+
+//     // write user package.json
+//     write(join(userDir, 'package.json'), JSON.stringify(userPks, null, 2))
+
+//   } catch (e) {
+//     log(e)
+//   }
+// }
+
+async function install_bak() {
+  if (!this.next) return
+
+  this.next = false
+
+  if (this.argvs[0] === 'i' || this.argvs[0] === 'install') {
+    let needinstall = {}
+    let userPks
+    const templateDir = dir('data/templates/', this.options.template)
+    const existTemplate = await exist(templateDir)
+    const templateTasksPath = join(templateDir, 'fbi/tasks.js')
+
+    // template default tasks
+    if (existTemplate) {
+      const hasDefaultTasks = await exist(templateTasksPath)
+      if (hasDefaultTasks) {
+        const source = await read(templateTasksPath)
+        const parser = new Parser(source)
+        const deps = parser.splitDependencies()
+        deps.globals.map(dep => {
+          // try {
+          //   // require(join(templateDir, 'node_modules', dep)) // test module installed
+          //   return require.resolve(join(templateDir, 'node_modules', dep))
+          // } catch (err) {
+          //   // if (err.code === 'MODULE_NOT_FOUND') {
+          //   needinstall[dep] = '*'
+          //   // }
+          // }
+
+          try {
+            // native module or global module
+            return require.resolve(dep)
+          } catch (err) {
+            try {
+              // require.resolve(join(templateDir, 'node_modules', dep))
+              // require(join(templateDir, 'node_modules', dep)) // if local modules installed
+              return require.resolve(join(templateDir, 'node_modules', dep))
+            } catch (e) {
+              needinstall[dep] = '*'
+            }
+          }
+
+        })
+
+      }
+    }
+
+    // user tasks
+    const userDir = cwd()
+    try {
+      userPks = require(join(userDir, 'package.json'))
+    } catch (e) {
+      userPks = {
+        dependencies: {}
+      }
+    }
+    const userTasksPath = join(userDir, 'fbi/tasks.js')
+    const hasUserTasks = await exist(userTasksPath)
+    let userPkgs
+
+    if (hasUserTasks) {
+      userPkgs = require(join(userDir, 'package.json'))
+      const source = await read(userTasksPath)
+      const parser = new Parser(source)
+      const deps = parser.splitDependencies()
+      deps.globals.map(dep => {
+        if (!userPkgs['dependencies'][dep]) {
+          userPkgs['dependencies'][dep] = '*'
+        }
+
+        try {
+          // native module or global module
+          return require.resolve(dep)
+        } catch (err) {
+          try {
+            // require.resolve(join(templateDir, 'node_modules', dep))
+            // require(join(templateDir, 'node_modules', dep)) // if local modules installed
+            return require.resolve(join(templateDir, 'node_modules', dep))
+          } catch (e) {
+            needinstall[dep] = userPkgs['dependencies'][dep]
+          }
+        }
+
+
+      })
+    }
+
+    // log(needinstall)
+    // write
+    write(join(userDir, 'package.json'), JSON.stringify(userPkgs, null, 2))
+
+    // TODO: split globals & locals, globals=> --save; locals=> ''
+    // log(Module)
+    if (Object.keys(needinstall).length) {
+      await install(needinstall, templateDir, this.options.npm.alias, this.options.npm.options)
+    }
+
+    // add tasks
+    if (existTemplate) {
+      dbTasks.set(require(templateTasksPath))
+    }
+
+    if (hasUserTasks) {
+      // TODO: deal with user tasks's `require`
+
+      // or Copy to template folder
+      const dest = dir(`data/templates/${this.options.template}/fbi/tmp/`)
+      // copy(userTasksPath, dest)
+      await copyFile(userTasksPath, join(dest, path.basename(userTasksPath)))
+      const tmp = join(dest, path.basename(userTasksPath))
+      // log(tmp)
+      const t = require(tmp)
+      dbTasks.set(t)
+    }
+
+    this.tasks = dbTasks.all()
+
   }
-
-  msg += `
-
-     Templates:`
-
-  if (!Object.keys(tmpls).length) {
-    msg += `
-       No available template.
-    `
-  } else {
-    Object.keys(tmpls).map(t => {
-      msg += `
-       ${t}:  ${tmpls[t]}`
-    })
-  }
-  msg += helps[1]
-
-  ctx.log(msg)
 }

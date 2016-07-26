@@ -11,7 +11,7 @@ module.exports = {
   },
   build2: {
     desc: 'bbb',
-    fn: function(){
+    fn: function () {
       this.log('this is user build')
     }
   }
