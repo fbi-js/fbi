@@ -31,6 +31,10 @@ export const defaultOptions = {
   server: {
     protocol: 'localhost',
     port: 9999
+  },
+  npm:{
+    alias:'npm',
+    options: '--save-dev --registry=https://registry.npm.taobao.org'
   }
 }
 

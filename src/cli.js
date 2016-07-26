@@ -1,9 +1,11 @@
+import path from 'path'
 import {version} from '../package.json'
-import Module from './module'
+// import Module from './module'
 import Store from './store'
 import Parser from './parser'
 import {getOptions} from './helpers/options'
-import {cwd, dir, join, exist, existSync, log, merge, read, install} from './helpers/utils'
+import {cwd, dir, join, exist, existSync, log, merge, read, write, install, copyFile} from './helpers/utils'
+import copy from './helpers/copy'
 
 export default class Cli {
   constructor(argvs) {
@@ -17,11 +19,9 @@ export default class Cli {
       ; (async () => {
         await this.config()
         await this.task()
-        // this.run()
-        // log(this)
+        this.create()
+        this.run()
       })()
-
-
   }
 
   version() {
@@ -30,7 +30,7 @@ export default class Cli {
     if (this.argvs[0] === '-v'
       || this.argvs[0] === '--verison') {
       this.next = false
-      log(version)
+      console.log(version)
     }
   }
 
@@ -41,7 +41,7 @@ export default class Cli {
       || this.argvs[0] === '-h'
       || this.argvs[0] === '--help') {
       this.next = false
-      log('help')
+      console.log(helps.join(''))
     }
   }
 
@@ -51,8 +51,8 @@ export default class Cli {
     try {
       // options
       const pathConfig = cwd('./fbi/config.js')
-      const existUserOptions = await exist(pathConfig)
-      const userOptions = existUserOptions ? require(pathConfig) : null
+      this.isfbi = await exist(pathConfig)
+      const userOptions = this.isfbi ? require(pathConfig) : null
       this.options = getOptions(userOptions)
     } catch (e) {
       log(e)
@@ -65,25 +65,41 @@ export default class Cli {
     try {
       const dbTasks = new Store('tasks')
       let needinstall = {}
-      const defaultTmplDir = dir('data/templates/', this.options.template)
-      const existDefaultTmpl = await exist(defaultTmplDir)
-      const defaultTasksPath = join(defaultTmplDir, 'fbi/tasks.js')
+      const templateDir = dir('data/templates/', this.options.template)
+      const existTemplate = await exist(templateDir)
+      const templateTasksPath = join(templateDir, 'fbi/tasks.js')
 
       // template default tasks
-      if (existDefaultTmpl) {
-        const hasDefaultTasks = await exist(defaultTasksPath)
+      if (existTemplate) {
+        const hasDefaultTasks = await exist(templateTasksPath)
         if (hasDefaultTasks) {
-          const source = await read(defaultTasksPath)
+          const source = await read(templateTasksPath)
           const parser = new Parser(source)
           const deps = parser.splitDependencies()
           deps.globals.map(dep => {
+            // try {
+            //   // require(join(templateDir, 'node_modules', dep)) // test module installed
+            //   return require.resolve(join(templateDir, 'node_modules', dep))
+            // } catch (err) {
+            //   // if (err.code === 'MODULE_NOT_FOUND') {
+            //   needinstall[dep] = '*'
+            //   // }
+            // }
+
             try {
-              require(join(defaultTmplDir, 'node_modules', dep)) // test module installed
-            } catch (e) {
-              needinstall[dep] = '*'
+              // native module or global module
+              return require.resolve(dep)
+            } catch (err) {
+              try {
+                // require.resolve(join(templateDir, 'node_modules', dep))
+                // require(join(templateDir, 'node_modules', dep)) // if local modules installed
+                return require.resolve(join(templateDir, 'node_modules', dep))
+              } catch (e) {
+                needinstall[dep] = '*'
+              }
             }
           })
-          // dbTasks.set(require(defaultTasksPath))
+          // dbTasks.set(require(templateTasksPath))
         }
       }
 
@@ -91,182 +107,80 @@ export default class Cli {
       const userDir = cwd()
       const userTasksPath = join(userDir, 'fbi/tasks.js')
       const hasUserTasks = await exist(userTasksPath)
+      let userPkgs
+
       if (hasUserTasks) {
+        userPkgs = require(join(userDir, 'package.json'))
         const source = await read(userTasksPath)
         const parser = new Parser(source)
         const deps = parser.splitDependencies()
         deps.globals.map(dep => {
-          try {
-            // require.resolve(join(defaultTmplDir, 'node_modules', dep))
-            require(join(defaultTmplDir, 'node_modules', dep)) // if local modules installed
-          } catch (e) {
-            needinstall[dep] = '*'
+          if (!userPkgs['dependencies'][dep]) {
+            userPkgs['dependencies'][dep] = '*'
           }
+
+          try {
+            // native module or global module
+            return require.resolve(dep)
+          } catch (err) {
+            try {
+              // require.resolve(join(templateDir, 'node_modules', dep))
+              // require(join(templateDir, 'node_modules', dep)) // if local modules installed
+              return require.resolve(join(templateDir, 'node_modules', dep))
+            } catch (e) {
+              needinstall[dep] = userPkgs['dependencies'][dep]
+            }
+          }
+
+
         })
         // dbTasks.set(require(userTasksPath))
       }
 
       // log(needinstall)
+      // write
+      write(join(userDir, 'package.json'), JSON.stringify(userPkgs, null, 2))
 
+      // TODO: split globals & locals, globals=> --save; locals=> ''
+      // log(Module)
       if (Object.keys(needinstall).length) {
-        await install(needinstall, defaultTmplDir, 'npm', '--save-dev --registry=https://registry.npm.taobao.org')
+        await install(needinstall, templateDir, this.options.npm.alias, this.options.npm.options)
       }
 
-      log('=================')
       // add tasks
-      if (existDefaultTmpl) {
-        dbTasks.set(require(defaultTasksPath))
+      if (existTemplate) {
+        dbTasks.set(require(templateTasksPath))
       }
 
       if (hasUserTasks) {
-        dbTasks.set(require(userTasksPath))
+        // TODO: deal with user tasks's `require`
+
+        // or Copy to template folder
+        const dest = dir(`data/templates/${this.options.template}/fbi/tmp/`)
+        // copy(userTasksPath, dest)
+        await copyFile(userTasksPath, join(dest, path.basename(userTasksPath)))
+        const tmp = join(dest, path.basename(userTasksPath))
+        // log(tmp)
+        const t = require(tmp)
+        dbTasks.set(t)
       }
 
       this.tasks = dbTasks.all()
+
     } catch (e) {
       log(e)
     }
   }
-
-  run() {
-    if (!this.next) return
-    log(this.tasks)
-
-    const cmds = this.argvs
-    try {
-      cmds.map(cmd => {
-        if (this.tasks[cmd]) {
-          this.tasks[cmd].fn.call(this)
-        }
-      })
-    } catch (e) {
-      log(`Task function error`, 0)
-      log(e)
-    }
-  }
-
-  // get run() {
-  //   // console.log(v)
-  // }
-
-  // run2(argvs){
-  //   this.argvs = argvs
-  //   console.log(this)
-  //   // console.log(argvs)
-
-  //   this.showHelp()
-  //   // Cli.showHelp.call(this)
-  // }
-
-  static helps() {
-    return [
-      `
-   Usage:
-
-     fbi [task]
-     fbi new [template]
-
-`,
-      `
-
-   Options:
-
-     -h, --help        output usage information
-     -v, --version     output the version number
-     rm, remove        remove tasks or templates
-`
-    ]
-  }
-
-  showHelp() {
-    console.log(this)
-    // let msg = this.helps[0]
-    // msg += `
-    //  Tasks:`
-
-    // const tasks = this.tasks
-    // const tmpls = this.templates
-
-    // console.log(tasks)
-
-    // if (!Object.keys(tasks).length) {
-    //   msg += `
-    //    No available task.
-    // `
-    // } else {
-    //   Object.keys(tasks).map(t => {
-    //     msg += `
-    //    ${t}:  ${tasks[t].desc}`
-    //   })
-    // }
-
-    // msg += `
-
-    //  Templates:`
-
-    // if (!Object.keys(tmpls).length) {
-    //   msg += `
-    //    No available template.
-    // `
-    // } else {
-    //   Object.keys(tmpls).map(t => {
-    //     msg += `
-    //    ${t}:  ${tmpls[t]}`
-    //   })
-    // }
-    // msg += helps[1]
-
-    // console.log(msg)
-  }
-
-  async init() {
-    // Cli.showHelp()
-    // this.argvs = argvs
-    // this.next = true
-    // await this.makeConfig()
-    // this.makeTasks()
-    // this.help()
-    // this.version()
-    // this.remove()
-    // this.create()
-  }
-
-  async makeConfig() {
-    try {
-      // access user config
-      const _path = _.cwd(this.config.paths.options)
-      this.isFbi = await exist(_path)
-      if (this.isFbi) {
-        const usrCfg = require(_path)
-        _.merge(this.config, usrCfg)
-      }
-    } catch (e) {
-      _.log(e)
-    }
-  }
-
-  makeTasks() {
-    try {
-      // access user tasks
-      const usrTasks = require(_.dir(`${this.config.paths.data_templates}/${this.config.template || 'basic'}/${this.config.paths.tasks}`))
-      this.add(usrTasks, false)
-    } catch (e) {
-      _.log(e)
-      // if(e.code === 'MODULE_NOT_FOUND'){
-      //   log(e.message)
-      //   this.makeTasks()
-      // }
-    }
-  }
-
-
-
-
 
   create() {
     if (!this.next) return
 
+    const dbTemplates = new Store('templates')
+    this.templates = dbTemplates.all()
+    log(this.templates)
+
     if (this.argvs[0] === 'new') {
+      log('new===')
       let mod = this.argvs[1] ? this.argvs[1].match(/^[^\\/:*""<>|,]+$/i) : null
       mod = mod ? mod[0] : null
 
@@ -333,6 +247,24 @@ export default class Cli {
       }
     }
   }
+
+  run() {
+    if (!this.next) return
+
+    const cmds = this.argvs
+    try {
+      cmds.map(cmd => {
+        if (this.tasks[cmd]) {
+          this.tasks[cmd].fn.call(this)
+        }
+      })
+    } catch (e) {
+      log(`Task function error`, 0)
+      log(e)
+    }
+    this.next = false
+  }
+
 }
 
 

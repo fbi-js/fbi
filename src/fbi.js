@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import {getOptions} from './helpers/options'
-import { read, exist } from './helpers/file'
 import {dir} from './helpers/utils'
 import options from './helpers/options'
 // classes
@@ -30,23 +29,23 @@ export default class Fbi {
     // console.log(parser.getGlobalDependencies())
 
     this.Cli = Cli
-    this.Module = Module
+    // this.Module = Module
     this.Parser = Parser
 
-    module.set('a', 'aaa')
-    module.set('b', function () {
-      console.log('b')
-    })
-    console.log(module.getAll())
+    // module.set('a', 'aaa')
+    // module.set('b', function () {
+    //   console.log('b')
+    // })
+    // console.log(module.getAll())
   }
 
   static get cli() {
     return Cli
   }
 
-  static get module() {
-    return Module
-  }
+  // static get module() {
+  //   return Module
+  // }
 
   run(cmds) {
     if (!cmds) {
