@@ -4,7 +4,7 @@ import Store from './store'
 import Parser from './parser'
 import Task from './task'
 import {getOptions} from './helpers/options'
-import {cwd, dir, join, exist, existSync, log, merge, read, write, install, copyFile} from './helpers/utils'
+import {cwd, dir, join, exist, existSync, readDir, log, merge, read, write, install, copyFile, isTask, isNotConfigFile} from './helpers/utils'
 
 const task = new Task()
 
@@ -101,11 +101,65 @@ export default class Cli {
     if (this.argvs[0] === 'i' || this.argvs[0] === 'install') {
       this.next = false
 
+      let dependencies = {}
       let needinstall = {}
-      let userPks
+
       // 1. local dependencies
       // parser task files
       // write deps into fbi/config.js => dependencies
+      if (Object.keys(this.options.dependencies).length) {
+        dependencies = this.options.dependencies
+      }
+
+      const all = await task.all()
+      let deps
+
+      const allTasks = Object.keys(all)
+      if (allTasks.length) {
+        allTasks.map(item => {
+          let parser = new Parser(all[item])
+          deps = parser.getDependencies()
+        })
+      }
+
+      deps.map(item => {
+        if (!dependencies[item]) {
+          dependencies[item] = '*'
+        }
+      })
+
+      // needinstall = merge({}, dependencies)
+      needinstall = JSON.parse(JSON.stringify(dependencies));
+
+      let templateDir = dir('data/templates/basic/node_modules')
+
+      Object.keys(dependencies).map(item => {
+        try {
+          // native module or global module
+          require.resolve(item)
+          delete dependencies[item]
+          // TODO: why?
+          delete needinstall[item]
+        } catch (err) {
+          try {
+            require.resolve(join(templateDir, 'node_modules', item))
+            delete needinstall[item]
+          } catch (e) {
+          }
+        }
+      })
+
+      if (Object.keys(needinstall).length) {
+        await install(needinstall, templateDir, this.options.npm.alias, this.options.npm.options)
+      }
+
+      // write
+      let userConfig = await read(cwd('fbi/config.js'))
+      // TODO
+      // log(userConfig)
+      // userConfig['dependencies'] = dependencies
+      // write(cwd('fbi/config.js'), JSON.stringify(userConfig, null, 2))
+
       // install dependencies
 
       // 2. global dependencies
@@ -215,10 +269,6 @@ export default class Cli {
     }
   }
 
-}
-
-function isTask(item) {
-  return !['-g'].includes(item)
 }
 
 // async task() {

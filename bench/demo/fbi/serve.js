@@ -6,7 +6,7 @@ const app = new Koa()
 // ctx is FBI Cli
 // ctx.log(ctx)
 
-var start = 8888
+var start = ctx.options.server.port || 8888
 
 // serve static
 app.use(serve(process.cwd()))
@@ -36,5 +36,5 @@ function autoPortServer(cb) {
 
 // listen
 autoPortServer(port => {
-  ctx.log(`Serving demo at http://localhost:${port}`, 1)
+  ctx.log(`Server runing at http://${ctx.options.server.host}:${port}`, 1)
 })

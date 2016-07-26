@@ -1,11 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import vm from 'vm'
-import {dir, join, cwd, readDir, log, read, exist} from './helpers/utils'
-
-function isNotConfigFile(file) {
-  return file !== 'config.js'
-}
+import {dir, join, cwd, readDir, log, read, exist, isNotConfigFile} from './helpers/utils'
 
 export default class Task {
 
@@ -74,12 +70,11 @@ export default class Task {
       if (justNames) {
         // names.globals = names.globals.concat(t_modules)
         names.globals = new Set(t_modules)
+      } else if (t_modules.length) {
+        await Promise.all(t_modules.map(async (item) => {
+          _this.tasks[item] = await read(join(t_task_dir, item, 'index.js'))
+        }))
       }
-      // if (t_modules.length) {
-      //   await Promise.all(t_modules.map(async (item) => {
-      //     _this.tasks[item] = await read(join(t_task_dir, item, 'index.js'))
-      //   }))
-      // }
     }
 
     // locals
@@ -88,37 +83,30 @@ export default class Task {
     if (u_exist) {
       let u_modules = await readDir(u_task_dir)
       u_modules = u_modules.filter(isNotConfigFile)
-      u_modules.map(item => {
-        item = path.basename(item, '.js')
-        names.locals.add(item)
-        // if (names.globals.has(item)) {
-        //   // names.locals.push(item)
-        // }
-      })
+
+      if (justNames) {
+        u_modules.map(item => {
+          item = path.basename(item, '.js')
+          names.locals.add(item)
+          // if (names.globals.has(item)) {
+          //   // names.locals.push(item)
+          // }
+        })
+      } else if (u_modules.length) {
+        await Promise.all(u_modules.map(async (item) => {
+          try {
+            _this.tasks[path.basename(item, '.js')] = await read(join(u_task_dir, item))
+          } catch (e) {
+            log(e)
+          }
+        }))
+      }
       // names.locals = Array.from(new Set(names.locals)) // 去重
-
-      // let u_tasks = []
-      // if (u_modules.length) {
-      //   await Promise.all(u_modules.map(async (item) => {
-      //     if (justNames) {
-      //       u_tasks.push(path.basename(item, '.js'))
-      //     } else {
-      //       try {
-      //         _this.tasks[path.basename(item, '.js')] = await read(join(u_task_dir, item))
-      //       } catch (e) {
-      //         log(e)
-      //       }
-      //     }
-      //   }))
-      // }
-
-      // if (justNames) {
-      //   names.locals = names.locals.concat(u_modules)
-      //   names.locals = Array.from(new Set(names.locals))
-      // }
     }
-    names.globals = Array.from(names.globals)
-    names.locals = Array.from(names.locals)
+    if (justNames) {
+      names.globals = Array.from(names.globals)
+      names.locals = Array.from(names.locals)
+    }
 
     return justNames ? names : _this.tasks
   }

@@ -177,3 +177,11 @@ export function readDir(folder, opts) {
     })
   })
 }
+
+export function isNotConfigFile(file) {
+  return file !== 'config.js'
+}
+
+export function isTask(item) {
+  return !['-g'].includes(item)
+}

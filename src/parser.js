@@ -1,6 +1,6 @@
 import {walk} from 'estree-walker'
 import acorn from 'acorn'
-import {merge} from './helpers/utils'
+import {merge, log} from './helpers/utils'
 
 export default class Parser {
   constructor(source, options) {
