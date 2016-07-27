@@ -179,9 +179,10 @@ export function readDir(folder, opts) {
 }
 
 export function isNotConfigFile(file) {
-  return file.indexOf('config.js') < 0
+  return file.indexOf('config') < 0
 }
 
 export function isTask(item) {
-  return !['-g'].includes(item)
+  // return !['-g'].includes(item)
+  return item.indexOf('-') !== 0
 }

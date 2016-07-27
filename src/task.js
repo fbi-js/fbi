@@ -133,6 +133,10 @@ export default class Task {
       }
     })`
 
-    vm.runInThisContext(code, { displayErrors: true })(requireRelative, ctx)
+    vm.runInThisContext(code, {
+      filename: `${name}.js`,
+      lineOffset: -3,
+      displayErrors: true
+    })(requireRelative, ctx)
   }
 }

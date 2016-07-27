@@ -78,33 +78,6 @@ var slicedToArray = function () {
   };
 }();
 
-// util.inspect.styles
-
-// { special: 'cyan',
-//   number: 'yellow',
-//   boolean: 'yellow',
-//   undefined: 'grey',
-//   null: 'bold',
-//   string: 'green',
-//   date: 'magenta',
-//   regexp: 'red' }
-
-// util.inspect.colors
-
-// { bold: [ 1, 22 ],
-//   italic: [ 3, 23 ],
-//   underline: [ 4, 24 ],
-//   inverse: [ 7, 27 ],
-//   white: [ 37, 39 ],
-//   grey: [ 90, 39 ],
-//   black: [ 30, 39 ],
-//   blue: [ 34, 39 ],
-//   cyan: [ 36, 39 ],
-//   green: [ 32, 39 ],
-//   magenta: [ 35, 39 ],
-//   red: [ 31, 39 ],
-//   yellow: [ 33, 39 ] }
-
 function colors() {
   function colorize(color, text) {
     var codes = util.inspect.colors[color];
@@ -183,12 +156,29 @@ function read(_p, charset) {
   });
 }
 
+function write(file, data) {
+  return new Promise(function (resolve, reject) {
+    fs.writeFile(file, data, function (err) {
+      return err ? reject(err) : resolve(true);
+    });
+  });
+}
+
 function exist(_p, opts) {
   return new Promise(function (resolve, reject) {
     fs.access(_p, opts || fs.R_OK | fs.W_OK, function (err) {
       return err ? resolve(false) : resolve(true);
     });
   });
+}
+
+function existSync(src) {
+  try {
+    fs.accessSync(src, fs.R_OK | fs.W_OK);
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 function install(source, rootPath, command, opts) {
@@ -218,6 +208,17 @@ function install(source, rootPath, command, opts) {
   });
 }
 
+function copyFile(source, target) {
+  return new Promise(function (resolve, reject) {
+    var rd = fs.createReadStream(source);
+    rd.on('error', reject);
+    var wr = fs.createWriteStream(target);
+    wr.on('error', reject);
+    wr.on('finish', resolve);
+    rd.pipe(wr);
+  });
+}
+
 function readDir(folder, opts) {
   return new Promise(function (resolve, reject) {
     fs.readdir(folder, opts, function (err, ret) {
@@ -227,11 +228,12 @@ function readDir(folder, opts) {
 }
 
 function isNotConfigFile(file) {
-  return file.indexOf('config.js') < 0;
+  return file.indexOf('config') < 0;
 }
 
 function isTask(item) {
-  return !['-g'].includes(item);
+  // return !['-g'].includes(item)
+  return item.indexOf('-') !== 0;
 }
 
 var options = {
@@ -575,7 +577,11 @@ var Task = function () {
 
       var code = '\n    (function(require, ctx) {\n      try {\n        ' + taskCnt + '\n      } catch (e) {\n        console.log(e)\n      }\n    })';
 
-      vm.runInThisContext(code, { displayErrors: true })(requireRelative, ctx);
+      vm.runInThisContext(code, {
+        filename: name + '.js',
+        lineOffset: -3,
+        displayErrors: true
+      })(requireRelative, ctx);
     }
   }]);
   return Task;
@@ -733,7 +739,8 @@ var Template = function () {
   createClass(Template, [{
     key: 'copy',
     value: function copy(name, dst) {
-      var src,
+      var ret,
+          src,
           has,
           _this = this;
 
@@ -742,18 +749,20 @@ var Template = function () {
           return false;
         } else {
           return Promise.resolve().then(function () {
+            ret = false;
             src = dir(_this.opts.data_templates, name);
             return exist(src);
           }).then(function (_resp) {
             has = _resp;
 
+
             if (has) {
               // copy
               _copy(src, dst, ['package.json', 'node_modules']);
-              return true;
-            } else {
-              return false;
+              ret = true;
             }
+            log(ret);
+            return ret;
           });
         }
       }).then(function () {});
@@ -835,7 +844,12 @@ var Cli = function () {
     this.argvs = argvs;
     this.next = true;
     this.log = log;
-    this.options = {};Promise.resolve().then(function () {
+    this.options = {};
+    this._ = {
+      cwd: cwd, dir: dir, join: join, exist: exist, existSync: existSync, readDir: readDir,
+      log: log, merge: merge, read: read, write: write, install: install, copyFile: copyFile,
+      isTask: isTask, isNotConfigFile: isNotConfigFile
+    };Promise.resolve().then(function () {
       _this.version();
       return _this.help();
     }).then(function () {
@@ -1048,11 +1062,15 @@ var Cli = function () {
 
             return Promise.resolve().then(function () {
               name = _this23.argvs[1] ? _this23.argvs[1].match(/^[^\\/:*""<>|,]+$/i) : null;
+
+              name = name.length ? name[0] : null;
               _test2 = name !== null;
               return template.copy(name, cwd());
             }).then(function (_resp) {
               if (_test2) {
                 succ = _resp;
+
+                log(succ);
               }
 
               if (_test2 && succ) {
@@ -1245,3 +1263,4 @@ var Fbi = function () {
 }();
 
 module.exports = Fbi;
+//# sourceMappingURL=fbi.js.map

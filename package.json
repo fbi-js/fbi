@@ -42,6 +42,7 @@
     "rollup": "^0.34.1",
     "rollup-plugin-babel": "^2.6.1",
     "rollup-plugin-json": "^2.0.1",
+    "rollup-plugin-sourcemaps": "^0.3.5",
     "rollup-watch": "^2.5.0"
   },
   "ava": {

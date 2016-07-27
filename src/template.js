@@ -13,15 +13,17 @@ export default class Template {
     if (!name) {
       return false
     }
+    let ret = false
     const src = dir(this.opts.data_templates, name)
     const has = await exist(src)
+
     if (has) {
       // copy
       copy(src, dst, ['package.json', 'node_modules'])
-      return true
-    } else {
-      return false
+      ret = true
     }
+    log(ret)
+    return ret
   }
 
   async all() {

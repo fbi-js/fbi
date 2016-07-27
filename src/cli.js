@@ -38,6 +38,11 @@ export default class Cli {
     this.next = true
     this.log = log
     this.options = {}
+    this._ = {
+      cwd, dir, join, exist, existSync, readDir,
+      log, merge, read, write, install, copyFile,
+      isTask, isNotConfigFile
+    }
 
       ; (async () => {
         this.version()
@@ -196,10 +201,10 @@ export default class Cli {
 
       try {
         let name = this.argvs[1] ? this.argvs[1].match(/^[^\\/:*""<>|,]+$/i) : null
-
+        name = name.length ? name[0] : null
         if (name !== null) {
-          const succ = await template.copy(name, cwd())
-
+          let succ = await template.copy(name, cwd())
+          log(succ)
           if (succ) {
             log(`Template '${name}' copied to current folder`, 1)
           } else {
