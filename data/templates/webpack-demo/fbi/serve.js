@@ -1,3 +1,4 @@
+const fs = require('fs');
 const http = require('http');
 const Koa = require('koa')
 const serve = require('koa-static')

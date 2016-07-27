@@ -1,7 +1,7 @@
 import fs from 'fs'
 import util from 'util'
 import path from 'path'
-import {exec} from 'child_process'
+import { exec } from 'child_process'
 
 // util.inspect.styles
 
@@ -179,7 +179,7 @@ export function readDir(folder, opts) {
 }
 
 export function isNotConfigFile(file) {
-  return file !== 'config.js'
+  return file.indexOf('config.js') < 0
 }
 
 export function isTask(item) {

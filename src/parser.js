@@ -1,8 +1,9 @@
-import {walk} from 'estree-walker'
+import { walk } from 'estree-walker'
 import acorn from 'acorn'
-import {merge, log} from './helpers/utils'
+import { merge, log } from './helpers/utils'
 
 export default class Parser {
+
   constructor(source, options) {
     this.dependencies = []
     this.localDependencies = []

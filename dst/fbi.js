@@ -2,13 +2,13 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var fs$1 = _interopDefault(require('fs'));
+var fs = _interopDefault(require('fs'));
 var path = _interopDefault(require('path'));
+var vm = _interopDefault(require('vm'));
 var util = _interopDefault(require('util'));
 var child_process = require('child_process');
 var estreeWalker = require('estree-walker');
 var acorn = _interopDefault(require('acorn'));
-var vm = _interopDefault(require('vm'));
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
@@ -77,6 +77,33 @@ var slicedToArray = function () {
     }
   };
 }();
+
+// util.inspect.styles
+
+// { special: 'cyan',
+//   number: 'yellow',
+//   boolean: 'yellow',
+//   undefined: 'grey',
+//   null: 'bold',
+//   string: 'green',
+//   date: 'magenta',
+//   regexp: 'red' }
+
+// util.inspect.colors
+
+// { bold: [ 1, 22 ],
+//   italic: [ 3, 23 ],
+//   underline: [ 4, 24 ],
+//   inverse: [ 7, 27 ],
+//   white: [ 37, 39 ],
+//   grey: [ 90, 39 ],
+//   black: [ 30, 39 ],
+//   blue: [ 34, 39 ],
+//   cyan: [ 36, 39 ],
+//   green: [ 32, 39 ],
+//   magenta: [ 35, 39 ],
+//   red: [ 31, 39 ],
+//   yellow: [ 33, 39 ] }
 
 function colors() {
   function colorize(color, text) {
@@ -150,7 +177,7 @@ function merge(target) {
 
 function read(_p, charset) {
   return new Promise(function (resolve, reject) {
-    fs$1.readFile(_p, charset || 'utf8', function (err, data) {
+    fs.readFile(_p, charset || 'utf8', function (err, data) {
       return err ? reject(err) : resolve(data);
     });
   });
@@ -158,13 +185,13 @@ function read(_p, charset) {
 
 function exist(_p, opts) {
   return new Promise(function (resolve, reject) {
-    fs$1.access(_p, opts || fs$1.R_OK | fs$1.W_OK, function (err) {
+    fs.access(_p, opts || fs.R_OK | fs.W_OK, function (err) {
       return err ? resolve(false) : resolve(true);
     });
   });
 }
 
-function _install(source, rootPath, command, opts) {
+function install(source, rootPath, command, opts) {
   var prevDir = process.cwd();
   var pkgs = '';
 
@@ -193,230 +220,19 @@ function _install(source, rootPath, command, opts) {
 
 function readDir(folder, opts) {
   return new Promise(function (resolve, reject) {
-    fs$1.readdir(folder, opts, function (err, ret) {
+    fs.readdir(folder, opts, function (err, ret) {
       return err ? reject(err) : resolve(ret);
     });
   });
 }
 
 function isNotConfigFile(file) {
-  return file !== 'config.js';
+  return file.indexOf('config.js') < 0;
 }
 
 function isTask(item) {
   return !['-g'].includes(item);
 }
-
-var defaultOptions = {
-  // template: 'basic',
-  paths: {
-    data: './data',
-    data_tasks: './data/tasks',
-    data_templates: './data/templates',
-    options: 'fbi/config.js',
-    tasks: 'fbi/tasks.js',
-    starters: '../tmpls/starters/',
-    settings: 'default.config.js'
-  },
-  meta: {
-    src: {
-      root: 'src',
-      html: 'tmpl',
-      css: 'style',
-      js: 'script',
-      img: 'image'
-    },
-    dist: {
-      root: 'dist',
-      html: '.',
-      css: 'css',
-      js: 'js',
-      img: 'img'
-    },
-    archive: 'archive'
-  },
-  server: {
-    host: 'localhost',
-    port: 8888
-  },
-  npm: {
-    alias: 'npm',
-    // options:'--save-dev --registry=https://registry.npm.taobao.org'
-    options: '--save-dev'
-  }
-};
-
-function getOptions(opts) {
-  return merge(defaultOptions, opts || {});
-}
-
-var version = "2.0.0-alpha.1";
-
-var Store = function () {
-  function Store(name) {
-    classCallCheck(this, Store);
-
-    this.name = name;
-    this.root = dir('data');
-    this.path = join(this.root, this.name + '.json');
-    this.init();
-  }
-
-  createClass(Store, [{
-    key: 'init',
-    value: function init() {
-      var data = void 0;
-      try {
-        data = require(this.path);
-      } catch (e) {
-        data = {};
-        fs$1.writeFileSync(this.path, JSON.stringify(data));
-      }
-      this.db = data;
-    }
-  }, {
-    key: 'get',
-    value: function get(attr) {
-      return this.db[attr];
-    }
-  }, {
-    key: 'set',
-    value: function set(obj) {
-      var _this = this;
-
-      // { attr: 'val', attr2: 'val2' }
-
-      if (Array.isArray(obj)) {
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
-
-        try {
-          for (var _iterator = obj[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var item = _step.value;
-
-            Object.keys(item).map(function (o) {
-              _this.db[o] = obj[o]; // deepth: 1
-            });
-          }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
-          }
-        }
-      } else {
-        Object.keys(obj).map(function (o) {
-          _this.db[o] = obj[o]; // deepth: 1
-        });
-      }
-
-      this.sync();
-    }
-  }, {
-    key: 'del',
-    value: function del(attr) {
-      delete this.db[attr];
-      this.sync();
-    }
-  }, {
-    key: 'all',
-    value: function all() {
-      return this.db;
-    }
-  }, {
-    key: 'sync',
-    value: function sync() {
-      var data = JSON.stringify(this.db, null, 2);
-      fs$1.writeFileSync(this.path, data);
-    }
-  }]);
-  return Store;
-}();
-
-var Parser = function () {
-  function Parser(source, options) {
-    classCallCheck(this, Parser);
-
-    this.dependencies = [];
-    this.localDependencies = [];
-    this.globalDependencies = [];
-    this.options = merge({ sourceType: 'module' }, options || {});
-
-    this.ast = acorn.parse(source, this.options);
-  }
-
-  createClass(Parser, [{
-    key: 'getDependencies',
-    value: function getDependencies() {
-      var _this = this;
-
-      estreeWalker.walk(this.ast, {
-        enter: function enter(node, parent) {
-          // import
-          if (node.type === 'ImportDeclaration') {
-            _this.dependencies.push(node.source.value);
-          }
-
-          // require
-          if (node.type === 'CallExpression' && node.callee.name === 'require') {
-            _this.dependencies.push(node.arguments[0].value);
-          }
-        }
-      });
-
-      return this.dependencies;
-    }
-  }, {
-    key: 'splitDependencies',
-    value: function splitDependencies() {
-      var _this2 = this;
-
-      if (!this.dependencies.length) {
-        this.getDependencies();
-      }
-
-      this.dependencies.map(function (item) {
-        if (/^\.?\.\//.test(item)) {
-          // local
-          _this2.localDependencies.push(item);
-        } else {
-          _this2.globalDependencies.push(item);
-        }
-      });
-
-      return {
-        locals: this.localDependencies,
-        globals: this.globalDependencies
-      };
-    }
-  }, {
-    key: 'getLocalDependencies',
-    value: function getLocalDependencies() {
-      if (!this.dependencies.length) {
-        this.splitDependencies();
-      }
-      return this.localDependencies;
-    }
-  }, {
-    key: 'getGlobalDependencies',
-    value: function getGlobalDependencies() {
-      if (!this.dependencies.length) {
-        this.splitDependencies();
-      }
-      return this.globalDependencies;
-    }
-  }]);
-  return Parser;
-}();
 
 var options = {
   data: './data',
@@ -438,7 +254,8 @@ var Module = function () {
      *
      */
 
-    this.modulePaths = [cwd('node_modules'), dir(options.data, opts.template ? 'templates/' + opts.template : '', 'node_modules'), dir(options.data, 'node_modules'), ''];
+    this.modulePaths = [cwd('node_modules'), dir(options.data, opts.template ? 'templates/' + opts.template : '', 'node_modules'), dir(options.data, 'node_modules'), '' // global
+    ];
 
     this.modulePaths = Array.from(new Set(this.modulePaths)); // duplicate removal
   }
@@ -459,6 +276,7 @@ var Module = function () {
           var _p = join(item, name);
           try {
             var found = require.resolve(_p);
+
             if (found) {
               ret = item ? item : 'global';
               break;
@@ -481,26 +299,6 @@ var Module = function () {
       }
 
       return ret;
-    }
-  }, {
-    key: 'set',
-    value: function set(name, value) {
-      this.modules.set(name, value);
-    }
-  }, {
-    key: 'del',
-    value: function del(name) {
-      this.modules.delete(name);
-    }
-  }, {
-    key: 'delAll',
-    value: function delAll() {
-      this.modules.clear();
-    }
-  }, {
-    key: 'has',
-    value: function has(name) {
-      return this.modules.has(name);
     }
   }, {
     key: 'getAll',
@@ -645,12 +443,6 @@ var Task = function () {
       });
     }
   }, {
-    key: 'set',
-    value: function set(obj) {}
-  }, {
-    key: 'del',
-    value: function del(name) {}
-  }, {
     key: 'all',
     value: function all(justNames) {
       var _this,
@@ -768,7 +560,7 @@ var Task = function () {
       function requireRelative(mod) {
 
         // find mod path
-        var mod_path = module.get(name);
+        var mod_path = module.get(mod);
 
         if (mod_path) {
           if (mod_path === 'global') {
@@ -779,20 +571,6 @@ var Task = function () {
         } else {
           log('Module not found: ' + mod + ', try \'fbi install\'', 0);
         }
-
-        // try {
-        //   return require(mod) // native module
-        // } catch (err) {
-        //   const global_path = dir('data/templates/basic/node_modules', mod)
-        //   return require(global_path)
-        // }
-
-        // try {
-        //   return require(mod) // native module
-        // } catch (err) {
-        //   const global_path = dir('data/templates/basic/node_modules', mod)
-        //   return require(global_path)
-        // }
       }
 
       var code = '\n    (function(require, ctx) {\n      try {\n        ' + taskCnt + '\n      } catch (e) {\n        console.log(e)\n      }\n    })';
@@ -803,9 +581,250 @@ var Task = function () {
   return Task;
 }();
 
-var task = new Task();
+var Parser = function () {
+  function Parser(source, options) {
+    classCallCheck(this, Parser);
 
-var helps = '\n    Usage:\n\n      fbi [command]         run command\n      fbi [task]            run a local preference task\n      fbi [task] -g         run a global task\n      fbi new [template]    init a new template\n\n    Commands:\n\n      -h, --help            output usage information\n      -v, --version         output the version number\n      i, install            install dependencies\n      i -f, install -f      install dependencies force\n      rm, remove            remove tasks or templates\n';
+    this.dependencies = [];
+    this.localDependencies = [];
+    this.globalDependencies = [];
+    this.options = merge({ sourceType: 'module' }, options || {});
+
+    this.ast = acorn.parse(source, this.options);
+  }
+
+  createClass(Parser, [{
+    key: 'getDependencies',
+    value: function getDependencies() {
+      var _this = this;
+
+      estreeWalker.walk(this.ast, {
+        enter: function enter(node, parent) {
+          // import
+          if (node.type === 'ImportDeclaration') {
+            _this.dependencies.push(node.source.value);
+          }
+
+          // require
+          if (node.type === 'CallExpression' && node.callee.name === 'require') {
+            _this.dependencies.push(node.arguments[0].value);
+          }
+        }
+      });
+
+      return this.dependencies;
+    }
+  }, {
+    key: 'splitDependencies',
+    value: function splitDependencies() {
+      var _this2 = this;
+
+      if (!this.dependencies.length) {
+        this.getDependencies();
+      }
+
+      this.dependencies.map(function (item) {
+        if (/^\.?\.\//.test(item)) {
+          // local
+          _this2.localDependencies.push(item);
+        } else {
+          _this2.globalDependencies.push(item);
+        }
+      });
+
+      return {
+        locals: this.localDependencies,
+        globals: this.globalDependencies
+      };
+    }
+  }, {
+    key: 'getLocalDependencies',
+    value: function getLocalDependencies() {
+      if (!this.dependencies.length) {
+        this.splitDependencies();
+      }
+      return this.localDependencies;
+    }
+  }, {
+    key: 'getGlobalDependencies',
+    value: function getGlobalDependencies() {
+      if (!this.dependencies.length) {
+        this.splitDependencies();
+      }
+      return this.globalDependencies;
+    }
+  }]);
+  return Parser;
+}();
+
+var ignore = [];
+
+var _copy = (function (src, dst, ign) {
+  ignore = ign ? ign : ignore;
+  copy(src, dst, walk$1);
+});
+
+// src: dir or file
+// dst: dir
+function walk$1(src, dst) {
+  var type = fs.statSync(src);
+
+  if (type.isDirectory()) {
+    return fs.readdirSync(src).filter(function (f) {
+      if (ignore.includes(f)) {
+        return false;
+      } else if (f[0] === '.' && ignore.includes('.')) {
+        return false;
+      } else {
+        return true;
+      }
+    }).map(function (f) {
+      var _src = path.join(src, f),
+          _dst = path.join(dst, f),
+          stat = fs.statSync(_src),
+          readable = void 0,
+          writable = void 0;
+
+      if (stat.isDirectory()) {
+        copy(_src, _dst, walk$1);
+      } else {
+        _copy$1(_src, _dst);
+      }
+    });
+  } else {
+    return _copy$1(src, path.join(dst, path.basename(src)));
+  }
+}
+
+function _copy$1(src, dst) {
+  var readable = void 0,
+      writable = void 0;
+
+  readable = fs.createReadStream(src);
+  writable = fs.createWriteStream(dst);
+  readable.pipe(writable);
+
+  var _path = path.relative(process.cwd(), dst);
+  console.log('copied => ' + _path);
+}
+
+function copy(src, dst, cb) {
+  try {
+    fs.accessSync(dst);
+    cb(src, dst);
+  } catch (e) {
+    fs.mkdirSync(dst);
+    cb(src, dst);
+
+    // fs.mkdir(dst, () => {
+    //   cb(src, dst)
+    // })
+  }
+}
+
+var Template = function () {
+  function Template(opts) {
+    classCallCheck(this, Template);
+
+
+    this.opts = opts;
+  }
+
+  createClass(Template, [{
+    key: 'copy',
+    value: function copy(name, dst) {
+      var src,
+          has,
+          _this = this;
+
+      return Promise.resolve().then(function () {
+        if (!name) {
+          return false;
+        } else {
+          return Promise.resolve().then(function () {
+            src = dir(_this.opts.data_templates, name);
+            return exist(src);
+          }).then(function (_resp) {
+            has = _resp;
+
+            if (has) {
+              // copy
+              _copy(src, dst, ['package.json', 'node_modules']);
+              return true;
+            } else {
+              return false;
+            }
+          });
+        }
+      }).then(function () {});
+    }
+  }, {
+    key: 'all',
+    value: function all() {
+      var templates,
+          _this4 = this;
+
+      return Promise.resolve().then(function () {
+        return readDir(dir(_this4.opts.data_templates));
+      }).then(function (_resp) {
+        templates = _resp;
+
+        return templates;
+      });
+    }
+  }]);
+  return Template;
+}();
+
+var defaultOptions = {
+  // template: 'basic',
+  paths: {
+    data: './data',
+    data_tasks: './data/tasks',
+    data_templates: './data/templates',
+    options: 'fbi/config.js',
+    tasks: 'fbi/tasks.js',
+    starters: '../tmpls/starters/',
+    settings: 'default.config.js'
+  },
+  meta: {
+    src: {
+      root: 'src',
+      html: 'tmpl',
+      css: 'style',
+      js: 'script',
+      img: 'image'
+    },
+    dist: {
+      root: 'dist',
+      html: '.',
+      css: 'css',
+      js: 'js',
+      img: 'img'
+    },
+    archive: 'archive'
+  },
+  server: {
+    host: 'localhost',
+    port: 8888
+  },
+  npm: {
+    alias: 'npm',
+    // options:'--save-dev --registry=https://registry.npm.taobao.org'
+    options: '--save-dev'
+  }
+};
+
+function getOptions(opts) {
+  return merge(defaultOptions, opts || {});
+}
+
+var version = "2.0.0-alpha.1";
+
+var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi new [template]      init a new template\n      fbi rm [task][template] remove tasks or templates\n\n    Commands:\n\n      -h, --help              output usage information\n      -v, --version           output the version number\n      i, install              install dependencies\n      i -f, install -f        install dependencies force\n';
+
+var task = new Task();
+var template = new Template(options);
 
 var Cli = function () {
   function Cli(argvs) {
@@ -817,24 +836,16 @@ var Cli = function () {
     this.next = true;
     this.log = log;
     this.options = {};Promise.resolve().then(function () {
-
       _this.version();
-
-      // find modules
-      // const name = 'koa'
-      // const mod = new Module(this.options)
-      // let ret = mod.get(name)
-      // if (ret) {
-      //   log(`'${name}' found in: ${ret}`)
-      // } else {
-      //   log(`'${name}' not found`)
-      // }
-
       return _this.help();
     }).then(function () {
       return _this.config();
     }).then(function () {
+      return _this.create();
+    }).then(function () {
       return _this.install();
+    }).then(function () {
+      return _this.remove();
     }).then(function () {
       return _this.run();
     }).then(function () {});
@@ -854,17 +865,18 @@ var Cli = function () {
     key: 'help',
     value: function help() {
       var all,
+          tmpls,
           _test,
-          _this6 = this;
+          _this5 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this6.next) {
+        if (!!_this5.next) {
           return Promise.resolve().then(function () {
-            _test = !_this6.argvs.length || _this6.argvs[0] === '-h' || _this6.argvs[0] === '--help';
+            _test = !_this5.argvs.length || _this5.argvs[0] === '-h' || _this5.argvs[0] === '--help';
 
             if (_test) {
               return Promise.resolve().then(function () {
-                _this6.next = false;
+                _this5.next = false;
 
                 return task.all(true);
               }).then(function (_resp) {
@@ -886,7 +898,23 @@ var Cli = function () {
             }
 
             if (_test) {
+              return Promise.resolve().then(function () {
+                return template.all();
+              }).then(function (_resp) {
+                tmpls = _resp;
+              });
+            }
+          }).then(function () {
+            if (_test && tmpls.length) {
+              helps += '\n\n    Templates:\n      ';
+              tmpls.map(function (item) {
+                helps += '\n      ' + item;
+              });
+            }
+
+            if (_test) {
               helps += '\n      ';
+
               console.log(helps);
             }
           });
@@ -898,19 +926,19 @@ var Cli = function () {
     value: function config() {
       var pathConfig,
           userOptions,
-          _this11 = this;
+          _this12 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this11.next) {
+        if (!!_this12.next) {
           return Promise.resolve().then(function () {
             // options
             pathConfig = cwd('./fbi/config.js');
             return exist(pathConfig);
           }).then(function (_resp) {
-            _this11.isfbi = _resp;
-            userOptions = _this11.isfbi ? require(pathConfig) : null;
+            _this12.isfbi = _resp;
+            userOptions = _this12.isfbi ? require(pathConfig) : null;
 
-            _this11.options = getOptions(userOptions);
+            _this12.options = getOptions(userOptions);
           }).catch(function (e) {
             log(e);
           });
@@ -919,16 +947,16 @@ var Cli = function () {
     }
   }, {
     key: 'install',
-    value: function install() {
+    value: function install$$() {
       var _this2,
-          _this14 = this;
+          _this15 = this;
 
       return Promise.resolve().then(function () {
-        _this2 = _this14;
+        _this2 = _this15;
 
-        if (!!_this14.next) {
+        if (!!_this15.next) {
 
-          if (_this14.argvs[0] === 'i' || _this14.argvs[0] === 'install') {
+          if (_this15.argvs[0] === 'i' || _this15.argvs[0] === 'install') {
             return function () {
               var force, dependencies, needinstall, all, deps, allTasks, targetDir;
               return Promise.resolve().then(function () {
@@ -950,8 +978,6 @@ var Cli = function () {
                 return task.all();
               }).then(function (_resp) {
                 all = _resp;
-                // log(all)
-
                 deps = [];
                 allTasks = Object.keys(all);
 
@@ -972,7 +998,6 @@ var Cli = function () {
                     dependencies[item] = '*';
                   }
                 });
-                // log(dependencies)
 
                 if (force) {
                   needinstall = dependencies;
@@ -993,13 +1018,11 @@ var Cli = function () {
                   })();
                 }
 
-                // log(needinstall)
-
                 targetDir = _this2.options.template ? dir(_this2.options.paths.data_templates, _this2.options.template) : dir(_this2.options.paths.data);
 
 
                 if (Object.keys(needinstall).length) {
-                  return _install(needinstall, targetDir, _this2.options.npm.alias, _this2.options.npm.options);
+                  return install(needinstall, targetDir, _this2.options.npm.alias, _this2.options.npm.options);
                 } else {
                   log('All Dependencies installed.');
                 }
@@ -1012,97 +1035,85 @@ var Cli = function () {
   }, {
     key: 'create',
     value: function create() {
-      if (!this.next) return;
+      var name,
+          succ,
+          _test2,
+          _this23 = this;
 
-      var dbTemplates = new Store('templates');
-      this.templates = dbTemplates.all();
-      log(this.templates);
+      return Promise.resolve().then(function () {
+        if (!!_this23.next) {
 
-      if (this.argvs[0] === 'new') {
-        log('new===');
-        var mod = this.argvs[1] ? this.argvs[1].match(/^[^\\/:*""<>|,]+$/i) : null;
-        mod = mod ? mod[0] : null;
+          if (_this23.argvs[0] === 'new') {
+            _this23.next = false;
 
-        try {
+            return Promise.resolve().then(function () {
+              name = _this23.argvs[1] ? _this23.argvs[1].match(/^[^\\/:*""<>|,]+$/i) : null;
+              _test2 = name !== null;
+              return template.copy(name, cwd());
+            }).then(function (_resp) {
+              if (_test2) {
+                succ = _resp;
+              }
 
-          if (this.templates[mod]) {
-            log('Installing template \'' + mod + '\' ...', 1);
-            var src = this._.dir(this.config.paths.data, 'templates', mod, path.sep);
-            var dst = this._.cwd(path.sep);
+              if (_test2 && succ) {
+                log('Template \'' + name + '\' copied to current folder', 1);
+              } else {
+                if (_test2) {
+                  log('Template \'' + name + '\' not found', 0);
+                }
 
-            // copy(src, dst)
-            copy(src, dst, ['package.json', 'node_modules']);
-          } else {
-            if (!mod) {
-              log('Invalid template name', 0);
-              show(this);
-            } else {
-              log('Template \'' + mod + '\' not found', 0);
-            }
+                log('Usage: fbi new [template name]', 0);
+              }
+            }).catch(function (e) {
+              log(e);
+            });
           }
-        } catch (e) {
-          log(e);
         }
-        this.next = false;
-      }
+      }).then(function () {});
     }
   }, {
     key: 'remove',
     value: function remove() {
-      if (!this.next) return;
+      var mods,
+          _this28 = this;
 
-      if (this.argvs[0] === 'rm' || this.argvs[0] === 'remove') {
-        this.next = false;
-        var mods = this.argvs.slice(1);
-        if (!mods.length) {
-          show(this);
-        }
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+      if (!!_this28.next) {
 
-        try {
-          for (var _iterator = mods[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var mod = _step.value;
+        if (_this28.argvs[0] === 'rm' || _this28.argvs[0] === 'remove') {
+          _this28.next = false;
 
-            if (this.tasks[mod]) {
-              if (this.tasks[mod].module.indexOf('.js') > 0) {
-                // fn task
-                // del task
-                var _path = this._.dir(this.tasks[mod].module.replace('../', ''));
-                var _exist = this._.existSync(_path);
-                if (_exist) {
-                  fs.unlinkSync(_path);
-                  dbTasks.del(mod);
-                  log('Task module \'' + mod + '\' removed', 1);
-                } else {
-                  log('Task module \'' + mod + '\' not found', 0);
-                }
-              } else {
-                dbTasks.del(mod);
-                // TODO: uninstall?
-                log('Task module \'' + mod + '\' removed', 1);
-              }
-            } else if (this.templates[mod]) {
-              // del template
-              dbTemplates.del(mod);
-              log('Template \'' + mod + '\' removed', 1);
-            } else {
-              log('Module \'' + mod + '\' not found', 0);
-            }
-          }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
+          mods = _this28.argvs.slice(1);
+
+          if (!mods.length) {
+            log('Usage: fbi rm [task] or [template]');
+            process.exit(1);
+          } else {
+            // for (const mod of mods) {
+            //   if (this.tasks[mod]) {
+            //     if (this.tasks[mod].module.indexOf('.js') > 0) { // fn task
+            //       // del task
+            //       const _path = this._.dir(this.tasks[mod].module.replace('../', ''))
+            //       const exist = this._.existSync(_path)
+            //       if (exist) {
+            //         fs.unlinkSync(_path)
+            //         dbTasks.del(mod)
+            //         log(`Task module '${mod}' removed`, 1)
+            //       } else {
+            //         log(`Task module '${mod}' not found`, 0)
+            //       }
+            //     } else {
+            //       dbTasks.del(mod)
+            //       // TODO: uninstall?
+            //       log(`Task module '${mod}' removed`, 1)
+            //     }
+            //   } else if (this.templates[mod]) {
+            //     // del template
+            //     dbTemplates.del(mod)
+            //     log(`Template '${mod}' removed`, 1)
+            //   } else {
+            //     log(`Module '${mod}' not found`, 0)
+            //   }
+            // }
           }
         }
       }
@@ -1112,14 +1123,14 @@ var Cli = function () {
     value: function run() {
       var _this3,
           cmds,
-          _this22 = this;
+          _this29 = this;
 
-      _this3 = _this22;
+      _this3 = _this29;
 
-      if (!!_this22.next) {
-        cmds = _this22.argvs;
+      if (!!_this29.next) {
+        cmds = _this29.argvs;
 
-        if (_this22.argvs.length > 0) {
+        if (_this29.argvs.length > 0) {
           (function () {
             var isGlobal = void 0;
             if (_this3.argvs[1] === '-g') {
@@ -1154,146 +1165,21 @@ var Cli = function () {
   return Cli;
 }();
 
-// async task() {
-//   if (!this.next) return
-
-//   try {
-//     const dbTasks = new Store('tasks')
-//     // let needinstall = {}
-//     // let userPks
-//     const templateDir = dir('data/templates/', this.options.template)
-//     const existTemplate = await exist(templateDir)
-//     const templateTasksPath = join(templateDir, 'fbi/tasks.js')
-
-//     // // template default tasks
-//     // if (existTemplate) {
-//     //   const hasDefaultTasks = await exist(templateTasksPath)
-//     //   if (hasDefaultTasks) {
-//     //     const source = await read(templateTasksPath)
-//     //     const parser = new Parser(source)
-//     //     const deps = parser.splitDependencies()
-//     //     deps.globals.map(dep => {
-
-//     //       try {
-//     //         require.resolve(dep)
-//     //       } catch (err) {
-//     //         try {
-//     //           // require(join(templateDir, 'node_modules', dep)) // test module installed
-//     //           require.resolve(join(templateDir, 'node_modules', dep))
-//     //         } catch (e) {
-//     //           needinstall[dep] = '*'
-//     //         }
-//     //       }
-
-//     //     })
-//     //   }
-//     // }
-
-//     // // user tasks
-//     const userDir = cwd()
-//     // try {
-//     //   userPks = require(join(userDir, 'package.json'))
-//     // } catch (e) {
-//     //   userPks = {
-//     //     dependencies: {}
-//     //   }
-//     // }
-//     const userTasksPath = join(userDir, 'fbi/tasks.js')
-//     // const hasUserTasks = await exist(userTasksPath)
-//     // if (hasUserTasks) {
-//     //   const source = await read(userTasksPath)
-//     //   const parser = new Parser(source)
-//     //   const deps = parser.splitDependencies()
-//     //   deps.globals.map(dep => {
-//     //     try {
-//     //       require.resolve(dep) // global or native module
-//     //     } catch (err) {
-//     //       try {
-//     //         // require(join(templateDir, 'node_modules', dep)) // test module installed
-//     //         require.resolve(join(templateDir, 'node_modules', dep))
-//     //         userPks['dependencies'][dep] = '*'
-//     //       } catch (e) {
-//     //         if (userPks['dependencies'][dep]) {
-//     //           needinstall[dep] = userPks['dependencies'][dep]
-//     //         } else {
-//     //           userPks['dependencies'][dep] = '*'
-//     //           needinstall[dep] = '*'
-//     //         }
-//     //       }
-//     //     }
-//     //   })
-//     // }
-
-//     // if (Object.keys(needinstall).length) {
-//     //   await install(needinstall, templateDir, this.options.npm.alias, this.options.npm.options)
-//     // }
-
-//     // add tasks
-//     log(templateTasksPath)
-//     if (existTemplate) {
-//       dbTasks.set(require(templateTasksPath))
-//     }
-
-//     if (hasUserTasks) {
-//       // copy
-//       const dest = join(templateDir, 'fbi/tmp', path.basename(userTasksPath))
-//       log(userTasksPath)
-//       log(dest)
-//       await copyFile(userTasksPath, dest)
-//       dbTasks.set(require(dest))
-//     }
-
-//     this.tasks = dbTasks.all()
-//     log(this)
-
-//     // write user package.json
-//     write(join(userDir, 'package.json'), JSON.stringify(userPks, null, 2))
-
-//   } catch (e) {
-//     log(e)
-//   }
-// }
-
-var dbTasks$1 = new Store('tasks');
-var dbTemplates$1 = new Store('templates');
-
-// const module = new Module()
-
 var Fbi = function () {
   function Fbi() {
     classCallCheck(this, Fbi);
 
     this.options = getOptions();
 
-    this.tasks = dbTasks$1.all() || {};
-    this.templates = dbTemplates$1.all() || {};
-
-    // parser /Users/Inman/work/git/github/neikvon/fbi/data/templates/basic/fbi/tasks.js
-    // const source = fs.readFileSync(path.join(__dirname, '../data/templates/basic/fbi/tasks.js'))
-    // const parser = new Parser(source)
-
-    // console.log(parser.getLocalDependencies())
-    // console.log(parser.getGlobalDependencies())
+    // this.tasks = dbTasks.all() || {}
+    // this.templates = dbTemplates.all() || {}
 
     this.Cli = Cli;
-    // this.Module = Module
     this.Parser = Parser;
-
-    // module.set('a', 'aaa')
-    // module.set('b', function () {
-    //   console.log('b')
-    // })
-    // console.log(module.getAll())
   }
 
   createClass(Fbi, [{
     key: 'run',
-
-
-    // static get module() {
-    //   return Module
-    // }
-
     value: function run(cmds) {
       if (!cmds) {
         return;
@@ -1329,7 +1215,7 @@ var Fbi = function () {
 
             delete any[a].fn;
             any[a]['module'] = '.' + _this.config.paths.data + '/tasks/' + a + '.js';
-            fs$1.writeFileSync(name, cnt);
+            // fs.writeFileSync(name, cnt)
           }
           _this.tasks[a] = any[a];
         } else if (any[a].module) {
@@ -1343,10 +1229,10 @@ var Fbi = function () {
 
       // sync tasks
       if (globally) {
-        dbTasks$1.set(this.tasks);
+        dbTasks.set(this.tasks);
       }
       if (globally) {
-        dbTemplates$1.set(this.templates);
+        dbTemplates.set(this.templates);
       }
     }
   }], [{

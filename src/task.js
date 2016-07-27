@@ -47,14 +47,6 @@ export default class Task {
     return ret
   }
 
-  set(obj) {
-
-  }
-
-  del(name) {
-
-  }
-
   async all(justNames) {
     const _this = this
     let names = {
@@ -119,7 +111,7 @@ export default class Task {
     function requireRelative(mod) {
 
       // find mod path
-      let mod_path = module.get(name)
+      let mod_path = module.get(mod)
 
       if (mod_path) {
         if (mod_path === 'global') {
@@ -130,20 +122,6 @@ export default class Task {
       } else {
         log(`Module not found: ${mod}, try 'fbi install'`, 0)
       }
-
-      // try {
-      //   return require(mod) // native module
-      // } catch (err) {
-      //   const global_path = dir('data/templates/basic/node_modules', mod)
-      //   return require(global_path)
-      // }
-
-      // try {
-      //   return require(mod) // native module
-      // } catch (err) {
-      //   const global_path = dir('data/templates/basic/node_modules', mod)
-      //   return require(global_path)
-      // }
     }
 
     let code = `

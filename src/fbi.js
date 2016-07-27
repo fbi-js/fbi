@@ -1,51 +1,26 @@
-import fs from 'fs'
-import path from 'path'
-import {getOptions} from './helpers/options'
-import {dir} from './helpers/utils'
-import options from './helpers/options'
-// classes
 import Cli from './cli'
-import Module from './module'
-import Store from './store'
 import Parser from './parser'
+// import Store from './store'
+import { getOptions } from './helpers/options'
+import { dir } from './helpers/utils'
 
-const dbTasks = new Store('tasks')
-const dbTemplates = new Store('templates')
-
-// const module = new Module()
+// const dbTasks = new Store('tasks')
+// const dbTemplates = new Store('templates')
 
 export default class Fbi {
   constructor() {
     this.options = getOptions()
 
-    this.tasks = dbTasks.all() || {}
-    this.templates = dbTemplates.all() || {}
-
-    // parser /Users/Inman/work/git/github/neikvon/fbi/data/templates/basic/fbi/tasks.js
-    // const source = fs.readFileSync(path.join(__dirname, '../data/templates/basic/fbi/tasks.js'))
-    // const parser = new Parser(source)
-
-    // console.log(parser.getLocalDependencies())
-    // console.log(parser.getGlobalDependencies())
+    // this.tasks = dbTasks.all() || {}
+    // this.templates = dbTemplates.all() || {}
 
     this.Cli = Cli
-    // this.Module = Module
     this.Parser = Parser
-
-    // module.set('a', 'aaa')
-    // module.set('b', function () {
-    //   console.log('b')
-    // })
-    // console.log(module.getAll())
   }
 
   static get cli() {
     return Cli
   }
-
-  // static get module() {
-  //   return Module
-  // }
 
   run(cmds) {
     if (!cmds) {
@@ -76,7 +51,7 @@ export default class Fbi {
 
           delete any[a].fn
           any[a]['module'] = `.${this.config.paths.data}/tasks/${a}.js`
-          fs.writeFileSync(name, cnt)
+          // fs.writeFileSync(name, cnt)
         }
         this.tasks[a] = any[a]
       } else if (any[a].module) { // task require a npm module

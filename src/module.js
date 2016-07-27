@@ -16,8 +16,9 @@ export default class Module {
     this.modulePaths = [
       cwd('node_modules'),
       dir(options.data, opts.template ? 'templates/' + opts.template : '', 'node_modules'),
-      dir(options.data, 'node_modules'),
-      ''
+      dir(options.data, 'node_modules')
+      ,
+      '' // global
     ]
 
     this.modulePaths = Array.from(new Set(this.modulePaths)) // duplicate removal
@@ -30,6 +31,7 @@ export default class Module {
       let _p = join(item, name)
       try {
         let found = require.resolve(_p)
+
         if (found) {
           ret = item ? item : 'global'
           break
@@ -40,22 +42,6 @@ export default class Module {
     }
 
     return ret
-  }
-
-  set(name, value) {
-    this.modules.set(name, value)
-  }
-
-  del(name) {
-    this.modules.delete(name)
-  }
-
-  delAll() {
-    this.modules.clear()
-  }
-
-  has(name) {
-    return this.modules.has(name)
   }
 
   getAll() {
