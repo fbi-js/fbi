@@ -1,7 +1,7 @@
 import {merge} from './utils'
 
 export const defaultOptions = {
-  template: 'basic',
+  // template: 'basic',
   paths: {
     data: './data',
     data_tasks: './data/tasks',

@@ -1,16 +1,45 @@
-export default class Module {
-  constructor(mod) {
-    this.modules = new Map()
+import {cwd, dir, join, log, exist} from './helpers/utils'
+import options from './options'
 
-    if (mod !== undefined && mod !== '') {
-      this.mod = new Map()
-      this.mod.set(mod, this.modules)
-      // this.set(mod, this.modules)
-    }
+export default class Module {
+  constructor(opts) {
+    /**
+     * modules find path:
+     *
+     * 1. current folder ＝> process.cwd()/node_modules
+     * 2. template folder => data/templates/template/node_modules
+     * 3. fbi global folder => data/node_modules
+     * 4. system globale folder => username/node_modules
+     *
+     */
+
+    this.modulePaths = [
+      cwd('node_modules'),
+      dir(options.data, opts.template ? 'templates/' + opts.template : '', 'node_modules'),
+      dir(options.data, 'node_modules'),
+      ''
+    ]
+
+    this.modulePaths = Array.from(new Set(this.modulePaths)) // duplicate removal
   }
 
   get(name) {
-    return this.modules.get(name)
+    let ret
+
+    for (let item of this.modulePaths) {
+      let _p = join(item, name)
+      try {
+        let found = require.resolve(_p)
+        if (found) {
+          ret = item ? item : 'global'
+          break
+        }
+      } catch (e) {
+
+      }
+    }
+
+    return ret
   }
 
   set(name, value) {

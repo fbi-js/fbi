@@ -2,6 +2,7 @@ import path from 'path'
 import {version} from '../package.json'
 import Store from './store'
 import Parser from './parser'
+import Module from './module'
 import Task from './task'
 import {getOptions} from './helpers/options'
 import {cwd, dir, join, exist, existSync, readDir, log, merge, read, write, install, copyFile, isTask, isNotConfigFile} from './helpers/utils'
@@ -21,6 +22,8 @@ let helps =
 
       -h, --help            output usage information
       -v, --version         output the version number
+      i, install            install dependencies
+      i -f, install -f      install dependencies force
       rm, remove            remove tasks or templates
 `
 
@@ -29,13 +32,24 @@ export default class Cli {
     this.argvs = argvs
     this.next = true
     this.log = log
-    this.dependencies = {}
+    this.options = {}
 
       ; (async () => {
 
         this.version()
         await this.help()
         await this.config()
+
+        // find modules
+        // const name = 'koa'
+        // const mod = new Module(this.options)
+        // let ret = mod.get(name)
+        // if (ret) {
+        //   log(`'${name}' found in: ${ret}`)
+        // } else {
+        //   log(`'${name}' not found`)
+        // }
+
         await this.install()
         await this.run()
       })()
@@ -101,68 +115,72 @@ export default class Cli {
     if (this.argvs[0] === 'i' || this.argvs[0] === 'install') {
       this.next = false
 
+      let force = this.argvs[1] === '-f' || this.argvs[1] === '-force'
+
       let dependencies = {}
       let needinstall = {}
 
       // 1. local dependencies
-      // parser task files
-      // write deps into fbi/config.js => dependencies
-      if (Object.keys(this.options.dependencies).length) {
+      // fbi/config.js => dependencies
+      if (this.options.dependencies
+        && Object.keys(this.options.dependencies).length) {
         dependencies = this.options.dependencies
       }
 
+      // 2. dependencies
+      // collect tasks
       const all = await task.all()
-      let deps
+      // log(all)
+      let deps = []
 
       const allTasks = Object.keys(all)
       if (allTasks.length) {
         allTasks.map(item => {
+          // get task deps
           let parser = new Parser(all[item])
-          deps = parser.getDependencies()
+          let dep = parser.getDependencies()
+          deps = deps.concat(dep)
         })
       }
 
+      deps = Array.from(new Set(deps)) // duplicate removal
+
+      // merge to dependencies
       deps.map(item => {
         if (!dependencies[item]) {
           dependencies[item] = '*'
         }
       })
+      // log(dependencies)
 
-      // needinstall = merge({}, dependencies)
-      needinstall = JSON.parse(JSON.stringify(dependencies));
+      if (force) {
+        needinstall = dependencies
+      } else {
+        // find modules
+        const mod = new Module(this.options)
 
-      let templateDir = dir('data/templates/basic/node_modules')
-
-      Object.keys(dependencies).map(item => {
-        try {
-          // native module or global module
-          require.resolve(item)
-          delete dependencies[item]
-          // TODO: why?
-          delete needinstall[item]
-        } catch (err) {
-          try {
-            require.resolve(join(templateDir, 'node_modules', item))
-            delete needinstall[item]
-          } catch (e) {
+        Object.keys(dependencies).map(item => {
+          let ret = mod.get(item)
+          if (ret) {
+            log(`Found '${item}' at: ${ret}`, 1)
+          } else {
+            log(`Not Fount '${item}'`)
+            needinstall[item] = dependencies[item]
           }
-        }
-      })
-
-      if (Object.keys(needinstall).length) {
-        await install(needinstall, templateDir, this.options.npm.alias, this.options.npm.options)
+        })
       }
 
-      // write
-      let userConfig = await read(cwd('fbi/config.js'))
-      // TODO
-      // log(userConfig)
-      // userConfig['dependencies'] = dependencies
-      // write(cwd('fbi/config.js'), JSON.stringify(userConfig, null, 2))
+      // log(needinstall)
 
-      // install dependencies
+      let targetDir = this.options.template
+        ? dir(this.options.paths.data_templates, this.options.template)
+        : dir(this.options.paths.data)
 
-      // 2. global dependencies
+      if (Object.keys(needinstall).length) {
+        await install(needinstall, targetDir, this.options.npm.alias, this.options.npm.options)
+      } else {
+        log('All Dependencies installed.')
+      }
     }
   }
 

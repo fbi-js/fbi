@@ -12,7 +12,7 @@ import Parser from './parser'
 const dbTasks = new Store('tasks')
 const dbTemplates = new Store('templates')
 
-const module = new Module()
+// const module = new Module()
 
 export default class Fbi {
   constructor() {
@@ -55,13 +55,13 @@ export default class Fbi {
     new Fbi.cli(typeof cmds === 'string' ? [cmds] : cmds)
   }
 
-  add(mods) {
-    if (!mods) {
-      return
-    }
+  // add(mods) {
+  //   if (!mods) {
+  //     return
+  //   }
 
-    new Fbi.module(typeof mods === 'string' ? [mods] : mods)
-  }
+  //   new Fbi.module(typeof mods === 'string' ? [mods] : mods)
+  // }
 
   // add anything
   add2(any, globally) {

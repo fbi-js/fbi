@@ -78,33 +78,6 @@ var slicedToArray = function () {
   };
 }();
 
-// util.inspect.styles
-
-// { special: 'cyan',
-//   number: 'yellow',
-//   boolean: 'yellow',
-//   undefined: 'grey',
-//   null: 'bold',
-//   string: 'green',
-//   date: 'magenta',
-//   regexp: 'red' }
-
-// util.inspect.colors
-
-// { bold: [ 1, 22 ],
-//   italic: [ 3, 23 ],
-//   underline: [ 4, 24 ],
-//   inverse: [ 7, 27 ],
-//   white: [ 37, 39 ],
-//   grey: [ 90, 39 ],
-//   black: [ 30, 39 ],
-//   blue: [ 34, 39 ],
-//   cyan: [ 36, 39 ],
-//   green: [ 32, 39 ],
-//   magenta: [ 35, 39 ],
-//   red: [ 31, 39 ],
-//   yellow: [ 33, 39 ] }
-
 function colors() {
   function colorize(color, text) {
     var codes = util.inspect.colors[color];
@@ -235,7 +208,7 @@ function isTask(item) {
 }
 
 var defaultOptions = {
-  template: 'basic',
+  // template: 'basic',
   paths: {
     data: './data',
     data_tasks: './data/tasks',
@@ -278,8 +251,6 @@ function getOptions(opts) {
 }
 
 var version = "2.0.0-alpha.1";
-
-// json files storage
 
 var Store = function () {
   function Store(name) {
@@ -445,6 +416,132 @@ var Parser = function () {
     }
   }]);
   return Parser;
+}();
+
+var options = {
+  data: './data',
+  data_tasks: './data/tasks',
+  data_templates: './data/templates'
+};
+
+var Module = function () {
+  function Module(opts) {
+    classCallCheck(this, Module);
+
+    /**
+     * modules find path:
+     *
+     * 1. current folder ＝> process.cwd()/node_modules
+     * 2. template folder => data/templates/template/node_modules
+     * 3. fbi global folder => data/node_modules
+     * 4. system globale folder => username/node_modules
+     *
+     */
+
+    this.modulePaths = [cwd('node_modules'), dir(options.data, opts.template ? 'templates/' + opts.template : '', 'node_modules'), dir(options.data, 'node_modules'), ''];
+
+    this.modulePaths = Array.from(new Set(this.modulePaths)); // duplicate removal
+  }
+
+  createClass(Module, [{
+    key: 'get',
+    value: function get(name) {
+      var ret = void 0;
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = this.modulePaths[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var item = _step.value;
+
+          var _p = join(item, name);
+          try {
+            var found = require.resolve(_p);
+            if (found) {
+              ret = item ? item : 'global';
+              break;
+            }
+          } catch (e) {}
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      return ret;
+    }
+  }, {
+    key: 'set',
+    value: function set(name, value) {
+      this.modules.set(name, value);
+    }
+  }, {
+    key: 'del',
+    value: function del(name) {
+      this.modules.delete(name);
+    }
+  }, {
+    key: 'delAll',
+    value: function delAll() {
+      this.modules.clear();
+    }
+  }, {
+    key: 'has',
+    value: function has(name) {
+      return this.modules.has(name);
+    }
+  }, {
+    key: 'getAll',
+    value: function getAll() {
+      var modules = {};
+      modules[this.mod] = {};
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = this.modules[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var _step2$value = slicedToArray(_step2.value, 2);
+
+          var key = _step2$value[0];
+          var value = _step2$value[1];
+
+          modules[this.mod][key] = value;
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      return modules;
+    }
+  }, {
+    key: 'sync',
+    value: function sync() {}
+  }]);
+  return Module;
 }();
 
 var Task = function () {
@@ -653,7 +750,7 @@ var Task = function () {
           }
         }
       }).then(function () {
-        // names.locals = Array.from(new Set(names.locals)) // 去重
+        // names.locals = Array.from(new Set(names.locals)) // duplicate removal
         if (justNames) {
           names.globals = Array.from(names.globals);
           names.locals = Array.from(names.locals);
@@ -666,14 +763,36 @@ var Task = function () {
     key: 'run',
     value: function run(name, ctx, task) {
       var taskCnt = task || this.tasks[name];
+      var module = new Module(ctx.options);
 
       function requireRelative(mod) {
-        try {
-          return require(mod); // native module
-        } catch (err) {
-          var global_path = dir('data/templates/basic/node_modules', mod);
-          return require(global_path);
+
+        // find mod path
+        var mod_path = module.get(name);
+
+        if (mod_path) {
+          if (mod_path === 'global') {
+            return require(mod); // native or global module
+          } else {
+            return require(join(mod_path, mod));
+          }
+        } else {
+          log('Module not found: ' + mod + ', try \'fbi install\'', 0);
         }
+
+        // try {
+        //   return require(mod) // native module
+        // } catch (err) {
+        //   const global_path = dir('data/templates/basic/node_modules', mod)
+        //   return require(global_path)
+        // }
+
+        // try {
+        //   return require(mod) // native module
+        // } catch (err) {
+        //   const global_path = dir('data/templates/basic/node_modules', mod)
+        //   return require(global_path)
+        // }
       }
 
       var code = '\n    (function(require, ctx) {\n      try {\n        ' + taskCnt + '\n      } catch (e) {\n        console.log(e)\n      }\n    })';
@@ -686,7 +805,7 @@ var Task = function () {
 
 var task = new Task();
 
-var helps = '\n    Usage:\n\n      fbi [command]         run command\n      fbi [task]            run a local preference task\n      fbi [task] -g         run a global task\n      fbi new [template]    init a new template\n\n    Commands:\n\n      -h, --help            output usage information\n      -v, --version         output the version number\n      rm, remove            remove tasks or templates\n';
+var helps = '\n    Usage:\n\n      fbi [command]         run command\n      fbi [task]            run a local preference task\n      fbi [task] -g         run a global task\n      fbi new [template]    init a new template\n\n    Commands:\n\n      -h, --help            output usage information\n      -v, --version         output the version number\n      i, install            install dependencies\n      i -f, install -f      install dependencies force\n      rm, remove            remove tasks or templates\n';
 
 var Cli = function () {
   function Cli(argvs) {
@@ -697,9 +816,20 @@ var Cli = function () {
     this.argvs = argvs;
     this.next = true;
     this.log = log;
-    this.dependencies = {};Promise.resolve().then(function () {
+    this.options = {};Promise.resolve().then(function () {
 
       _this.version();
+
+      // find modules
+      // const name = 'koa'
+      // const mod = new Module(this.options)
+      // let ret = mod.get(name)
+      // if (ret) {
+      //   log(`'${name}' found in: ${ret}`)
+      // } else {
+      //   log(`'${name}' not found`)
+      // }
+
       return _this.help();
     }).then(function () {
       return _this.config();
@@ -800,78 +930,80 @@ var Cli = function () {
 
           if (_this14.argvs[0] === 'i' || _this14.argvs[0] === 'install') {
             return function () {
-              var dependencies, needinstall, all, deps, allTasks, templateDir, userConfig;
+              var force, dependencies, needinstall, all, deps, allTasks, targetDir;
               return Promise.resolve().then(function () {
                 _this2.next = false;
 
+                force = _this2.argvs[1] === '-f' || _this2.argvs[1] === '-force';
                 dependencies = {};
                 needinstall = {};
 
                 // 1. local dependencies
-                // parser task files
-                // write deps into fbi/config.js => dependencies
+                // fbi/config.js => dependencies
 
-                if (Object.keys(_this2.options.dependencies).length) {
+                if (_this2.options.dependencies && Object.keys(_this2.options.dependencies).length) {
                   dependencies = _this2.options.dependencies;
                 }
 
+                // 2. dependencies
+                // collect tasks
                 return task.all();
               }).then(function (_resp) {
                 all = _resp;
-                deps = void 0;
+                // log(all)
+
+                deps = [];
                 allTasks = Object.keys(all);
 
                 if (allTasks.length) {
                   allTasks.map(function (item) {
+                    // get task deps
                     var parser = new Parser(all[item]);
-                    deps = parser.getDependencies();
+                    var dep = parser.getDependencies();
+                    deps = deps.concat(dep);
                   });
                 }
 
+                deps = Array.from(new Set(deps)); // duplicate removal
+
+                // merge to dependencies
                 deps.map(function (item) {
                   if (!dependencies[item]) {
                     dependencies[item] = '*';
                   }
                 });
+                // log(dependencies)
 
-                // needinstall = merge({}, dependencies)
-                needinstall = JSON.parse(JSON.stringify(dependencies));
+                if (force) {
+                  needinstall = dependencies;
+                } else {
+                  (function () {
+                    // find modules
+                    var mod = new Module(_this2.options);
 
-                templateDir = dir('data/templates/basic/node_modules');
+                    Object.keys(dependencies).map(function (item) {
+                      var ret = mod.get(item);
+                      if (ret) {
+                        log('Found \'' + item + '\' at: ' + ret, 1);
+                      } else {
+                        log('Not Fount \'' + item + '\'');
+                        needinstall[item] = dependencies[item];
+                      }
+                    });
+                  })();
+                }
 
+                // log(needinstall)
 
-                Object.keys(dependencies).map(function (item) {
-                  try {
-                    // native module or global module
-                    require.resolve(item);
-                    delete dependencies[item];
-                    // TODO: why?
-                    delete needinstall[item];
-                  } catch (err) {
-                    try {
-                      require.resolve(join(templateDir, 'node_modules', item));
-                      delete needinstall[item];
-                    } catch (e) {}
-                  }
-                });
+                targetDir = _this2.options.template ? dir(_this2.options.paths.data_templates, _this2.options.template) : dir(_this2.options.paths.data);
+
 
                 if (Object.keys(needinstall).length) {
-                  return _install(needinstall, templateDir, _this2.options.npm.alias, _this2.options.npm.options);
+                  return _install(needinstall, targetDir, _this2.options.npm.alias, _this2.options.npm.options);
+                } else {
+                  log('All Dependencies installed.');
                 }
-              }).then(function () {
-                return read(cwd('fbi/config.js'));
-              }).then(function (_resp) {
-                // write
-                userConfig = _resp;
-                // TODO
-                // log(userConfig)
-                // userConfig['dependencies'] = dependencies
-                // write(cwd('fbi/config.js'), JSON.stringify(userConfig, null, 2))
-
-                // install dependencies
-
-                // 2. global dependencies
-              });
+              }).then(function () {});
             }();
           }
         }
@@ -1022,90 +1154,110 @@ var Cli = function () {
   return Cli;
 }();
 
-var Module = function () {
-  function Module(mod) {
-    classCallCheck(this, Module);
+// async task() {
+//   if (!this.next) return
 
-    this.modules = new Map();
+//   try {
+//     const dbTasks = new Store('tasks')
+//     // let needinstall = {}
+//     // let userPks
+//     const templateDir = dir('data/templates/', this.options.template)
+//     const existTemplate = await exist(templateDir)
+//     const templateTasksPath = join(templateDir, 'fbi/tasks.js')
 
-    if (mod !== undefined && mod !== '') {
-      this.mod = new Map();
-      this.mod.set(mod, this.modules);
-      // this.set(mod, this.modules)
-    }
-  }
+//     // // template default tasks
+//     // if (existTemplate) {
+//     //   const hasDefaultTasks = await exist(templateTasksPath)
+//     //   if (hasDefaultTasks) {
+//     //     const source = await read(templateTasksPath)
+//     //     const parser = new Parser(source)
+//     //     const deps = parser.splitDependencies()
+//     //     deps.globals.map(dep => {
 
-  createClass(Module, [{
-    key: 'get',
-    value: function get(name) {
-      return this.modules.get(name);
-    }
-  }, {
-    key: 'set',
-    value: function set(name, value) {
-      this.modules.set(name, value);
-    }
-  }, {
-    key: 'del',
-    value: function del(name) {
-      this.modules.delete(name);
-    }
-  }, {
-    key: 'delAll',
-    value: function delAll() {
-      this.modules.clear();
-    }
-  }, {
-    key: 'has',
-    value: function has(name) {
-      return this.modules.has(name);
-    }
-  }, {
-    key: 'getAll',
-    value: function getAll() {
-      var modules = {};
-      modules[this.mod] = {};
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+//     //       try {
+//     //         require.resolve(dep)
+//     //       } catch (err) {
+//     //         try {
+//     //           // require(join(templateDir, 'node_modules', dep)) // test module installed
+//     //           require.resolve(join(templateDir, 'node_modules', dep))
+//     //         } catch (e) {
+//     //           needinstall[dep] = '*'
+//     //         }
+//     //       }
 
-      try {
-        for (var _iterator = this.modules[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var _step$value = slicedToArray(_step.value, 2);
+//     //     })
+//     //   }
+//     // }
 
-          var key = _step$value[0];
-          var value = _step$value[1];
+//     // // user tasks
+//     const userDir = cwd()
+//     // try {
+//     //   userPks = require(join(userDir, 'package.json'))
+//     // } catch (e) {
+//     //   userPks = {
+//     //     dependencies: {}
+//     //   }
+//     // }
+//     const userTasksPath = join(userDir, 'fbi/tasks.js')
+//     // const hasUserTasks = await exist(userTasksPath)
+//     // if (hasUserTasks) {
+//     //   const source = await read(userTasksPath)
+//     //   const parser = new Parser(source)
+//     //   const deps = parser.splitDependencies()
+//     //   deps.globals.map(dep => {
+//     //     try {
+//     //       require.resolve(dep) // global or native module
+//     //     } catch (err) {
+//     //       try {
+//     //         // require(join(templateDir, 'node_modules', dep)) // test module installed
+//     //         require.resolve(join(templateDir, 'node_modules', dep))
+//     //         userPks['dependencies'][dep] = '*'
+//     //       } catch (e) {
+//     //         if (userPks['dependencies'][dep]) {
+//     //           needinstall[dep] = userPks['dependencies'][dep]
+//     //         } else {
+//     //           userPks['dependencies'][dep] = '*'
+//     //           needinstall[dep] = '*'
+//     //         }
+//     //       }
+//     //     }
+//     //   })
+//     // }
 
-          modules[this.mod][key] = value;
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
+//     // if (Object.keys(needinstall).length) {
+//     //   await install(needinstall, templateDir, this.options.npm.alias, this.options.npm.options)
+//     // }
 
-      return modules;
-    }
-  }, {
-    key: 'sync',
-    value: function sync() {}
-  }]);
-  return Module;
-}();
+//     // add tasks
+//     log(templateTasksPath)
+//     if (existTemplate) {
+//       dbTasks.set(require(templateTasksPath))
+//     }
+
+//     if (hasUserTasks) {
+//       // copy
+//       const dest = join(templateDir, 'fbi/tmp', path.basename(userTasksPath))
+//       log(userTasksPath)
+//       log(dest)
+//       await copyFile(userTasksPath, dest)
+//       dbTasks.set(require(dest))
+//     }
+
+//     this.tasks = dbTasks.all()
+//     log(this)
+
+//     // write user package.json
+//     write(join(userDir, 'package.json'), JSON.stringify(userPks, null, 2))
+
+//   } catch (e) {
+//     log(e)
+//   }
+// }
 
 var dbTasks$1 = new Store('tasks');
 var dbTemplates$1 = new Store('templates');
 
-var module$1 = new Module();
+// const module = new Module()
 
 var Fbi = function () {
   function Fbi() {
@@ -1149,15 +1301,14 @@ var Fbi = function () {
 
       new Fbi.cli(typeof cmds === 'string' ? [cmds] : cmds);
     }
-  }, {
-    key: 'add',
-    value: function add(mods) {
-      if (!mods) {
-        return;
-      }
 
-      new Fbi.module(typeof mods === 'string' ? [mods] : mods);
-    }
+    // add(mods) {
+    //   if (!mods) {
+    //     return
+    //   }
+
+    //   new Fbi.module(typeof mods === 'string' ? [mods] : mods)
+    // }
 
     // add anything
 

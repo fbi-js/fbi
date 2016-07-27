@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import vm from 'vm'
+import Module from './module'
 import {dir, join, cwd, readDir, log, read, exist, isNotConfigFile} from './helpers/utils'
 
 export default class Task {
@@ -101,7 +102,7 @@ export default class Task {
           }
         }))
       }
-      // names.locals = Array.from(new Set(names.locals)) // 去重
+      // names.locals = Array.from(new Set(names.locals)) // duplicate removal
     }
     if (justNames) {
       names.globals = Array.from(names.globals)
@@ -113,14 +114,36 @@ export default class Task {
 
   run(name, ctx, task) {
     let taskCnt = task || this.tasks[name]
+    const module = new Module(ctx.options)
 
     function requireRelative(mod) {
-      try {
-        return require(mod) // native module
-      } catch (err) {
-        const global_path = dir('data/templates/basic/node_modules', mod)
-        return require(global_path)
+
+      // find mod path
+      let mod_path = module.get(name)
+
+      if (mod_path) {
+        if (mod_path === 'global') {
+          return require(mod) // native or global module
+        } else {
+          return require(join(mod_path, mod))
+        }
+      } else {
+        log(`Module not found: ${mod}, try 'fbi install'`, 0)
       }
+
+      // try {
+      //   return require(mod) // native module
+      // } catch (err) {
+      //   const global_path = dir('data/templates/basic/node_modules', mod)
+      //   return require(global_path)
+      // }
+
+      // try {
+      //   return require(mod) // native module
+      // } catch (err) {
+      //   const global_path = dir('data/templates/basic/node_modules', mod)
+      //   return require(global_path)
+      // }
     }
 
     let code = `
