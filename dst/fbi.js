@@ -78,6 +78,33 @@ var slicedToArray = function () {
   };
 }();
 
+// util.inspect.styles
+
+// { special: 'cyan',
+//   number: 'yellow',
+//   boolean: 'yellow',
+//   undefined: 'grey',
+//   null: 'bold',
+//   string: 'green',
+//   date: 'magenta',
+//   regexp: 'red' }
+
+// util.inspect.colors
+
+// { bold: [ 1, 22 ],
+//   italic: [ 3, 23 ],
+//   underline: [ 4, 24 ],
+//   inverse: [ 7, 27 ],
+//   white: [ 37, 39 ],
+//   grey: [ 90, 39 ],
+//   black: [ 30, 39 ],
+//   blue: [ 34, 39 ],
+//   cyan: [ 36, 39 ],
+//   green: [ 32, 39 ],
+//   magenta: [ 35, 39 ],
+//   red: [ 31, 39 ],
+//   yellow: [ 33, 39 ] }
+
 function colors() {
   function colorize(color, text) {
     var codes = util.inspect.colors[color];
@@ -1069,8 +1096,6 @@ var Cli = function () {
             }).then(function (_resp) {
               if (_test2) {
                 succ = _resp;
-
-                log(succ);
               }
 
               if (_test2 && succ) {
@@ -1182,6 +1207,9 @@ var Cli = function () {
   }]);
   return Cli;
 }();
+
+// const dbTasks = new Store('tasks')
+// const dbTemplates = new Store('templates')
 
 var Fbi = function () {
   function Fbi() {

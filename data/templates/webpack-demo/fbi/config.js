@@ -1,11 +1,13 @@
 module.exports = {
+  template: 'webpack-demo',
   server: {
     host: 'localhost',
     port: 8888
   },
   npm: {
-    alias: 'tnpm',
-    options: '--save-dev'
+    alias: 'npm',
+    // options: '--save-dev'
+    options: '--save-dev --registry=https://registry.npm.taobao.org'
   },
   dependencies: {
     koa: '2.0.0-alpha.4',

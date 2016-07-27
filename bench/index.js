@@ -5,16 +5,16 @@ const Fbi = require('../dst/fbi')
 // new Fbi.cli(['-v'])
 
 // test run
-// const fbi = new Fbi()
-// fbi.run('myCmd')
+const fbi = new Fbi()
+fbi.run('serve')
 
 // test add
-new Fbi()
-const a = new Fbi.module('tasks')
+// new Fbi()
+// const a = new Fbi.module('tasks')
 
-a.set('aaa', [1,2,3])
+// a.set('aaa', [1,2,3])
 
-let all = a.getAll()
+// let all = a.getAll()
 
-console.log(all)
-console.log(a.get('aaa'))
+// console.log(all)
+// console.log(a.get('aaa'))

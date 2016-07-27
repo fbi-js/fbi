@@ -204,7 +204,6 @@ export default class Cli {
         name = name.length ? name[0] : null
         if (name !== null) {
           let succ = await template.copy(name, cwd())
-          log(succ)
           if (succ) {
             log(`Template '${name}' copied to current folder`, 1)
           } else {
