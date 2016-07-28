@@ -1,4 +1,4 @@
 module.exports = {
-  template: 'rollup-demo',
+  template: 'basic',
   attr: 'val'
 }

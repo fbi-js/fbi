@@ -1,4 +1,4 @@
-import {cwd, dir, join, log, exist, readDir} from './helpers/utils'
+import {cwd, dir, join, log, exist, existSync, readDir} from './helpers/utils'
 import copy from './helpers/copy'
 
 export default class Template {
@@ -15,14 +15,12 @@ export default class Template {
     }
     let ret = false
     const src = dir(this.opts.data_templates, name)
-    const has = await exist(src)
+    const has = existSync(src)
 
     if (has) {
-      // copy
       copy(src, dst, ['package.json', 'node_modules'])
-      ret = true
+      return true
     }
-    log(ret)
     return ret
   }
 

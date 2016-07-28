@@ -3,12 +3,13 @@ import Parser from './parser'
 import Module from './module'
 import Template from './template'
 import options from './options'
-import { getOptions } from './helpers/options'
+import { getOptions, defaultOptions } from './helpers/options'
 import { version } from '../package.json'
 import {
   cwd, dir, join, exist, existSync, readDir,
   log, merge, read, write, install, copyFile,
-  isTask, isNotConfigFile} from './helpers/utils'
+  isTaskName, isTaskFile
+} from './helpers/utils'
 
 let helps =
   `
@@ -17,15 +18,17 @@ let helps =
       fbi [command]           run command
       fbi [task]              run a local preference task
       fbi [task] -g           run a global task
-      fbi new [template]      init a new template
-      fbi rm [task][template] remove tasks or templates
+      fbi [task] -t           run a template task
 
     Commands:
 
-      -h, --help              output usage information
-      -v, --version           output the version number
+      new [template]          init a new template
+      rm [task][template]     remove tasks or templates
+      cat [task][-t, -g]      cat task content
       i, install              install dependencies
       i -f, install -f        install dependencies force
+      -h, --help              output usage information
+      -v, --version           output the version number
 `
 
 const task = new Task()
@@ -41,17 +44,23 @@ export default class Cli {
     this._ = {
       cwd, dir, join, exist, existSync, readDir,
       log, merge, read, write, install, copyFile,
-      isTask, isNotConfigFile
+      isTaskName, isTaskFile
     }
 
       ; (async () => {
-        this.version()
-        await this.help()
-        await this.config()
-        await this.create()
-        await this.install()
-        await this.remove()
-        await this.run()
+        try {
+          this.version()
+          await this.config()
+          await this.help()
+          await this.create()
+          await this.install()
+          await this.remove()
+          await this.cat()
+          await this.list()
+          await this.run()
+        } catch (e) {
+          log(e, 0)
+        }
       })()
   }
 
@@ -73,7 +82,7 @@ export default class Cli {
       || this.argvs[0] === '--help') {
       this.next = false
 
-      const all = await task.all(true)
+      const all = await task.all(this.options, true, true)
       helps += `
     Tasks:
     `
@@ -83,6 +92,14 @@ export default class Cli {
       ${item} <global>`
         })
       }
+
+      if (all.template.length) {
+        all.template.map(item => {
+          helps += `
+      ${item} <template>`
+        })
+      }
+
       if (all.locals.length) {
         all.locals.map(item => {
           helps += `
@@ -111,12 +128,35 @@ export default class Cli {
   async config() {
     if (!this.next) return
 
+    // user options > tempalte options > default options
+
     try {
-      // options
-      const pathConfig = cwd('./fbi/config.js')
-      this.isfbi = await exist(pathConfig)
-      const userOptions = this.isfbi ? require(pathConfig) : null
+      // default options
+      this.options = defaultOptions
+
+      // user options
+      const userOptionsPath = cwd(this.options.paths.options)
+      this.isfbi = await exist(userOptionsPath)
+      const userOptions = this.isfbi ? require(userOptionsPath) : null
+
+      // template options
+      if (userOptions.template) {
+        const templateOptionsPath = dir(
+          options.data_templates,
+          userOptions.template,
+          this.options.paths.options
+        )
+
+        if (existSync(templateOptionsPath)) {
+          const templateOptions = require(templateOptionsPath)
+          // merge template options
+          this.options = getOptions(templateOptions)
+        }
+      }
+
+      // merge user options
       this.options = getOptions(userOptions)
+
     } catch (e) {
       log(e)
     }
@@ -142,7 +182,7 @@ export default class Cli {
 
       // 2. dependencies
       // collect tasks
-      const all = await task.all()
+      const all = await task.all(this.options)
       let deps = []
 
       const allTasks = Object.keys(all)
@@ -199,18 +239,17 @@ export default class Cli {
     if (this.argvs[0] === 'new') {
       this.next = false
 
+      if (!this.argvs[1]) {
+        return log(`Usage: fbi new [template name]`, 0)
+      }
+      // log(this.argvs[1].match(/^[^\\/:*""<>|,]+$/i))
       try {
-        let name = this.argvs[1] ? this.argvs[1].match(/^[^\\/:*""<>|,]+$/i) : null
-        name = name.length ? name[0] : null
-        if (name !== null) {
-          let succ = await template.copy(name, cwd())
-          if (succ) {
-            log(`Template '${name}' copied to current folder`, 1)
-          } else {
-            log(`Template '${name}' not found`, 0)
-          }
+        const name = this.argvs[1]
+        let succ = await template.copy(name, cwd())
+        if (succ) {
+          log(`Template '${name}' copied to current folder`, 1)
         } else {
-          log(`Usage: fbi new [template name]`, 0)
+          log(`Template '${name}' not found`, 0)
         }
       } catch (e) {
         log(e)
@@ -259,24 +298,103 @@ export default class Cli {
     }
   }
 
+  async cat() {
+    if (!this.next) return
+
+    if (this.argvs[0] === 'cat') {
+      this.next = false
+
+      if (!this.argvs[1]) {
+        return log(`Usage: fbi cat [task] [-t, -g]`, 0)
+      }
+
+      const name = this.argvs[1]
+      let type = 'local'
+      if (this.argvs[2] === '-g') {
+        type = 'global'
+      } else if (this.argvs[2] === '-t') {
+        type = 'template'
+      }
+
+      const taskObj = await task.get(name, type, this.options)
+      log(`${taskObj.type} task ${name}'s content:
+
+${taskObj.cnt}
+        `)
+    }
+  }
+
+  async list() {
+    if (!this.next) return
+
+    if (this.argvs[0] === 'ls'
+      || this.argvs[0] === 'list') {
+      this.next = false
+
+      let helps = ''
+      const all = await task.all(this.options, true, false)
+      helps += `
+    Tasks:
+    `
+      if (all.globals.length) {
+        all.globals.map(item => {
+          helps += `
+      ${item} <global>`
+        })
+      }
+
+      if (all.template.length) {
+        all.template.map(item => {
+          helps += `
+      ${item} <template>`
+        })
+      }
+
+      if (all.locals.length) {
+        all.locals.map(item => {
+          helps += `
+      ${item} <local>`
+        })
+      }
+
+      const tmpls = await template.all()
+      if (tmpls.length) {
+        helps += `
+
+    Templates:
+      `
+        tmpls.map(item => {
+          helps += `
+      ${item}`
+        })
+      }
+      helps += `
+      `
+
+      console.log(helps)
+    }
+  }
+
   async run() {
     if (!this.next) return
 
     let cmds = this.argvs
     if (this.argvs.length > 0) {
-      let isGlobal
+      let type = 'local'
       if (this.argvs[1] === '-g') {
-        isGlobal = true
+        type = 'global'
+      } else if (this.argvs[1] === '-t') {
+        type = 'template'
       }
       try {
-        cmds = cmds.filter(isTask)
+        cmds = cmds.filter(isTaskName)
         cmds.map(async (cmd) => {
-          const taskObj = await task.get(cmd, isGlobal)
+          const taskObj = await task.get(cmd, type, this.options)
           if (taskObj.cnt) {
             log(`Running ${taskObj.type} task '${cmd}'...`, 1)
-            task.run(cmd, this, taskObj.cnt)
+            task.run(cmd, this, taskObj)
           } else {
-            log(`Task not found: '${cmd}${isGlobal ? ' <global>' : ''}'`, 0)
+            log(`Task not found: '${cmd}`, 0)
           }
         })
       } catch (e) {

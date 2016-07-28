@@ -2,7 +2,9 @@ import fs from 'fs'
 import path from 'path'
 import vm from 'vm'
 import Module from './module'
-import {dir, join, cwd, readDir, log, read, exist, isNotConfigFile} from './helpers/utils'
+import options from './options'
+import { dir, join, cwd, readDir, log, read, exist,
+  existSync, isTaskFile } from './helpers/utils'
 
 export default class Task {
 
@@ -10,52 +12,82 @@ export default class Task {
     this.tasks = {}
   }
 
-  async get(name, isGlobal) {
-    const _this = this
+  async get(name, type, opts) {
+
+    log(opts.alias)
+
+    // local task > tempalte task => global task
+
     let ret = {
       cnt: '',
       type: ''
     }
 
-    // locals
-    if (!isGlobal) {
-      const u_task_dir = cwd('fbi')
-      let u_exist = await exist(u_task_dir)
+    // find in local
+    if (type === 'local') {
+      const u_path = cwd(opts.paths.tasks, name + '.js')
+      let u_exist = existSync(u_path)
       if (u_exist) {
-        let u_modules = await readDir(u_task_dir)
-        u_modules = u_modules.filter(isNotConfigFile)
-        if (u_modules.length && u_modules.includes(name + '.js')) {
-          ret.cnt = await read(join(u_task_dir, name + '.js'))
-          ret.type = 'local'
-        }
+        ret.cnt = await read(u_path)
+        ret.type = 'local'
       }
     }
 
-    if (!ret.cnt) {
-      // global tasks
-      const t_task_dir = dir('data/tasks/')
-      let t_exist = await exist(t_task_dir)
-      if (t_exist) {
-        const t_modules = await readDir(t_task_dir)
-        if (t_modules.length && t_modules.includes(name)) {
-          ret.cnt = await read(join(t_task_dir, name, 'index.js'))
-          ret.type = 'global'
-        }
+    // find in template
+    if (!ret.cnt && opts.template && opts.template !== '') {
+      const u_path = dir(options.data_templates, opts.template, opts.paths.tasks, name + '.js')
+      let u_exist = existSync(u_path)
+      if (u_exist) {
+        ret.cnt = await read(u_path)
+        ret.type = 'template'
+      }
+    }
+
+    // find in global
+    if (!ret.cnt || type === 'global') {
+      const u_path = dir(options.data_tasks, name, 'index.js')
+      let u_exist = existSync(u_path)
+      if (u_exist) {
+        ret.cnt = await read(u_path)
+        ret.type = 'global'
       }
     }
 
     return ret
   }
 
-  async all(justNames) {
+  async all(opts, justNames, justAvailable) {
     const _this = this
     let names = {
+      locals: new Set(),
       globals: new Set(),
-      locals: new Set()
+      template: new Set()
+    }
+
+    // template tasks
+    if (opts.template && opts.template !== '') {
+      const m_task_dir = dir(options.data_templates, opts.template, opts.paths.tasks)
+      let m_exist = await exist(m_task_dir)
+      if (m_exist) {
+        let m_modules = await readDir(m_task_dir)
+        m_modules = m_modules.filter(isTaskFile)
+
+        if (justNames) {
+          // names.template = new Set(m_modules)
+          m_modules.map(item => {
+            item = path.basename(item, '.js')
+            names.template.add(item)
+          })
+        } else if (m_modules.length) {
+          await Promise.all(m_modules.map(async (item) => {
+            _this.tasks[path.basename(item, '.js')] = await read(join(m_task_dir, item))
+          }))
+        }
+      }
     }
 
     // global tasks
-    const t_task_dir = dir('data/tasks/')
+    const t_task_dir = dir(options.data_tasks)
     let t_exist = await exist(t_task_dir)
     if (t_exist) {
       const t_modules = await readDir(t_task_dir)
@@ -75,15 +107,12 @@ export default class Task {
     let u_exist = await exist(u_task_dir)
     if (u_exist) {
       let u_modules = await readDir(u_task_dir)
-      u_modules = u_modules.filter(isNotConfigFile)
+      u_modules = u_modules.filter(isTaskFile)
 
       if (justNames) {
         u_modules.map(item => {
           item = path.basename(item, '.js')
           names.locals.add(item)
-          // if (names.globals.has(item)) {
-          //   // names.locals.push(item)
-          // }
         })
       } else if (u_modules.length) {
         await Promise.all(u_modules.map(async (item) => {
@@ -96,22 +125,36 @@ export default class Task {
       }
       // names.locals = Array.from(new Set(names.locals)) // duplicate removal
     }
+
+    if (justAvailable) {
+      for (let item of names.template.values()) {
+        if (names.locals.has(item)) {
+          names.template.delete(item)
+        }
+      }
+      for (let item of names.globals.values()) {
+        if (names.locals.has(item)) {
+          names.globals.delete(item)
+        }
+      }
+    }
+
     if (justNames) {
-      names.globals = Array.from(names.globals)
       names.locals = Array.from(names.locals)
+      names.template = Array.from(names.template)
+      names.globals = Array.from(names.globals)
     }
 
     return justNames ? names : _this.tasks
   }
 
-  run(name, ctx, task) {
-    let taskCnt = task || this.tasks[name]
+  run(name, ctx, taskObj) {
+    let taskCnt = taskObj.cnt || this.tasks[name]
     const module = new Module(ctx.options)
 
     function requireRelative(mod) {
-
       // find mod path
-      let mod_path = module.get(mod)
+      let mod_path = module.get(mod, taskObj.type)
 
       if (mod_path) {
         if (mod_path === 'global') {

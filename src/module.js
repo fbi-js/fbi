@@ -1,4 +1,4 @@
-import {cwd, dir, join, log, exist} from './helpers/utils'
+import {cwd, dir, join, log, exist, isRelative} from './helpers/utils'
 import options from './options'
 
 export default class Module {
@@ -21,26 +21,34 @@ export default class Module {
       '' // global
     ]
 
+    this.opts = opts
     this.modulePaths = Array.from(new Set(this.modulePaths)) // duplicate removal
   }
 
-  get(name) {
+  get(name, type) {
     let ret
 
-    for (let item of this.modulePaths) {
-      let _p = join(item, name)
-      try {
-        let found = require.resolve(_p)
+    if (isRelative(name)) {
+      if (type === 'local') {
+        ret = cwd(this.opts.paths.tasks)
+      } else if (type === 'template') {
+        ret = dir(options.data_templates, this.opts.template, this.opts.paths.tasks)
+      }
+    } else {
+      for (let item of this.modulePaths) {
+        let _p = join(item, name)
+        try {
+          let found = require.resolve(_p)
 
-        if (found) {
-          ret = item ? item : 'global'
-          break
+          if (found) {
+            ret = item ? item : 'global'
+            break
+          }
+        } catch (e) {
+
         }
-      } catch (e) {
-
       }
     }
-
     return ret
   }
 
@@ -51,10 +59,6 @@ export default class Module {
       modules[this.mod][key] = value
     }
     return modules
-  }
-
-  sync() {
-
   }
 
 }

@@ -3,13 +3,8 @@ import {merge} from './utils'
 export const defaultOptions = {
   // template: 'basic',
   paths: {
-    data: './data',
-    data_tasks: './data/tasks',
-    data_templates: './data/templates',
-    options: 'fbi/config.js',
-    tasks: 'fbi/tasks.js',
-    starters: '../tmpls/starters/',
-    settings: 'default.config.js'
+    tasks: 'fbi/',
+    options: 'fbi/config.js'
   },
   meta: {
     src: {

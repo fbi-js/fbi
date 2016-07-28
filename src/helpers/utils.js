@@ -178,11 +178,23 @@ export function readDir(folder, opts) {
   })
 }
 
-export function isNotConfigFile(file) {
-  return file.indexOf('config') < 0
+export function isTaskFile(file) {
+  return path.extname(file) === '.js' && file.indexOf('config') < 0
 }
 
-export function isTask(item) {
+export function isTaskName(item) {
   // return !['-g'].includes(item)
   return item.indexOf('-') !== 0
+}
+
+export function isAbsolute(str) {
+  return /^(?:\/|(?:[A-Za-z]:)?[\\|\/])/.test(str);
+}
+
+export function isRelative(str) {
+  return /^\.?\.\//.test(str);
+}
+
+export function normalize(str) {
+  return str.replace(/\\/g, '/');
 }
