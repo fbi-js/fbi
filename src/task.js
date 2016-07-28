@@ -14,13 +14,9 @@ export default class Task {
 
   async get(name, type, opts) {
 
+    // if alias, get fullname from alias
     if (opts.alias && opts.alias[name]) {
       name = opts.alias[name]
-      // Object.keys(opts.alias).map(item => {
-      //   if (name === item) {
-      //     name = opts.alias[item]
-      //   }
-      // })
     }
 
     // local task > tempalte task => global task
@@ -81,7 +77,6 @@ export default class Task {
         m_modules = m_modules.filter(isTaskFile)
 
         if (justNames) {
-          // names.template = new Set(m_modules)
           m_modules.map(item => {
             item = path.basename(item, '.js')
             names.template.add(item)
@@ -101,7 +96,6 @@ export default class Task {
       const t_modules = await readDir(t_task_dir)
 
       if (justNames) {
-        // names.globals = names.globals.concat(t_modules)
         names.globals = new Set(t_modules)
       } else if (t_modules.length) {
         await Promise.all(t_modules.map(async (item) => {

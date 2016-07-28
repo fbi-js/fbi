@@ -2,6 +2,7 @@ import {cwd, dir, join, log, exist, isRelative} from './helpers/utils'
 import options from './options'
 
 export default class Module {
+
   constructor(opts) {
     /**
      * modules find path:
@@ -52,13 +53,13 @@ export default class Module {
     return ret
   }
 
-  getAll() {
-    let modules = {}
-    modules[this.mod] = {}
-    for (let [key, value] of this.modules) {
-      modules[this.mod][key] = value
-    }
-    return modules
-  }
+  // getAll() {
+  //   let modules = {}
+  //   modules[this.mod] = {}
+  //   for (let [key, value] of this.modules) {
+  //     modules[this.mod][key] = value
+  //   }
+  //   return modules
+  // }
 
 }
