@@ -198,3 +198,7 @@ export function isRelative(str) {
 export function normalize(str) {
   return str.replace(/\\/g, '/');
 }
+
+export function basename(src, ext) {
+  return path.basename(src, ext)
+}

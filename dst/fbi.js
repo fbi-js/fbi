@@ -2,10 +2,10 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var fs = _interopDefault(require('fs'));
-var path = _interopDefault(require('path'));
 var vm = _interopDefault(require('vm'));
+var fs = _interopDefault(require('fs'));
 var util = _interopDefault(require('util'));
+var path = _interopDefault(require('path'));
 var child_process = require('child_process');
 var estreeWalker = require('estree-walker');
 var acorn = _interopDefault(require('acorn'));
@@ -37,44 +37,6 @@ var createClass = function () {
     if (protoProps) defineProperties(Constructor.prototype, protoProps);
     if (staticProps) defineProperties(Constructor, staticProps);
     return Constructor;
-  };
-}();
-
-var slicedToArray = function () {
-  function sliceIterator(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"]) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  return function (arr, i) {
-    if (Array.isArray(arr)) {
-      return arr;
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i);
-    } else {
-      throw new TypeError("Invalid attempt to destructure non-iterable instance");
-    }
   };
 }();
 
@@ -241,6 +203,10 @@ function isRelative(str) {
   );
 }
 
+function basename(src, ext) {
+  return path.basename(src, ext);
+}
+
 var options = {
   data: './data',
   data_tasks: './data/tasks',
@@ -315,41 +281,16 @@ var Module = function () {
       }
       return ret;
     }
-  }, {
-    key: 'getAll',
-    value: function getAll() {
-      var modules = {};
-      modules[this.mod] = {};
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
 
-      try {
-        for (var _iterator2 = this.modules[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var _step2$value = slicedToArray(_step2.value, 2);
+    // getAll() {
+    //   let modules = {}
+    //   modules[this.mod] = {}
+    //   for (let [key, value] of this.modules) {
+    //     modules[this.mod][key] = value
+    //   }
+    //   return modules
+    // }
 
-          var key = _step2$value[0];
-          var value = _step2$value[1];
-
-          modules[this.mod][key] = value;
-        }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
-      }
-
-      return modules;
-    }
   }]);
   return Module;
 }();
@@ -368,13 +309,9 @@ var Task = function () {
 
       return Promise.resolve().then(function () {
 
+        // if alias, get fullname from alias
         if (opts.alias && opts.alias[name]) {
           name = opts.alias[name];
-          // Object.keys(opts.alias).map(item => {
-          //   if (name === item) {
-          //     name = opts.alias[item]
-          //   }
-          // })
         }
 
         // local task > tempalte task => global task
@@ -504,9 +441,8 @@ var Task = function () {
               }
             }).then(function () {
               if (_test8 && justNames) {
-                // names.template = new Set(m_modules)
                 m_modules.map(function (item) {
-                  item = path.basename(item, '.js');
+                  item = basename(item, '.js');
                   names.template.add(item);
                 });
               } else {
@@ -516,7 +452,7 @@ var Task = function () {
                     return Promise.resolve().then(function () {
                       return read(join(m_task_dir, item));
                     }).then(function (_resp) {
-                      _this.tasks[path.basename(item, '.js')] = _resp;
+                      _this.tasks[basename(item, '.js')] = _resp;
                     });
                   }));
                 }
@@ -542,7 +478,6 @@ var Task = function () {
       }).then(function () {
 
         if (_test4 && justNames) {
-          // names.globals = names.globals.concat(t_modules)
           names.globals = new Set(t_modules);
         } else {
           _test6 = _test4;
@@ -577,7 +512,7 @@ var Task = function () {
       }).then(function () {
         if (_test5 && justNames) {
           u_modules.map(function (item) {
-            item = path.basename(item, '.js');
+            item = basename(item, '.js');
             names.locals.add(item);
           });
         } else {
@@ -588,7 +523,7 @@ var Task = function () {
                 return Promise.resolve().then(function () {
                   return read(join(u_task_dir, item));
                 }).then(function (_resp) {
-                  _this.tasks[path.basename(item, '.js')] = _resp;
+                  _this.tasks[basename(item, '.js')] = _resp;
                 }).catch(function (e) {
                   log(e);
                 });

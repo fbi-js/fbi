@@ -1,10 +1,10 @@
-import fs from 'fs'
-import path from 'path'
 import vm from 'vm'
 import Module from './module'
 import options from './options'
-import { dir, join, cwd, readDir, log, read, exist,
-  existSync, isTaskFile } from './helpers/utils'
+import {
+  dir, join, cwd, readDir, log, read, exist,
+  existSync, isTaskFile, basename
+} from './helpers/utils'
 
 export default class Task {
 
@@ -78,12 +78,12 @@ export default class Task {
 
         if (justNames) {
           m_modules.map(item => {
-            item = path.basename(item, '.js')
+            item = basename(item, '.js')
             names.template.add(item)
           })
         } else if (m_modules.length) {
           await Promise.all(m_modules.map(async (item) => {
-            _this.tasks[path.basename(item, '.js')] = await read(join(m_task_dir, item))
+            _this.tasks[basename(item, '.js')] = await read(join(m_task_dir, item))
           }))
         }
       }
@@ -113,13 +113,13 @@ export default class Task {
 
       if (justNames) {
         u_modules.map(item => {
-          item = path.basename(item, '.js')
+          item = basename(item, '.js')
           names.locals.add(item)
         })
       } else if (u_modules.length) {
         await Promise.all(u_modules.map(async (item) => {
           try {
-            _this.tasks[path.basename(item, '.js')] = await read(join(u_task_dir, item))
+            _this.tasks[basename(item, '.js')] = await read(join(u_task_dir, item))
           } catch (e) {
             log(e)
           }
