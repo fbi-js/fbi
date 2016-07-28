@@ -1,41 +1,98 @@
 const fs = require('fs')
 const rollup = require('rollup')
 const uglify = require('uglify-js')
+const babel = require('rollup-plugin-babel')
+const postcss = require('rollup-plugin-postcss')
+const precss = require('precss')
+const autoprefixer = require('autoprefixer')
+const es2015Rollup = require('babel-preset-es2015-rollup')
+const asyncToPromises = require('babel-plugin-async-to-promises')
 
-const opts = ctx.options.rollupConfig
 const _ = ctx._
 
 // ctx.log(ctx)
 
-rollup.rollup({
-  entry: opts.entry
-}).then(bundle => {
-  var code = bundle.generate({
-    format: opts.format,
-    moduleName: 'App',
-    banner: opts.banner ? banner : null
-  }).code
+let cache
 
-  if (ctx.argvs[1] === '-p') {
-    try {
-      var minified = (opts.banner ? banner + '\n' : '') + uglify.minify(code, {
-        fromString: true,
-        output: {
-          screw_ie8: true,
-          ascii_only: true
-        },
-        compress: {
-          pure_funcs: ['makeMap']
-        }
-      }).code
-    } catch (e) {
-      ctx.log(e)
-    }
-    return write(opts.out, minified)
-  } else {
-    return write(opts.out, code)
-  }
+let opts = {
+  entry: 'src/js/app.js',
+  format: 'iife', // amd cjs es iife umd
+  plugins: [
+    postcss({
+      plugins: [
+        precss(),
+        autoprefixer({
+          "browsers": ["last 2 versions", "> 5%", "safari >= 5", "ie >= 8", "opera >= 12", "Firefox ESR", "iOS >= 6", "android >= 4"]
+        })
+      ],
+      extensions: ['.css', '.sss']  // default value
+      // parser: sugarss
+    }),
+    babel({
+      presets: [es2015Rollup],
+      plugins: [asyncToPromises]
+    })
+  ],
+  out: 'dst/js/app.js'
+}
+
+const dst = opts.out.split('/')[0]
+
+const isProduction = ctx.argvs[1] === '-p'
+
+if (isProduction) {
+  ctx.log('Env: production')
+}
+
+try {
+  fs.accessSync(dst)
+} catch (e) {
+  fs.mkdirSync(dst)
+}
+
+rollup.rollup({
+  entry: opts.entry,
+  plugins: opts.plugins,
+  cache: cache
 })
+  .then(bundle => {
+    var code = bundle.generate({
+      format: opts.format,
+      moduleName: 'App',
+      banner: opts.banner ? banner : null
+    }).code
+
+    cache = bundle
+
+    if (isProduction) {
+      try {
+        var minified = (opts.banner ? banner + '\n' : '') + uglify.minify(code, {
+          fromString: true,
+          output: {
+            screw_ie8: true,
+            ascii_only: true
+          },
+          compress: {
+            pure_funcs: ['makeMap']
+          }
+        }).code
+      } catch (e) {
+        ctx.log(e)
+      }
+      return write(opts.out, minified)
+    } else {
+      return write(opts.out, code)
+
+      // bundle.write({
+      //   format: opts.format,
+      //   dest: opts.out,
+      //   sourceMap: true
+      // })
+    }
+  })
+  .catch(e => {
+    ctx.log(e, 0)
+  })
 
 function write(dest, code) {
   return new Promise((resolve, reject) => {

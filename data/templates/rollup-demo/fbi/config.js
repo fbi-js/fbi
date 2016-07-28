@@ -1,8 +1,12 @@
 module.exports = {
   template: 'rollup-demo',
-  rollupConfig: {
-    entry: 'src/js/app.js',
-    format: 'umd',
-    out: 'dst/js/app.js'
+  alias: {
+    b: 'build',
+    s: 'serve'
+  },
+  dependencies: {
+  },
+  npm: {
+    options: '--save-dev --registry=https://registry.npm.taobao.org'
   }
 }

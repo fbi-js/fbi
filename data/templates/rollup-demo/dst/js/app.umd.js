@@ -1,18 +1,9 @@
-(function () {
-  'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global.App = factory());
+}(this, function () { 'use strict';
 
-  function __$styleInject(css) {
-    css = css || '';
-    var head = document.head || document.getElementsByTagName('head')[0];
-    var style = document.createElement('style');
-    style.type = 'text/css';
-    if (style.styleSheet){
-      style.styleSheet.cssText = css;
-    } else {
-      style.appendChild(document.createTextNode(css));
-    }
-    head.appendChild(style);
-  }
   var classCallCheck = function (instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -53,9 +44,7 @@
     return Modal;
   }();
 
-  __$styleInject("html, body {\n  height: 100%;\n}\n\nbody {\n  margin: 0;\n  padding: 0;\n  display: -webkit-box;\n  display: -webkit-flex;\n  display: -ms-flexbox;\n  display: flex;\n  -webkit-box-pack: center;\n  -webkit-justify-content: center;\n      -ms-flex-pack: center;\n          justify-content: center;\n  -webkit-box-align: center;\n  -webkit-align-items: center;\n      -ms-flex-align: center;\n          align-items: center;\n}\n\n.center {\n  text-align: center;\n}\n\n.center h2 {\n  font-size: 30px;\n}\n\n.center .desc {\n  font-size: 14px;\n  color: #999;\n}");
-
-  function init() {
+  var app = (function () {
     var txt, modal;
     return Promise.resolve().then(function () {
 
@@ -70,12 +59,8 @@
       modal = new Modal();
 
       modal.init();
-
-      window.setTimeout(function () {
-        document.body.style.visibility = 'visible';
-      }, 500);
     });
-  }
+  });
 
   function red() {
     return new Promise(function (resolve, reject) {
@@ -83,6 +68,6 @@
     });
   }
 
-  init();
+  return app;
 
-}());
+}));

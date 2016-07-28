@@ -18,7 +18,7 @@ export default class Template {
     const has = existSync(src)
 
     if (has) {
-      copy(src, dst, ['package.json', 'node_modules'])
+      copy(src, dst, ['package.json', 'node_modules', 'dst', 'dist'])
       return true
     }
     return ret

@@ -1,14 +1,16 @@
+import { createInterface } from 'readline'
 import Task from './task'
 import Parser from './parser'
 import Module from './module'
 import Template from './template'
 import options from './options'
+import copy from './helpers/copy'
 import { getOptions, defaultOptions } from './helpers/options'
 import { version } from '../package.json'
 import {
   cwd, dir, join, exist, existSync, readDir,
   log, merge, read, write, install, copyFile,
-  isTaskName, isTaskFile
+  isTaskName, isTaskFile, basename
 } from './helpers/utils'
 
 let helps =
@@ -28,6 +30,8 @@ let helps =
       ls, list                list all tasks & templates
       i, install              install dependencies
       i -f, install -f        install dependencies force
+      add-task                add task files in current folder
+      add-template [name]     add current folder as a template named [name]
       -h, --help              output usage information
       -v, --version           output the version number
 `
@@ -58,6 +62,7 @@ export default class Cli {
           await this.remove()
           await this.cat()
           await this.list()
+          await this.add()
           await this.run()
         } catch (e) {
           log(e, 0)
@@ -141,7 +146,7 @@ export default class Cli {
       const userOptions = this.isfbi ? require(userOptionsPath) : null
 
       // template options
-      if (userOptions.template) {
+      if (userOptions && userOptions.template) {
         const templateOptionsPath = dir(
           options.data_templates,
           userOptions.template,
@@ -223,8 +228,8 @@ export default class Cli {
       }
 
       let targetDir = this.options.template
-        ? dir(this.options.paths.data_templates, this.options.template)
-        : dir(this.options.paths.data)
+        ? dir(options.data_templates, this.options.template)
+        : dir(options.data)
 
       if (Object.keys(needinstall).length) {
         await install(needinstall, targetDir, this.options.npm.alias, this.options.npm.options)
@@ -373,6 +378,87 @@ ${taskObj.cnt}
       `
 
       console.log(helps)
+    }
+  }
+
+  async add() {
+    if (!this.next) return
+
+    if (this.argvs[0] === 'add-template') {
+      this.next = false
+
+      // add template
+      const name = this.argvs[1] || basename(cwd(), '')
+      const isExist = await exist(dir(options.data_templates, name))
+
+      if (isExist) {
+        log(`tempalte '${name}' already exist, type 'y' to replace, type a name to create a new one`, 0)
+
+        let
+          rl = createInterface(process.stdin, process.stdout),
+          prompts = ['name'],
+          p = 0,
+          data = {}
+
+        let get = function () {
+          rl.setPrompt(prompts[p] + '> ')
+          rl.prompt()
+
+          p++
+        }
+
+        get()
+
+        rl.on('line', (line) => {
+          data[prompts[p - 1]] = line
+
+          if (p === prompts.length) {
+            return rl.close()
+          }
+
+          get()
+        }).on('close', async () => {
+          if (data.name === 'y') {
+            copy(cwd(), dir(options.data_templates, name))
+          } else if (data.name === '') {
+            log('name can\'t be empty')
+          } else {
+            const isExist2 = await exist(dir(options.data_templates, data.name))
+            if (isExist2) {
+              log(`${data.name} already exist too`, 0)
+              process.exit(0)
+            } else {
+              copy(cwd(), dir(options.data_templates, data.name))
+            }
+          }
+
+          // process.exit(0) // can't do it right away
+        })
+      } else {
+        copy(cwd(), dir(options.data_templates, name))
+      }
+
+    } else if (this.argvs[0] === 'add-task') {
+      this.next = false
+
+      log(this.argvs)
+
+      if (!this.argvs[1]) {
+        log(`Usage: fbi add-task [*] or [name.js]`)
+      } else {
+        log('y')
+        let ts = this.argvs.slice(1)
+        ts = ts.filter(isTaskFile)
+        if (!ts.length) {
+          log(`no task found.`, 0)
+        } else {
+          ts.map(async (item) => {
+            // TODO: mkdirp
+            await copyFile(cwd(item), dir(options.data_tasks, basename(item, '.js'), 'index.js'))
+            log(`task '${item}' added successfully`, 1)
+          })
+        }
+      }
     }
   }
 

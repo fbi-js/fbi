@@ -1,0 +1,23 @@
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.center {
+  text-align: center;
+  h2 {
+    font-size: 30px;
+  }
+  .desc {
+    font-size: 14px;
+    color: #999;
+  }
+}
