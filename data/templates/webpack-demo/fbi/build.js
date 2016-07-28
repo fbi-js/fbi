@@ -1,7 +1,5 @@
 const webpack = require('webpack');
 
-console.log(ctx)
-
 // fbi build -p
 if (ctx.argvs[1] === '-p') {
   ctx.log('type: production')
@@ -21,9 +19,10 @@ compiler.run(function (err, stats) {
     ctx.log(err, 0)
   }
 
-  ctx.log(stats.toString({
-    chunks: false,
-    colors: true
-  }))
+  ctx.log(`webpack output:
+${stats.toString({
+      chunks: false,
+      colors: true
+    })}`)
 });
 

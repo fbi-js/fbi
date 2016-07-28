@@ -20,5 +20,10 @@ module.exports = {
       path: './dst/assets'
     },
     plugins: []
+  },
+  alias: {
+    b: 'build',
+    w: 'watch',
+    s: 'serve'
   }
 }

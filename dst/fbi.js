@@ -368,11 +368,19 @@ var Task = function () {
 
       return Promise.resolve().then(function () {
 
-        log(opts.alias);
+        if (opts.alias && opts.alias[name]) {
+          name = opts.alias[name];
+          // Object.keys(opts.alias).map(item => {
+          //   if (name === item) {
+          //     name = opts.alias[item]
+          //   }
+          // })
+        }
 
         // local task > tempalte task => global task
 
         ret = {
+          name: name,
           cnt: '',
           type: ''
         };
@@ -629,6 +637,9 @@ var Task = function () {
               if (names.locals.has(_item)) {
                 names.globals.delete(_item);
               }
+              if (names.template.has(_item)) {
+                names.globals.delete(_item);
+              }
             }
           } catch (err) {
             _didIteratorError2 = true;
@@ -647,9 +658,31 @@ var Task = function () {
         }
 
         if (justNames) {
-          names.locals = Array.from(names.locals);
-          names.template = Array.from(names.template);
-          names.globals = Array.from(names.globals);
+          Object.keys(names).map(function (item) {
+            names[item] = Array.from(names[item]); // Set => Array
+
+            // alias
+
+            var _loop = function _loop(i, len) {
+              var alias = '';
+              if (opts.alias) {
+                Object.keys(opts.alias).map(function (a) {
+                  if (opts.alias[a] === names[item][i]) {
+                    alias = a;
+                  }
+                });
+              }
+
+              names[item][i] = {
+                name: names[item][i],
+                alias: alias
+              };
+            };
+
+            for (var i = 0, len = names[item].length; i < len; i++) {
+              _loop(i, len);
+            }
+          });
         }
 
         return justNames ? names : _this.tasks;
@@ -919,7 +952,7 @@ function getOptions(opts) {
 
 var version = "2.0.0-alpha.1";
 
-var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n    Commands:\n\n      new [template]          init a new template\n      rm [task][template]     remove tasks or templates\n      cat [task][-t, -g]      cat task content\n      i, install              install dependencies\n      i -f, install -f        install dependencies force\n      -h, --help              output usage information\n      -v, --version           output the version number\n';
+var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n    Commands:\n\n      new [template]          init a new template\n      rm [task][template]     remove tasks or templates\n      cat [task][-t, -g]      cat task content\n      ls, list                list all tasks & templates\n      i, install              install dependencies\n      i -f, install -f        install dependencies force\n      -h, --help              output usage information\n      -v, --version           output the version number\n';
 
 var task = new Task();
 var template = new Template(options);
@@ -999,19 +1032,19 @@ var Cli = function () {
           }).then(function () {
             if (_test && all.globals.length) {
               all.globals.map(function (item) {
-                helps += '\n      ' + item + ' <global>';
+                helps += '\n      ' + item.name + ' ' + item.alias + ' <global>';
               });
             }
 
             if (_test && all.template.length) {
               all.template.map(function (item) {
-                helps += '\n      ' + item + ' <template>';
+                helps += '\n      ' + item.name + ' ' + item.alias + ' <template>';
               });
             }
 
             if (_test && all.locals.length) {
               all.locals.map(function (item) {
-                helps += '\n      ' + item + ' <local>';
+                helps += '\n      ' + item.name + ' ' + item.alias + ' <local>';
               });
             }
 
@@ -1333,19 +1366,19 @@ var Cli = function () {
           }).then(function () {
             if (_test4 && all.globals.length) {
               all.globals.map(function (item) {
-                _helps += '\n      ' + item + ' <global>';
+                _helps += '\n      ' + item.name + ' ' + item.alias + ' <global>';
               });
             }
 
             if (_test4 && all.template.length) {
               all.template.map(function (item) {
-                _helps += '\n      ' + item + ' <template>';
+                _helps += '\n      ' + item.name + ' ' + item.alias + ' <template>';
               });
             }
 
             if (_test4 && all.locals.length) {
               all.locals.map(function (item) {
-                _helps += '\n      ' + item + ' <local>';
+                _helps += '\n      ' + item.name + ' ' + item.alias + ' <local>';
               });
             }
 
@@ -1403,7 +1436,7 @@ var Cli = function () {
                   taskObj = _resp;
 
                   if (taskObj.cnt) {
-                    log('Running ' + taskObj.type + ' task \'' + cmd + '\'...', 1);
+                    log('Running ' + taskObj.type + ' task \'' + taskObj.name + '\'...', 1);
                     task.run(cmd, _this3, taskObj);
                   } else {
                     log('Task not found: \'' + cmd, 0);

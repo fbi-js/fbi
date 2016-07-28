@@ -25,6 +25,7 @@ let helps =
       new [template]          init a new template
       rm [task][template]     remove tasks or templates
       cat [task][-t, -g]      cat task content
+      ls, list                list all tasks & templates
       i, install              install dependencies
       i -f, install -f        install dependencies force
       -h, --help              output usage information
@@ -89,21 +90,21 @@ export default class Cli {
       if (all.globals.length) {
         all.globals.map(item => {
           helps += `
-      ${item} <global>`
+      ${item.name} ${item.alias} <global>`
         })
       }
 
       if (all.template.length) {
         all.template.map(item => {
           helps += `
-      ${item} <template>`
+      ${item.name} ${item.alias} <template>`
         })
       }
 
       if (all.locals.length) {
         all.locals.map(item => {
           helps += `
-      ${item} <local>`
+      ${item.name} ${item.alias} <local>`
         })
       }
 
@@ -339,21 +340,21 @@ ${taskObj.cnt}
       if (all.globals.length) {
         all.globals.map(item => {
           helps += `
-      ${item} <global>`
+      ${item.name} ${item.alias} <global>`
         })
       }
 
       if (all.template.length) {
         all.template.map(item => {
           helps += `
-      ${item} <template>`
+      ${item.name} ${item.alias} <template>`
         })
       }
 
       if (all.locals.length) {
         all.locals.map(item => {
           helps += `
-      ${item} <local>`
+      ${item.name} ${item.alias} <local>`
         })
       }
 
@@ -391,7 +392,7 @@ ${taskObj.cnt}
         cmds.map(async (cmd) => {
           const taskObj = await task.get(cmd, type, this.options)
           if (taskObj.cnt) {
-            log(`Running ${taskObj.type} task '${cmd}'...`, 1)
+            log(`Running ${taskObj.type} task '${taskObj.name}'...`, 1)
             task.run(cmd, this, taskObj)
           } else {
             log(`Task not found: '${cmd}`, 0)

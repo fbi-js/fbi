@@ -14,11 +14,19 @@ export default class Task {
 
   async get(name, type, opts) {
 
-    log(opts.alias)
+    if (opts.alias && opts.alias[name]) {
+      name = opts.alias[name]
+      // Object.keys(opts.alias).map(item => {
+      //   if (name === item) {
+      //     name = opts.alias[item]
+      //   }
+      // })
+    }
 
     // local task > tempalte task => global task
 
     let ret = {
+      name: name,
       cnt: '',
       type: ''
     }
@@ -136,13 +144,33 @@ export default class Task {
         if (names.locals.has(item)) {
           names.globals.delete(item)
         }
+        if (names.template.has(item)) {
+          names.globals.delete(item)
+        }
       }
     }
 
     if (justNames) {
-      names.locals = Array.from(names.locals)
-      names.template = Array.from(names.template)
-      names.globals = Array.from(names.globals)
+      Object.keys(names).map(item => {
+        names[item] = Array.from(names[item]) // Set => Array
+
+        // alias
+        for (let i = 0, len = names[item].length; i < len; i++) {
+          let alias = ''
+          if (opts.alias) {
+            Object.keys(opts.alias).map(a => {
+              if (opts.alias[a] === names[item][i]) {
+                alias = a
+              }
+            })
+          }
+
+          names[item][i] = {
+            name: names[item][i],
+            alias: alias
+          }
+        }
+      })
     }
 
     return justNames ? names : _this.tasks
