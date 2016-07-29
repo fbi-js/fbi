@@ -17,37 +17,29 @@
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/neikvon/fbi.git"
   },
-  "author": "Inman <neikvon@icloud.com>",
-  "license": "MIT",
   "keywords": [
-    "front-end",
-    "scaffold",
-    "sass",
-    "webpack",
-    "gulp",
-    "watch"
+    "fbi",
+    "node",
+    "task",
+    "template",
+    "management"
   ],
-  "dependencies": {
-    "acorn": "^3.2.0",
-    "estree-walker": "^0.2.1"
+  "bugs": {
+    "url": "https://github.com/neikvon/fbi/issues"
   },
+  "homepage": "https://github.com/neikvon/fbi#readme",
+  "author": "shawnnxiao <neikvon@icloud.com>",
+  "license": "MIT",
+  "dependencies": {},
   "devDependencies": {
-    "ava": "^0.15.2",
     "babel-plugin-async-to-promises": "^1.0.5",
     "babel-preset-es2015-rollup": "^1.1.1",
-    "koa-static": "^3.0.0",
-    "npm-run-all": "^2.3.0",
     "rollup": "^0.34.1",
     "rollup-plugin-babel": "^2.6.1",
     "rollup-plugin-json": "^2.0.1",
     "rollup-plugin-sourcemaps": "^0.3.5",
     "rollup-watch": "^2.5.0"
-  },
-  "ava": {
-    "files": [
-      "test/*.js"
-    ]
   }
 }
