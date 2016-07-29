@@ -143,7 +143,7 @@ export function install(source, rootPath, command, opts) {
   process.chdir(rootPath)
   const cmd = `${command} install ${pkgs} ${opts ? opts : ''}`
   log(cmd + '...')
-  log('install dest: ' + rootPath)
+  log(`install dest: ${rootPath}/node_modules`)
   return new Promise((resolve, reject) => {
     exec(cmd, (error, stdout, stderr) => {
       process.chdir(prevDir)
@@ -173,10 +173,19 @@ export function copyFile(source, target) {
   })
 }
 
-export function readDir(folder, opts) {
+export function readDir(folder, ignore) {
+  function valid(item){
+    return !ignore.includes(item)
+  }
   return new Promise((resolve, reject) => {
-    fs.readdir(folder, opts, (err, ret) => {
-      return err ? reject(err) : resolve(ret)
+    fs.readdir(folder, (err, ret) => {
+      if(err){
+        reject(err)
+      }
+      if(ignore && ignore.length){
+        ret = ret.filter(valid)
+      }
+      resolve(ret)
     })
   })
 }

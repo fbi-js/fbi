@@ -1,4 +1,7 @@
 module.exports = {
   template: 'basic',
-  attr: 'val'
+  attr: 'val',
+  alias: {
+    s: 'serve'
+  }
 }

@@ -1,6 +1,5 @@
 import { createInterface } from 'readline'
 import Task from './task'
-import Parser from './parser'
 import Module from './module'
 import Template from './template'
 import options from './options'
@@ -31,7 +30,7 @@ let helps =
       i, install              install dependencies
       i -f, install -f        install dependencies force
       add-task                add task files in current folder
-      add-template [name]     add current folder as a template named [name]
+      add-tmpl [name]         add current folder as a template named [name]
       -h, --help              output usage information
       -v, --version           output the version number
 `
@@ -151,7 +150,7 @@ export default class Cli {
           options.data_templates,
           userOptions.template,
           'node_modules'
-          )
+        )
 
         const templateOptionsPath = dir(
           options.data_templates,
@@ -182,66 +181,63 @@ export default class Cli {
 
       let force = this.argvs[1] === '-f' || this.argvs[1] === '-force'
 
-      let dependencies = {}
-      let needinstall = {}
+      let localdeps = {}
+      let tmplDeps = {}
+      let taskDeps = {}
+      const opts = this.options
 
-      // 1. local dependencies
-      // fbi/config.js => dependencies
-      if (this.options.dependencies
-        && Object.keys(this.options.dependencies).length) {
-        dependencies = this.options.dependencies
+      // local package.json => devDependencies
+      if (await exist(cwd('package.json'))) {
+        localdeps = require(cwd('package.json')).devDependencies
       }
 
-      // 2. dependencies
-      // collect tasks
-      const all = await task.all(this.options)
-      let deps = []
-
-      const allTasks = Object.keys(all)
-      if (allTasks.length) {
-        allTasks.map(item => {
-          // get task deps
-          let parser = new Parser(all[item])
-          let dep = parser.getDependencies()
-          deps = deps.concat(dep)
-        })
-      }
-
-      deps = Array.from(new Set(deps)) // duplicate removal
-
-      // merge to dependencies
-      deps.map(item => {
-        if (!dependencies[item]) {
-          dependencies[item] = '*'
+      // template package.json => devDependencies
+      if (opts.template) {
+        const tmplPkg = dir(options.data_templates, opts.template, 'package.json')
+        const tmplPkg_exist = await exist(tmplPkg)
+        if (tmplPkg_exist) {
+          const tmplPkg_dev = require(tmplPkg)['devDependencies']
+          tmplDeps = merge(tmplPkg_dev, localdeps)
         }
+        if (Object.keys(tmplDeps).length) {
+          let tmplPkgCnt = require(tmplPkg)
+          tmplPkgCnt['devDependencies'] = tmplDeps
+          await write(tmplPkg, JSON.stringify(tmplPkgCnt, null, 2))
+        }
+      }
+
+      // task package.json => devDependencies
+      else {
+        const taskPkg = dir(options.data_tasks, 'package.json')
+        const taskPkg_exist = await exist(taskPkg)
+        if (taskPkg_exist) {
+          const taskPkg_dev = require(taskPkg).devDependencies
+          taskDeps = merge(taskPkg_dev, localdeps)
+        }
+        if (Object.keys(taskDeps).length) {
+          let taskPkgCnt = require(taskPkg)
+          taskPkgCnt['devDependencies'] = taskDeps
+          await write(taskPkg, JSON.stringify(taskPkgCnt, null, 2))
+        }
+      }
+
+      const npms = opts.npm
+
+      const installTmplDeps = Object.keys(tmplDeps).length
+        ? await install(tmplDeps, dir(options.data_templates, opts.template), npms.alias, npms.options)
+        : Promise.resolve()
+
+      const installTaskDeps = Object.keys(taskDeps).length
+        ? await install(taskDeps, dir(options.data_tasks), npms.alias, npms.options)
+        : Promise.resolve()
+
+      // install
+      Promise.all([installTmplDeps, installTaskDeps]).then(ret => {
+        log('All Dependencies Installed', 1)
+      }).catch(err => {
+        log(err, 0)
       })
 
-      if (force) {
-        needinstall = dependencies
-      } else {
-        // find modules
-        const mod = new Module(this.options)
-
-        Object.keys(dependencies).map(item => {
-          let ret = mod.get(item, 'local') // TODO: local or template
-          if (ret) {
-            log(`Found '${item}' at: ${ret}`, 1)
-          } else {
-            log(`Not Fount '${item}'`)
-            needinstall[item] = dependencies[item]
-          }
-        })
-      }
-
-      let targetDir = this.options.template
-        ? dir(options.data_templates, this.options.template)
-        : dir(options.data)
-
-      if (Object.keys(needinstall).length) {
-        await install(needinstall, targetDir, this.options.npm.alias, this.options.npm.options)
-      } else {
-        log('All Dependencies installed.')
-      }
     }
   }
 
@@ -390,7 +386,7 @@ ${taskObj.cnt}
   async add() {
     if (!this.next) return
 
-    if (this.argvs[0] === 'add-template') {
+    if (this.argvs[0] === 'add-tmpl') {
       this.next = false
 
       // add template
@@ -425,7 +421,7 @@ ${taskObj.cnt}
           get()
         }).on('close', async () => {
           if (data.name === 'y') {
-            copy(cwd(), dir(options.data_templates, name))
+            copy(cwd(), dir(options.data_templates, name), ['dst', 'dist'])
           } else if (data.name === '') {
             log('name can\'t be empty')
           } else {
@@ -434,7 +430,7 @@ ${taskObj.cnt}
               log(`${data.name} already exist too`, 0)
               process.exit(0)
             } else {
-              copy(cwd(), dir(options.data_templates, data.name))
+              copy(cwd(), dir(options.data_templates, data.name), ['dst', 'dist'])
             }
           }
 

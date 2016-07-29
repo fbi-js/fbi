@@ -1,3 +1,8 @@
+/**
+ * global vars:
+ * ctx => fbi
+ * require => requireResolve
+ */
 const fs = require('fs')
 const rollup = require('rollup')
 const uglify = require('uglify-js')

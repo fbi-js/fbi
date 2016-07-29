@@ -1,5 +1,11 @@
+/**
+ * global vars:
+ * ctx => fbi
+ * require => requireResolve
+ */
+
 const webpack = require('webpack');
-const webpackConfig = require('./webpack.config')
+const webpackConfig = require('./webpack.config.js')(require, ctx)
 
 const compiler = webpack(webpackConfig);
 

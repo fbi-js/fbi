@@ -93,7 +93,7 @@ export default class Task {
     const t_task_dir = dir(options.data_tasks)
     let t_exist = await exist(t_task_dir)
     if (t_exist) {
-      const t_modules = await readDir(t_task_dir)
+      const t_modules = await readDir(t_task_dir, ['node_modules', 'package.json'])
 
       if (justNames) {
         names.globals = new Set(t_modules)
@@ -178,14 +178,21 @@ export default class Task {
       // find mod path
       let mod_path = module.get(mod, taskObj.type)
 
-      if (mod_path) {
-        if (mod_path === 'global') {
-          return require(mod) // native or global module
-        } else {
-          return require(join(mod_path, mod))
-        }
+      // if (mod_path) {
+      //   if (mod_path === 'global') {
+      //     return require(mod) // native or global module
+      //   } else {
+      //     return require(join(mod_path, mod))
+      //   }
+      // } else {
+      //   log(`Module not found: ${mod}, try 'fbi install'`, 0)
+      // }
+
+      if (mod_path && mod_path !== 'global') {
+        return require(join(mod_path, mod))
       } else {
-        log(`Module not found: ${mod}, try 'fbi install'`, 0)
+        return mod ? require(mod) : require
+        // log(`Module not found: ${mod}, try 'fbi install'`, 0)
       }
     }
 

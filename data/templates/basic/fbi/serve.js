@@ -1,3 +1,8 @@
+/**
+ * global vars:
+ * ctx => fbi
+ * require => requireResolve
+ */
 const http = require('http');
 const Koa = require('koa')
 const serve = require('koa-static')

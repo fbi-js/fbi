@@ -1,62 +1,16 @@
+/**
+ * global vars:
+ * ctx => fbi
+ * require => requireResolve
+ */
+
 const webpack = require('webpack')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
-const autoprefixer = require('autoprefixer')
-const precss = require('precss')
-const cssnano = require('cssnano')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const webpackConfigFn = require('./webpack.config.js')
+const webpackConfig = require('./webpack.config.js')(require, ctx)
 
 const isProduction = ctx.argvs[1] === '-p' // fbi build -p
 
-const webpackConfig = webpackConfigFn(
-  webpack,
-  ExtractTextPlugin,
-  HtmlWebpackPlugin,
-  ctx.options.node_modules_path,
-  isProduction)
-
-// ctx._.copyFile('./src/index.html', './dst/index.html')
-
-
-webpackConfig['postcss'] = function () {
-  if (isProduction) {
-    return [
-      autoprefixer({
-        browsers: [
-          'last 2 versions',
-          '> 5%',
-          'safari >= 5',
-          'ie >= 8',
-          'opera >= 12',
-          'Firefox ESR',
-          'iOS >= 6',
-          'android >= 4'
-        ]
-      }),
-      precss,
-      cssnano // css minify
-    ]
-  } else {
-    return [
-      autoprefixer({
-        browsers: [
-          'last 2 versions',
-          '> 5%',
-          'safari >= 5',
-          'ie >= 8',
-          'opera >= 12',
-          'Firefox ESR',
-          'iOS >= 6',
-          'android >= 4'
-        ]
-      }),
-      precss
-    ]
-  }
-}
-
 if (isProduction) {
-  ctx.log('type: production')
+  ctx.log('env: production')
   webpackConfig['plugins'].push(
     new webpack.optimize.UglifyJsPlugin({ // js ugllify
       compress: {
