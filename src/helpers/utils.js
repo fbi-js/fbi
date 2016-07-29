@@ -165,7 +165,10 @@ export function copyFile(source, target) {
     rd.on('error', reject)
     var wr = fs.createWriteStream(target)
     wr.on('error', reject)
-    wr.on('finish', resolve)
+    wr.on('finish', () => {
+      log(`copied ${source} => ${target}`)
+      resolve()
+    })
     rd.pipe(wr)
   })
 }
@@ -180,6 +183,10 @@ export function readDir(folder, opts) {
 
 export function isTaskFile(file) {
   return path.extname(file) === '.js' && file.indexOf('config') < 0
+}
+
+export function isTemplate(name) {
+  return path.extname(name) === '' && name.indexOf('.') !== 0
 }
 
 export function isTaskName(item) {

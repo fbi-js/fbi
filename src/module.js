@@ -15,7 +15,7 @@ export default class Module {
      */
 
     this.modulePaths = [
-      cwd('node_modules'),
+      // cwd('node_modules'),
       dir(options.data, opts.template ? 'templates/' + opts.template : '', 'node_modules'),
       dir(options.data, 'node_modules')
       ,
@@ -38,6 +38,7 @@ export default class Module {
     } else {
       for (let item of this.modulePaths) {
         let _p = join(item, name)
+
         try {
           let found = require.resolve(_p)
 

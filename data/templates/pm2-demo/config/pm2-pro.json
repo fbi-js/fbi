@@ -1,0 +1,21 @@
+{
+  "apps": [
+    {
+      "name": "fbi-pm2-demo",
+      "script": "./app.js",
+      "exec_mode": "fork",
+      "max_memory_restart": "1G",
+      "autorestart": true,
+      "node_args": [],
+      "args": [],
+      "watch": false,
+      "error_file": "./log/err.log",
+      "out_file": "./log/out.log",
+      "merge_logs": true,
+      "log_date_format": "YYYY-MM-DD HH:mm Z",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  ]
+}

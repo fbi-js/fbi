@@ -174,7 +174,7 @@ export default class Task {
     let taskCnt = taskObj.cnt || this.tasks[name]
     const module = new Module(ctx.options)
 
-    function requireRelative(mod) {
+    function requireResolve(mod) {
       // find mod path
       let mod_path = module.get(mod, taskObj.type)
 
@@ -202,6 +202,6 @@ export default class Task {
       filename: `${name}.js`,
       lineOffset: -3,
       displayErrors: true
-    })(requireRelative, ctx)
+    })(requireResolve, ctx)
   }
 }

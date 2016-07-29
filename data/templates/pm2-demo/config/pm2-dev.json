@@ -1,0 +1,28 @@
+{
+  "apps": [
+    {
+      "name": "fbi-pm2-demo",
+      "script": "./app.js",
+      "node_args": [],
+      "watch": [
+        "./server/*.js"
+      ],
+      "ignore_watch": [
+        "node_modules",
+        "log"
+      ],
+      "watch_options": {
+        "followSymlinks": false
+      },
+      "error_file": "./log/err.log",
+      "out_file": "./log/out.log",
+      "merge_logs": true,
+      "log_date_format": "YYYY-MM-DD HH:mm Z",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "exec_mode": "fork",
+      "autorestart": false
+    }
+  ]
+}

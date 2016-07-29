@@ -2,6 +2,8 @@ const pm2 = require('pm2')
 const wpConfig = require('./webpack.config')
 const ruConfig = require('../config/rollup-config')
 
+pm2.disconnect();
+
 // process.stdin.resume();//so the program will not close instantly
 
 // function processHandler(options, err) {
@@ -52,8 +54,8 @@ const ruConfig = require('../config/rollup-config')
 
 
 // test
-ctx.log('fm local serve.js')
+// ctx.log('fm local serve.js')
 
-ctx.log(wpConfig.name)
+// ctx.log(wpConfig.name)
 
-ctx.log(ruConfig.entry)
+// ctx.log(ruConfig.entry)

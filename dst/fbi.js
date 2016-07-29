@@ -41,6 +41,33 @@ var createClass = function () {
   };
 }();
 
+// util.inspect.styles
+
+// { special: 'cyan',
+//   number: 'yellow',
+//   boolean: 'yellow',
+//   undefined: 'grey',
+//   null: 'bold',
+//   string: 'green',
+//   date: 'magenta',
+//   regexp: 'red' }
+
+// util.inspect.colors
+
+// { bold: [ 1, 22 ],
+//   italic: [ 3, 23 ],
+//   underline: [ 4, 24 ],
+//   inverse: [ 7, 27 ],
+//   white: [ 37, 39 ],
+//   grey: [ 90, 39 ],
+//   black: [ 30, 39 ],
+//   blue: [ 34, 39 ],
+//   cyan: [ 36, 39 ],
+//   green: [ 32, 39 ],
+//   magenta: [ 35, 39 ],
+//   red: [ 31, 39 ],
+//   yellow: [ 33, 39 ] }
+
 function colors() {
   function colorize(color, text) {
     var codes = util.inspect.colors[color];
@@ -177,7 +204,10 @@ function copyFile(source, target) {
     rd.on('error', reject);
     var wr = fs.createWriteStream(target);
     wr.on('error', reject);
-    wr.on('finish', resolve);
+    wr.on('finish', function () {
+      log('copied ' + source + ' => ' + target);
+      resolve();
+    });
     rd.pipe(wr);
   });
 }
@@ -192,6 +222,10 @@ function readDir(folder, opts) {
 
 function isTaskFile(file) {
   return path.extname(file) === '.js' && file.indexOf('config') < 0;
+}
+
+function isTemplate(name) {
+  return path.extname(name) === '' && name.indexOf('.') !== 0;
 }
 
 function isTaskName(item) {
@@ -228,7 +262,9 @@ var Module = function () {
      *
      */
 
-    this.modulePaths = [cwd('node_modules'), dir(options.data, opts.template ? 'templates/' + opts.template : '', 'node_modules'), dir(options.data, 'node_modules'), '' // global
+    this.modulePaths = [
+    // cwd('node_modules'),
+    dir(options.data, opts.template ? 'templates/' + opts.template : '', 'node_modules'), dir(options.data, 'node_modules'), '' // global
     ];
 
     this.opts = opts;
@@ -256,6 +292,7 @@ var Module = function () {
             var item = _step.value;
 
             var _p = join(item, name);
+
             try {
               var found = require.resolve(_p);
 
@@ -630,7 +667,7 @@ var Task = function () {
       var taskCnt = taskObj.cnt || this.tasks[name];
       var module = new Module(ctx.options);
 
-      function requireRelative(mod) {
+      function requireResolve(mod) {
         // find mod path
         var mod_path = module.get(mod, taskObj.type);
 
@@ -651,7 +688,7 @@ var Task = function () {
         filename: name + '.js',
         lineOffset: -3,
         displayErrors: true
-      })(requireRelative, ctx);
+      })(requireResolve, ctx);
     }
   }]);
   return Task;
@@ -841,6 +878,7 @@ var Template = function () {
       }).then(function (_resp) {
         templates = _resp;
 
+        templates = templates.filter(isTemplate);
         return templates;
       });
     }
@@ -1035,6 +1073,8 @@ var Cli = function () {
             // template options
 
             if (userOptions && userOptions.template) {
+              _this13.options['node_modules_path'] = dir(options.data_templates, userOptions.template, 'node_modules');
+
               templateOptionsPath = dir(options.data_templates, userOptions.template, _this13.options.paths.options);
 
 
@@ -1116,7 +1156,7 @@ var Cli = function () {
                     var mod = new Module(_this2.options);
 
                     Object.keys(dependencies).map(function (item) {
-                      var ret = mod.get(item);
+                      var ret = mod.get(item, 'local'); // TODO: local or template
                       if (ret) {
                         log('Found \'' + item + '\' at: ' + ret, 1);
                       } else {

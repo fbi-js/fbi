@@ -10,7 +10,7 @@ const app = new Koa()
 var start = ctx.options.server.port || 8888
 
 // serve static
-app.use(serve('./dst'))
+app.use(serve(process.cwd()))
 
 // auto selected a valid port & start server
 function autoPortServer(cb) {

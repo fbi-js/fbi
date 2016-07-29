@@ -1,7 +1,6 @@
 const webpack = require('webpack');
-const webpackConfig = require('./webpack.config')
 
-const compiler = webpack(webpackConfig);
+const compiler = webpack(ctx.options.webpackConfig);
 
 compiler.watch({
   aggregateTimeout: 300,

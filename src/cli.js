@@ -147,6 +147,12 @@ export default class Cli {
 
       // template options
       if (userOptions && userOptions.template) {
+        this.options['node_modules_path'] = dir(
+          options.data_templates,
+          userOptions.template,
+          'node_modules'
+          )
+
         const templateOptionsPath = dir(
           options.data_templates,
           userOptions.template,
@@ -217,7 +223,7 @@ export default class Cli {
         const mod = new Module(this.options)
 
         Object.keys(dependencies).map(item => {
-          let ret = mod.get(item)
+          let ret = mod.get(item, 'local') // TODO: local or template
           if (ret) {
             log(`Found '${item}' at: ${ret}`, 1)
           } else {
