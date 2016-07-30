@@ -40,13 +40,12 @@ export default class Module {
         const found = require.resolve(join(localTasks, name))
         ret = localTasks
       } catch (e) {
-        log(e)
         try {
           const tmplTasks = dir(options.data_templates, this.opts.template, this.opts.paths.tasks)
           const found = require.resolve(join(tmplTasks, name))
           ret = tmplTasks
         } catch (e) {
-
+          log(`can't find module ${name} in template '${this.opts.template}'`, 0)
         }
       }
     } else {

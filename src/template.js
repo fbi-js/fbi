@@ -1,14 +1,13 @@
-import { cwd, dir, join, log, exist,
-  existSync, readDir, isTemplate }
-from './helpers/utils'
+import {
+  cwd, dir, join, log, exist,
+  existSync, readDir, isTemplate
+} from './helpers/utils'
 import copy from './helpers/copy'
 
 export default class Template {
 
   constructor(opts) {
-
     this.opts = opts
-
   }
 
   async copy(name, dst) {

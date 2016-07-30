@@ -1,9 +1,10 @@
+import fs from 'fs'
 import vm from 'vm'
 import Module from './module'
 import options from './options'
 import {
   dir, join, cwd, readDir, log, read, exist,
-  existSync, isTaskFile, basename
+  existSync, isTaskFile, basename, isRelative
 } from './helpers/utils'
 
 export default class Task {
@@ -175,8 +176,18 @@ export default class Task {
     const module = new Module(ctx.options)
 
     function requireResolve(mod) {
+
       // find mod path
       let mod_path = module.get(mod, taskObj.type)
+
+      // if (isRelative(mod)) {
+      //   log(`${mod} isRelative`)
+      //   const _exist = existSync(join(mod_path, mod))
+      //   if (_exist) {
+      //     let cnt2 = fs.readFileSync(join(mod_path, mod), 'utf8')
+      //   }
+      // }
+
 
       // if (mod_path) {
       //   if (mod_path === 'global') {
@@ -198,15 +209,19 @@ export default class Task {
 
     let code = `
     (function(require, ctx) {
+      if(!ctx.next || ctx.next === 'false') return false;
+
+      ctx.log('Running ${taskObj.type} task "${taskObj.name}${taskObj.params}\"...', 1);
       try {
         ${taskCnt}
       } catch (e) {
-        console.log(e)
+        ctx.log('task function error', 0)
+        ctx.log(e, 0)
       }
     })`
 
     vm.runInThisContext(code, {
-      filename: `${name}.js`,
+      filename: `${taskObj.name}.js`,
       lineOffset: -3,
       displayErrors: true
     })(requireResolve, ctx)

@@ -174,15 +174,15 @@ export function copyFile(source, target) {
 }
 
 export function readDir(folder, ignore) {
-  function valid(item){
+  function valid(item) {
     return !ignore.includes(item)
   }
   return new Promise((resolve, reject) => {
     fs.readdir(folder, (err, ret) => {
-      if(err){
+      if (err) {
         reject(err)
       }
-      if(ignore && ignore.length){
+      if (ignore && ignore.length) {
         ret = ret.filter(valid)
       }
       resolve(ret)
@@ -217,4 +217,45 @@ export function normalize(str) {
 
 export function basename(src, ext) {
   return path.basename(src, ext)
+}
+
+/**
+ * arr:
+ * build -p -w serve -3000 deploy -10.11.11.1
+ * prefix: -
+ *
+ * return
+
+  { build: { params: [ 'p', 'w' ] },
+    serve: { params: [ '3000' ] },
+    deploy: { params: [ '10.11.11.1' ] }
+  }
+
+ */
+export function parseArgvs(arr, prefix) {
+
+  if (!arr.length || !prefix) {
+    log('Usage: let ret = parseArgvs(arr, prefix)', 0)
+    return arr
+  }
+
+  let ret = {}
+
+  arr.reduce((prev, curr, idx) => {
+    if (curr.indexOf(prefix) === 0) {
+      if (ret[prev]) {
+        if (Array.isArray(ret[prev]['params'])) {
+          ret[prev]['params'].push(curr.slice(prefix.length))
+        } else {
+          ret[prev]['params'] = [curr.slice(prefix.length)]
+        }
+      }
+      return prev
+    } else {
+      ret[curr] = {}
+      return curr
+    }
+  }, arr[0])
+
+  return ret
 }

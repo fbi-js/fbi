@@ -1,8 +1,9 @@
 const webpack = require('webpack');
+const isProduction = ctx.taskParams && ctx.taskParams[0] === 'p' // fbi build -p
 
 // fbi build -p
-if (ctx.argvs[1] === '-p') {
-  ctx.log('type: production')
+if (isProduction) {
+  ctx.log('env: production')
   ctx.options.webpackConfig['plugins'].push(
     new webpack.optimize.UglifyJsPlugin({
       compress: {

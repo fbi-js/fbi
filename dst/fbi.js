@@ -3,8 +3,8 @@
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var readline = require('readline');
-var vm = _interopDefault(require('vm'));
 var fs = _interopDefault(require('fs'));
+var vm = _interopDefault(require('vm'));
 var util = _interopDefault(require('util'));
 var path = _interopDefault(require('path'));
 var child_process = require('child_process');
@@ -38,33 +38,6 @@ var createClass = function () {
     return Constructor;
   };
 }();
-
-// util.inspect.styles
-
-// { special: 'cyan',
-//   number: 'yellow',
-//   boolean: 'yellow',
-//   undefined: 'grey',
-//   null: 'bold',
-//   string: 'green',
-//   date: 'magenta',
-//   regexp: 'red' }
-
-// util.inspect.colors
-
-// { bold: [ 1, 22 ],
-//   italic: [ 3, 23 ],
-//   underline: [ 4, 24 ],
-//   inverse: [ 7, 27 ],
-//   white: [ 37, 39 ],
-//   grey: [ 90, 39 ],
-//   black: [ 30, 39 ],
-//   blue: [ 34, 39 ],
-//   cyan: [ 36, 39 ],
-//   green: [ 32, 39 ],
-//   magenta: [ 35, 39 ],
-//   red: [ 31, 39 ],
-//   yellow: [ 33, 39 ] }
 
 function colors() {
   function colorize(color, text) {
@@ -249,6 +222,47 @@ function basename(src, ext) {
   return path.basename(src, ext);
 }
 
+/**
+ * arr:
+ * build -p -w serve -3000 deploy -10.11.11.1
+ * prefix: -
+ *
+ * return
+
+  { build: { params: [ 'p', 'w' ] },
+    serve: { params: [ '3000' ] },
+    deploy: { params: [ '10.11.11.1' ] }
+  }
+
+ */
+function parseArgvs(arr, prefix) {
+
+  if (!arr.length || !prefix) {
+    log('Usage: let ret = parseArgvs(arr, prefix)', 0);
+    return arr;
+  }
+
+  var ret = {};
+
+  arr.reduce(function (prev, curr, idx) {
+    if (curr.indexOf(prefix) === 0) {
+      if (ret[prev]) {
+        if (Array.isArray(ret[prev]['params'])) {
+          ret[prev]['params'].push(curr.slice(prefix.length));
+        } else {
+          ret[prev]['params'] = [curr.slice(prefix.length)];
+        }
+      }
+      return prev;
+    } else {
+      ret[curr] = {};
+      return curr;
+    }
+  }, arr[0]);
+
+  return ret;
+}
+
 var options = {
   data: './data',
   data_tasks: './data/tasks',
@@ -295,12 +309,13 @@ var Module = function () {
           var found = require.resolve(join(localTasks, name));
           ret = localTasks;
         } catch (e) {
-          log(e);
           try {
             var tmplTasks = dir(options.data_templates, this.opts.template, this.opts.paths.tasks);
             var _found = require.resolve(join(tmplTasks, name));
             ret = tmplTasks;
-          } catch (e) {}
+          } catch (e) {
+            log('can\'t find module ' + name + ' in template \'' + this.opts.template + '\'', 0);
+          }
         }
       } else {
         var _iteratorNormalCompletion = true;
@@ -678,8 +693,18 @@ var Task = function () {
       var module = new Module(ctx.options);
 
       function requireResolve(mod) {
+
         // find mod path
         var mod_path = module.get(mod, taskObj.type);
+
+        // if (isRelative(mod)) {
+        //   log(`${mod} isRelative`)
+        //   const _exist = existSync(join(mod_path, mod))
+        //   if (_exist) {
+        //     let cnt2 = fs.readFileSync(join(mod_path, mod), 'utf8')
+        //   }
+        // }
+
 
         // if (mod_path) {
         //   if (mod_path === 'global') {
@@ -699,10 +724,10 @@ var Task = function () {
         }
       }
 
-      var code = '\n    (function(require, ctx) {\n      try {\n        ' + taskCnt + '\n      } catch (e) {\n        console.log(e)\n      }\n    })';
+      var code = '\n    (function(require, ctx) {\n      if(!ctx.next || ctx.next === \'false\') return false;\n\n      ctx.log(\'Running ' + taskObj.type + ' task "' + taskObj.name + taskObj.params + '"...\', 1);\n      try {\n        ' + taskCnt + '\n      } catch (e) {\n        ctx.log(\'task function error\', 0)\n        ctx.log(e, 0)\n      }\n    })';
 
       vm.runInThisContext(code, {
-        filename: name + '.js',
+        filename: taskObj.name + '.js',
         lineOffset: -3,
         displayErrors: true
       })(requireResolve, ctx);
@@ -780,7 +805,6 @@ var Template = function () {
   function Template(opts) {
     classCallCheck(this, Template);
 
-
     this.opts = opts;
   }
 
@@ -829,28 +853,13 @@ var Template = function () {
 
 var defaultOptions = {
   // template: 'basic',
+  task_param_prefix: '-',
   paths: {
     tasks: 'fbi/',
     options: 'fbi/config.js'
   },
-  meta: {
-    src: {
-      root: 'src',
-      html: 'tmpl',
-      css: 'style',
-      js: 'script',
-      img: 'image'
-    },
-    dist: {
-      root: 'dist',
-      html: '.',
-      css: 'css',
-      js: 'js',
-      img: 'img'
-    },
-    archive: 'archive'
-  },
   server: {
+    root: './',
     host: 'localhost',
     port: 8888
   },
@@ -867,7 +876,7 @@ function getOptions(opts) {
 
 var version = "2.0.0-alpha.1";
 
-var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n    Commands:\n\n      new [template]          init a new template\n      rm [task][template]     remove tasks or templates\n      cat [task][-t, -g]      cat task content\n      ls, list                list all tasks & templates\n      i, install              install dependencies\n      i -f, install -f        install dependencies force\n      add-task                add task files in current folder\n      add-tmpl [name]         add current folder as a template named [name]\n      -h, --help              output usage information\n      -v, --version           output the version number\n';
+var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n    Commands:\n\n      new [template]          create a new project via template\n      rm [task][template]     remove tasks or templates\n      cat [task][-t, -g]      cat task content\n      ls, list                list all tasks & templates\n      i, install              install dependencies\n      i -f, install -f        install dependencies force\n      add-task                add task files in current folder\n      add-tmpl [name]         add current folder as a template named [name]\n      -h, --help              output usage information\n      -v, --version           output the version number\n';
 
 var task = new Task();
 var template = new Template(options);
@@ -1182,7 +1191,7 @@ var Cli = function () {
                 succ = _resp;
 
                 if (succ) {
-                  log('Template \'' + name + '\' copied to current folder', 1);
+                  log('Template \'' + name + '\' init in current folder', 1);
                 } else {
                   log('Template \'' + name + '\' not found', 0);
                 }
@@ -1208,8 +1217,8 @@ var Cli = function () {
           mods = _this39.argvs.slice(1);
 
           if (!mods.length) {
-            log('Usage: fbi rm [task] or [template]');
-            process.exit(1);
+            log('Usage: fbi rm [task] or [template]', 0);
+            process.exit(0);
           } else {
             // for (const mod of mods) {
             //   if (this.tasks[mod]) {
@@ -1348,6 +1357,20 @@ var Cli = function () {
               });
             }
 
+            return _test7 && exist(cwd('package.json'));
+          }).then(function (_resp) {
+            if (_resp) {
+              (function () {
+                var usrpkg = require(cwd('package.json'));
+                if (usrpkg.scripts && Object.keys(usrpkg.scripts).length > 0) {
+                  _helps += '\n\n    npm scripts:\n      ';
+                  Object.keys(usrpkg.scripts).map(function (item) {
+                    _helps += '\n      ' + item + ': \'' + usrpkg.scripts[item] + '\'';
+                  });
+                }
+              })();
+            }
+
             if (_test7) {
               _helps += '\n      ';
 
@@ -1362,14 +1385,14 @@ var Cli = function () {
     value: function add() {
       var _this2,
           ts,
-          _this54 = this;
+          _this55 = this;
 
       return Promise.resolve().then(function () {
-        _this2 = _this54;
+        _this2 = _this55;
 
-        if (!!_this54.next) {
+        if (!!_this55.next) {
 
-          if (_this54.argvs[0] === 'add-tmpl') {
+          if (_this55.argvs[0] === 'add-tmpl') {
             return function () {
               var name, isExist;
               return Promise.resolve().then(function () {
@@ -1440,16 +1463,16 @@ var Cli = function () {
               });
             }();
           } else {
-            if (_this54.argvs[0] === 'add-task') {
-              _this54.next = false;
+            if (_this55.argvs[0] === 'add-task') {
+              _this55.next = false;
 
-              log(_this54.argvs);
+              log(_this55.argvs);
 
-              if (!_this54.argvs[1]) {
+              if (!_this55.argvs[1]) {
                 log('Usage: fbi add-task [*] or [name.js]');
               } else {
                 log('y');
-                ts = _this54.argvs.slice(1);
+                ts = _this55.argvs.slice(1);
 
                 ts = ts.filter(isTaskFile);
                 if (!ts.length) {
@@ -1475,41 +1498,68 @@ var Cli = function () {
     value: function run() {
       var _this3,
           cmds,
-          _this66 = this;
+          _this67 = this;
 
-      _this3 = _this66;
+      _this3 = _this67;
 
-      if (!!_this66.next) {
-        cmds = _this66.argvs;
+      if (!!_this67.next) {
+        cmds = _this67.argvs;
 
-        if (_this66.argvs.length > 0) {
+        if (_this67.argvs.length > 0) {
           (function () {
-            var type = 'local';
-            if (_this3.argvs[1] === '-g') {
-              type = 'global';
-            } else if (_this3.argvs[1] === '-t') {
-              type = 'template';
-            }
+            var ret = void 0;
+            var prefix = _this3.options.task_param_prefix;
             try {
-              cmds = cmds.filter(isTaskName);
-              cmds.map(function (cmd) {
-                var taskObj;
-                return Promise.resolve().then(function () {
-                  return task.get(cmd, type, _this3.options);
-                }).then(function (_resp) {
-                  taskObj = _resp;
-
-                  if (taskObj.cnt) {
-                    log('Running ' + taskObj.type + ' task \'' + taskObj.name + '\'...', 1);
-                    task.run(cmd, _this3, taskObj);
-                  } else {
-                    log('Task not found: \'' + cmd, 0);
-                  }
-                });
-              });
+              ret = parseArgvs(cmds, prefix);
             } catch (e) {
-              log('Task function error', 0);
+              log('task params parsed error', 0);
               log(e);
+            }
+
+            if (Object.keys(ret).length) {
+              Object.keys(ret).map(function (item) {
+                var taskType, itemParams, taskObj, _discriminant, _match, _brokenOut;
+
+                return Promise.resolve().then(function () {
+                  return Promise.resolve().then(function () {
+                    taskType = 'local';
+                    itemParams = ret[item]['params'];
+
+                    if (itemParams) {
+                      _discriminant = itemParams[0];
+                      _match = false;
+                      _brokenOut = false;
+
+                      if (!_brokenOut && (_match || 't' === _discriminant)) {
+                        taskType = 'template';
+                        itemParams.splice(0, 1);
+                        _brokenOut = true;
+                        _match = true;
+                      }
+
+                      if (!_brokenOut && (_match || 'g' === _discriminant)) {
+                        taskType = 'global';
+                        itemParams.splice(0, 1);
+                        _brokenOut = true;
+                        _match = true;
+                      }
+                    }
+                    return task.get(item, taskType, _this3.options);
+                  }).then(function (_resp) {
+                    taskObj = _resp;
+
+                    if (taskObj.cnt) {
+                      taskObj['params'] = itemParams && itemParams.length ? ' ' + prefix + itemParams.join(' ' + prefix) : '';
+                      _this3['taskParams'] = itemParams && itemParams.length ? itemParams : null;
+                      task.run(item, _this3, taskObj);
+                    } else {
+                      log('Task not found: \'' + item, 0);
+                    }
+                  }).catch(function (e) {
+                    log(e, 0);
+                  });
+                }).then(function () {});
+              });
             }
           })();
         }

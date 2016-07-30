@@ -4,8 +4,6 @@ module.exports = {
     b: 'build',
     s: 'serve'
   },
-  dependencies: {
-  },
   npm: {
     options: '--save-dev --registry=https://registry.npm.taobao.org'
   }

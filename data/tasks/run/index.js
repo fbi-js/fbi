@@ -1,13 +1,11 @@
-const npm = require('global-npm')
+ctx.next = false
 
-// if (!ctx.argvs[1]) {
-//   return
-// }
+const npm = require('global-npm')
 
 let cmdName = ctx.argvs[1]
 
 if (cmdName) {
-  ctx.log(cmdName, 1)
+  ctx.log(`npm script: ${cmdName}`, 1)
 
   npm.load({}, function (er) {
     if (er) {

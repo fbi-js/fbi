@@ -3,11 +3,10 @@
  * ctx => fbi
  * require => requireResolve
  */
-
 const webpack = require('webpack')
 const webpackConfig = require('./webpack.config.js')(require, ctx)
 
-const isProduction = ctx.argvs[1] === '-p' // fbi build -p
+const isProduction = ctx.taskParams && ctx.taskParams[0] === 'p' // fbi build -p
 
 if (isProduction) {
   ctx.log('env: production')

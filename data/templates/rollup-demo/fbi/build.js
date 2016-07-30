@@ -43,7 +43,7 @@ let opts = {
 
 const dst = opts.out.split('/')[0]
 
-const isProduction = ctx.argvs[1] === '-p'
+const isProduction = ctx.taskParams && ctx.taskParams[0] === 'p' // fbi build -p
 
 if (isProduction) {
   ctx.log('Env: production')

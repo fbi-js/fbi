@@ -9,7 +9,7 @@ import { version } from '../package.json'
 import {
   cwd, dir, join, exist, existSync, readDir,
   log, merge, read, write, install, copyFile,
-  isTaskName, isTaskFile, basename
+  isTaskName, isTaskFile, basename, parseArgvs
 } from './helpers/utils'
 
 let helps =
@@ -23,7 +23,7 @@ let helps =
 
     Commands:
 
-      new [template]          init a new template
+      new [template]          create a new project via template
       rm [task][template]     remove tasks or templates
       cat [task][-t, -g]      cat task content
       ls, list                list all tasks & templates
@@ -255,7 +255,7 @@ export default class Cli {
         const name = this.argvs[1]
         let succ = await template.copy(name, cwd())
         if (succ) {
-          log(`Template '${name}' copied to current folder`, 1)
+          log(`Template '${name}' init in current folder`, 1)
         } else {
           log(`Template '${name}' not found`, 0)
         }
@@ -273,8 +273,8 @@ export default class Cli {
 
       const mods = this.argvs.slice(1)
       if (!mods.length) {
-        log(`Usage: fbi rm [task] or [template]`)
-        process.exit(1)
+        log(`Usage: fbi rm [task] or [template]`, 0)
+        process.exit(0)
       } else {
         // for (const mod of mods) {
         //   if (this.tasks[mod]) {
@@ -376,6 +376,21 @@ ${taskObj.cnt}
       ${item}`
         })
       }
+
+      if (await exist(cwd('package.json'))) {
+        const usrpkg = require(cwd('package.json'))
+        if (usrpkg.scripts && Object.keys(usrpkg.scripts).length > 0) {
+          helps += `
+
+    npm scripts:
+      `
+          Object.keys(usrpkg.scripts).map(item => {
+            helps += `
+      ${item}: '${usrpkg.scripts[item]}'`
+          })
+        }
+      }
+
       helps += `
       `
 
@@ -469,26 +484,48 @@ ${taskObj.cnt}
 
     let cmds = this.argvs
     if (this.argvs.length > 0) {
-      let type = 'local'
-      if (this.argvs[1] === '-g') {
-        type = 'global'
-      } else if (this.argvs[1] === '-t') {
-        type = 'template'
-      }
+      let ret
+      const prefix = this.options.task_param_prefix
       try {
-        cmds = cmds.filter(isTaskName)
-        cmds.map(async (cmd) => {
-          const taskObj = await task.get(cmd, type, this.options)
-          if (taskObj.cnt) {
-            log(`Running ${taskObj.type} task '${taskObj.name}'...`, 1)
-            task.run(cmd, this, taskObj)
-          } else {
-            log(`Task not found: '${cmd}`, 0)
+        ret = parseArgvs(cmds, prefix)
+      } catch (e) {
+        log(`task params parsed error`, 0)
+        log(e)
+      }
+
+      if (Object.keys(ret).length) {
+        Object.keys(ret).map(async (item) => {
+          try {
+            let taskType = 'local'
+            let itemParams = ret[item]['params']
+            if (itemParams) {
+              switch (itemParams[0]) {
+                case 't':
+                  taskType = 'template'
+                  itemParams.splice(0, 1)
+                  break
+                case 'g':
+                  taskType = 'global'
+                  itemParams.splice(0, 1)
+                  break
+              }
+            }
+            const taskObj = await task.get(item, taskType, this.options)
+            if (taskObj.cnt) {
+              taskObj['params'] = (itemParams && itemParams.length)
+                ? ' ' + prefix + itemParams.join(' ' + prefix)
+                : ''
+              this['taskParams'] = (itemParams && itemParams.length)
+                ? itemParams
+                : null
+              task.run(item, this, taskObj)
+            } else {
+              log(`Task not found: '${item}`, 0)
+            }
+          } catch (e) {
+            log(e, 0)
           }
         })
-      } catch (e) {
-        log(`Task function error`, 0)
-        log(e)
       }
     }
   }
