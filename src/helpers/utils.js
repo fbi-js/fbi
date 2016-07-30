@@ -3,33 +3,6 @@ import util from 'util'
 import path from 'path'
 import { exec } from 'child_process'
 
-// util.inspect.styles
-
-// { special: 'cyan',
-//   number: 'yellow',
-//   boolean: 'yellow',
-//   undefined: 'grey',
-//   null: 'bold',
-//   string: 'green',
-//   date: 'magenta',
-//   regexp: 'red' }
-
-// util.inspect.colors
-
-// { bold: [ 1, 22 ],
-//   italic: [ 3, 23 ],
-//   underline: [ 4, 24 ],
-//   inverse: [ 7, 27 ],
-//   white: [ 37, 39 ],
-//   grey: [ 90, 39 ],
-//   black: [ 30, 39 ],
-//   blue: [ 34, 39 ],
-//   cyan: [ 36, 39 ],
-//   green: [ 32, 39 ],
-//   magenta: [ 35, 39 ],
-//   red: [ 31, 39 ],
-//   yellow: [ 33, 39 ] }
-
 export function colors() {
   function colorize(color, text) {
     const codes = util.inspect.colors[color]
@@ -43,14 +16,29 @@ export function colors() {
 }
 
 /**
- * type: 0-error, 1-succ
+ * type:
+ * -1 waring, 0 error, 1 succ
+ * bold, italic, underline, inverse, white, grey,
+ * black, blue, cyan, green, magenta, red, yellow
  */
 export function log(msg, type) {
   if (typeof msg === 'string') {
     if (type !== undefined) {
-      msg = type
-        ? colors().grey('FBI => ') + colors().cyan(msg)
-        : colors().grey('FBI Error => ') + colors().magenta(msg)
+      switch (type) {
+        case -1:
+          msg = colors().grey('FBI => ') + colors().red(msg)
+          break
+        case 0:
+          msg = colors().grey('FBI Error => ') + colors().magenta(msg)
+          break
+        case 1:
+          msg = colors().grey('FBI => ') + colors().cyan(msg)
+          break
+        default:
+          msg = colors().grey('FBI => ') + colors()[type]
+            ? colors()[type](msg)
+            : msg
+      }
     } else {
       msg = colors().grey('FBI => ') + msg
     }
@@ -135,15 +123,21 @@ export function existSync(src) {
 export function install(source, rootPath, command, opts) {
   const prevDir = process.cwd()
   let pkgs = ''
+  let info = ''
 
   Object.keys(source).map(item => {
     pkgs += `${item}@${source[item]} `
+    info += `
+       ${item}@${source[item]} `
   })
+  info += `
+       ${opts ? opts : ''}
+  ...
+  `;
 
   process.chdir(rootPath)
   const cmd = `${command} install ${pkgs} ${opts ? opts : ''}`
-  log(cmd + '...')
-  log(`install dest: ${rootPath}/node_modules`)
+  log(`${command} install ${info}`)
   return new Promise((resolve, reject) => {
     exec(cmd, (error, stdout, stderr) => {
       process.chdir(prevDir)
@@ -153,20 +147,23 @@ export function install(source, rootPath, command, opts) {
         return reject(msg)
       }
 
-      log(stdout)
+      log(`
+${stdout}`)
       resolve(stdout)
     })
   })
 }
 
-export function copyFile(source, target) {
+export function copyFile(source, target, quiet) {
   return new Promise((resolve, reject) => {
     var rd = fs.createReadStream(source)
     rd.on('error', reject)
     var wr = fs.createWriteStream(target)
     wr.on('error', reject)
     wr.on('finish', () => {
-      log(`copied ${source} => ${target}`)
+      if (!quiet) {
+        log(`copied ${source} => ${target}`)
+      }
       resolve()
     })
     rd.pipe(wr)
@@ -187,6 +184,38 @@ export function readDir(folder, ignore) {
       }
       resolve(ret)
     })
+  })
+}
+
+export function mkdir(p) {
+  return new Promise((resolve, reject) => {
+    fs.mkdir(p, err => {
+      return err ? reject(err) : resolve()
+    })
+  })
+}
+
+export function rmfile(p, callback) {
+  fs.lstat(p, (err, stat) => {
+    if (err) callback.call(null, err)
+    else if (stat.isDirectory()) rmdir(p, callback)
+    else fs.unlink(p, callback)
+  })
+}
+
+export function rmdir(dir, callback) {
+  fs.readdir(dir, (err, files) => {
+    if (err) callback.call(null, err)
+    else if (files.length) {
+      var i, j
+      for (i = j = files.length; i--;) {
+        rmfile(join(dir, files[i]), err => {
+          if (err) callback.call(null, err)
+          else if (--j === 0) fs.rmdir(dir, callback)
+        })
+      }
+    }
+    else fs.rmdir(dir, callback)
   })
 }
 
@@ -258,4 +287,52 @@ export function parseArgvs(arr, prefix) {
   }, arr[0])
 
   return ret
+}
+
+export function genTaskHelpTxt(all) {
+  if (!Object.keys(all).length) {
+    return ''
+  }
+  let txt = `
+    Tasks:
+    `;
+  ['global', 'template', 'local'].map(type => {
+    if (all[type].length) {
+      all[type].map(item => {
+        txt += `
+      ${item.name} ${item.alias} <${type}>`;
+      })
+    }
+  })
+  return txt
+}
+
+export function genTmplHelpTxt(all) {
+  if (!all.length) {
+    return ''
+  }
+  let txt = `
+
+    Templates:
+    `;
+  all.map(item => {
+    txt += `
+      ${item}`;
+  })
+  return txt
+}
+
+export function genNpmscriptsHelpTxt(all) {
+  if (!Object.keys(all).length) {
+    return ''
+  }
+  let txt = `
+
+    npm scrips:
+    `;
+  Object.keys(all).map(item => {
+    txt += `
+      ${item}: '${all[item]}'`;
+  })
+  return txt
 }

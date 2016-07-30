@@ -9,7 +9,9 @@ import { version } from '../package.json'
 import {
   cwd, dir, join, exist, existSync, readDir,
   log, merge, read, write, install, copyFile,
-  isTaskName, isTaskFile, basename, parseArgvs
+  isTaskName, isTaskFile, basename, parseArgvs,
+  rmdir, rmfile, mkdir,
+  genTaskHelpTxt, genTmplHelpTxt, genNpmscriptsHelpTxt
 } from './helpers/utils'
 
 let helps =
@@ -23,17 +25,20 @@ let helps =
 
     Commands:
 
-      new [template]          create a new project via template
-      rm [task][template]     remove tasks or templates
-      cat [task][-t, -g]      cat task content
       ls, list                list all tasks & templates
-      i, install              install dependencies
-      i -f, install -f        install dependencies force
+      new [template]          create a new project via template
       add-task                add task files in current folder
       add-tmpl [name]         add current folder as a template named [name]
+      rm-task [name]          remove task
+      rm-tmpl [name]          remove template
+      cat [task][-t, -g]      cat task content
+      i, install              install dependencies
+      i -f, install -f        install dependencies force
       -h, --help              output usage information
       -v, --version           output the version number
 `
+
+
 
 const task = new Task()
 const template = new Template(options)
@@ -87,45 +92,10 @@ export default class Cli {
       || this.argvs[0] === '--help') {
       this.next = false
 
-      const all = await task.all(this.options, true, true)
-      helps += `
-    Tasks:
-    `
-      if (all.globals.length) {
-        all.globals.map(item => {
-          helps += `
-      ${item.name} ${item.alias} <global>`
-        })
-      }
-
-      if (all.template.length) {
-        all.template.map(item => {
-          helps += `
-      ${item.name} ${item.alias} <template>`
-        })
-      }
-
-      if (all.locals.length) {
-        all.locals.map(item => {
-          helps += `
-      ${item.name} ${item.alias} <local>`
-        })
-      }
-
-      const tmpls = await template.all()
-      if (tmpls.length) {
-        helps += `
-
-    Templates:
-      `
-        tmpls.map(item => {
-          helps += `
-      ${item}`
-        })
-      }
+      helps += genTaskHelpTxt(await task.all(this.options, true, true))
+      helps += genTmplHelpTxt(await template.all())
       helps += `
       `
-
       console.log(helps)
     }
   }
@@ -134,7 +104,6 @@ export default class Cli {
     if (!this.next) return
 
     // user options > tempalte options > default options
-
     try {
       // default options
       this.options = defaultOptions
@@ -164,7 +133,6 @@ export default class Cli {
           this.options = getOptions(templateOptions)
         }
       }
-
       // merge user options
       this.options = getOptions(userOptions)
 
@@ -268,41 +236,83 @@ export default class Cli {
   async remove() {
     if (!this.next) return
 
-    if (this.argvs[0] === 'rm' || this.argvs[0] === 'remove') {
+    if (this.argvs[0] === 'rm-task') {
+      this.next = false
+
+      let mods = this.argvs.slice(1)
+      if (!mods.length) {
+        log(`Usage: fbi rm-task [name]`, 0)
+        process.exit(0)
+      }
+      let tasks_path = dir(options.data_tasks)
+      let tmpl_name
+      if (mods[0].indexOf('-') === 0) {
+        tmpl_name = mods[0].slice(1)
+        mods = mods.splice(1, 1)
+        if (tmpl_name !== '') {
+          if (mods.length) {
+            const tmpl_exist = await exist(dir(options.data_templates, tmpl_name))
+            if (tmpl_exist) {
+              tasks_path = dir(options.data_templates, tmpl_name, this.options.paths.tasks)
+            } else {
+              log(`template '${tmpl_name}' not found`, 0)
+              process.exit(0)
+            }
+          } else {
+            log(`Usage: fbi rm-task -[template] [task]`, 0)
+            process.exit(0)
+          }
+        }
+        else {
+          log(`Usage: fbi rm-task -[template] [task]`, 0)
+          process.exit(0)
+        }
+      }
+      const tasks = await readDir(tasks_path)
+      mods.map(async (item) => {
+        item = item + '.js'
+        if (tasks.includes(item)) {
+          try {
+            rmfile(join(tasks_path, item), err => {
+              if (err) {
+                log(err, 0)
+              }
+              log(`task ${basename(item, '.js')} ${tmpl_name ? 'in ' + tmpl_name + ' ' : ''}removed`, 1)
+            })
+          } catch (e) {
+            log(e, 0)
+          }
+        } else {
+          log(`task '${basename(item, '.js')}' ${tmpl_name ? 'in ' + tmpl_name + ' ' : ''} not found`, 0)
+        }
+      })
+    }
+
+    if (this.argvs[0] === 'rm-tmpl') {
       this.next = false
 
       const mods = this.argvs.slice(1)
       if (!mods.length) {
-        log(`Usage: fbi rm [task] or [template]`, 0)
+        log(`Usage: fbi rm-tmpl [name]`, 0)
         process.exit(0)
-      } else {
-        // for (const mod of mods) {
-        //   if (this.tasks[mod]) {
-        //     if (this.tasks[mod].module.indexOf('.js') > 0) { // fn task
-        //       // del task
-        //       const _path = this._.dir(this.tasks[mod].module.replace('../', ''))
-        //       const exist = this._.existSync(_path)
-        //       if (exist) {
-        //         fs.unlinkSync(_path)
-        //         dbTasks.del(mod)
-        //         log(`Task module '${mod}' removed`, 1)
-        //       } else {
-        //         log(`Task module '${mod}' not found`, 0)
-        //       }
-        //     } else {
-        //       dbTasks.del(mod)
-        //       // TODO: uninstall?
-        //       log(`Task module '${mod}' removed`, 1)
-        //     }
-        //   } else if (this.templates[mod]) {
-        //     // del template
-        //     dbTemplates.del(mod)
-        //     log(`Template '${mod}' removed`, 1)
-        //   } else {
-        //     log(`Module '${mod}' not found`, 0)
-        //   }
-        // }
       }
+      const tmpls = await readDir(dir(options.data_templates))
+      mods.map(async (item) => {
+        if (tmpls.includes(item)) {
+          try {
+            rmdir(dir(options.data_templates, item), err => {
+              if (err) {
+                log(err, 0)
+              }
+              log(`template '${item}' removed`, 1)
+            })
+          } catch (e) {
+            log(e, 0)
+          }
+        } else {
+          log(`template '${item}' not found`, 0)
+        }
+      })
     }
   }
 
@@ -325,6 +335,7 @@ export default class Cli {
       }
 
       const taskObj = await task.get(name, type, this.options)
+      log(`file path: ${taskObj.path}`)
       log(`${taskObj.type} task ${name}'s content:
 
 ${taskObj.cnt}
@@ -339,55 +350,14 @@ ${taskObj.cnt}
       || this.argvs[0] === 'list') {
       this.next = false
 
-      let helps = ''
-      const all = await task.all(this.options, true, false)
-      helps += `
-    Tasks:
-    `
-      if (all.globals.length) {
-        all.globals.map(item => {
-          helps += `
-      ${item.name} ${item.alias} <global>`
-        })
-      }
+      let helps = genTaskHelpTxt(await task.all(this.options, true, false))
 
-      if (all.template.length) {
-        all.template.map(item => {
-          helps += `
-      ${item.name} ${item.alias} <template>`
-        })
-      }
-
-      if (all.locals.length) {
-        all.locals.map(item => {
-          helps += `
-      ${item.name} ${item.alias} <local>`
-        })
-      }
-
-      const tmpls = await template.all()
-      if (tmpls.length) {
-        helps += `
-
-    Templates:
-      `
-        tmpls.map(item => {
-          helps += `
-      ${item}`
-        })
-      }
+      helps += genTmplHelpTxt(await template.all())
 
       if (await exist(cwd('package.json'))) {
         const usrpkg = require(cwd('package.json'))
         if (usrpkg.scripts && Object.keys(usrpkg.scripts).length > 0) {
-          helps += `
-
-    npm scripts:
-      `
-          Object.keys(usrpkg.scripts).map(item => {
-            helps += `
-      ${item}: '${usrpkg.scripts[item]}'`
-          })
+          helps += genNpmscriptsHelpTxt(usrpkg.scripts)
         }
       }
 
@@ -409,36 +379,30 @@ ${taskObj.cnt}
       const isExist = await exist(dir(options.data_templates, name))
 
       if (isExist) {
-        log(`tempalte '${name}' already exist, type 'y' to replace, type a name to create a new one`, 0)
-
+        log(`tempalte '${name}' already exist, type 'y' to replace, or type name to create new one`, -1)
         let
           rl = createInterface(process.stdin, process.stdout),
           prompts = ['name'],
           p = 0,
           data = {}
-
         let get = function () {
-          rl.setPrompt(prompts[p] + '> ')
+          rl.setPrompt(prompts[p] + ': ')
           rl.prompt()
 
           p++
         }
-
         get()
-
         rl.on('line', (line) => {
           data[prompts[p - 1]] = line
-
           if (p === prompts.length) {
             return rl.close()
           }
-
           get()
         }).on('close', async () => {
           if (data.name === 'y') {
             copy(cwd(), dir(options.data_templates, name), ['dst', 'dist'])
           } else if (data.name === '') {
-            log('name can\'t be empty')
+            log('name can\'t be empty', 0)
           } else {
             const isExist2 = await exist(dir(options.data_templates, data.name))
             if (isExist2) {
@@ -448,31 +412,36 @@ ${taskObj.cnt}
               copy(cwd(), dir(options.data_templates, data.name), ['dst', 'dist'])
             }
           }
-
-          // process.exit(0) // can't do it right away
         })
       } else {
-        copy(cwd(), dir(options.data_templates, name))
+        copy(cwd(), dir(options.data_templates, name), ['dst', 'dist'])
       }
+    }
 
-    } else if (this.argvs[0] === 'add-task') {
+    if (this.argvs[0] === 'add-task') {
       this.next = false
 
-      log(this.argvs)
-
       if (!this.argvs[1]) {
-        log(`Usage: fbi add-task [*] or [name.js]`)
+        log(`Usage: fbi add-task [*] or [name.js]`, 0)
       } else {
-        log('y')
         let ts = this.argvs.slice(1)
         ts = ts.filter(isTaskFile)
         if (!ts.length) {
           log(`no task found.`, 0)
         } else {
           ts.map(async (item) => {
-            // TODO: mkdirp
-            await copyFile(cwd(item), dir(options.data_tasks, basename(item, '.js'), 'index.js'))
-            log(`task '${item}' added successfully`, 1)
+            const taskdir = dir(options.data_tasks)
+            const taskdir_exist = await exist(taskdir)
+            const task_exist = await exist(join(taskdir, item))
+            if (!taskdir_exist) {
+              await mkdir(taskdir)
+            }
+            try {
+              await copyFile(cwd(item), join(taskdir, item), 'quiet')
+              log(`task '${basename(item, '.js')}' ${task_exist ? 'updated' : 'added'}`, 1)
+            } catch (e) {
+              log(e, 0)
+            }
           })
         }
       }

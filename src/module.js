@@ -28,12 +28,6 @@ export default class Module {
     let ret
 
     if (isRelative(name)) {
-      // if (type === 'local') {
-      //   ret = cwd(this.opts.paths.tasks)
-      // } else if (type === 'template') {
-      //   ret = dir(options.data_templates, this.opts.template, this.opts.paths.tasks)
-      // }
-
       // local => template
       try {
         const localTasks = cwd(this.opts.paths.tasks)

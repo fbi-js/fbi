@@ -14,48 +14,46 @@ export default class Task {
   }
 
   async get(name, type, opts) {
-
     // if alias, get fullname from alias
     if (opts.alias && opts.alias[name]) {
       name = opts.alias[name]
     }
 
     // local task > tempalte task => global task
-
     let ret = {
       name: name,
       cnt: '',
-      type: ''
+      type: '',
+      path: ''
+    }
+
+    async function find(_path, _type) {
+      _path = _path + '.js'
+      let _exist = existSync(_path)
+      if (_exist) {
+        ret.cnt = await read(_path)
+        ret.type = _type
+        ret.path = _path
+      }
     }
 
     // find in local
     if (type === 'local') {
-      const u_path = cwd(opts.paths.tasks, name + '.js')
-      let u_exist = existSync(u_path)
-      if (u_exist) {
-        ret.cnt = await read(u_path)
-        ret.type = 'local'
-      }
+      await find(cwd(opts.paths.tasks, name), type)
     }
 
     // find in template
     if (!ret.cnt && opts.template && opts.template !== '') {
-      const u_path = dir(options.data_templates, opts.template, opts.paths.tasks, name + '.js')
-      let u_exist = existSync(u_path)
-      if (u_exist) {
-        ret.cnt = await read(u_path)
-        ret.type = 'template'
-      }
+      await find(dir(
+        options.data_templates,
+        opts.template,
+        opts.paths.tasks,
+        name), 'template')
     }
 
     // find in global
     if (!ret.cnt || type === 'global') {
-      const u_path = dir(options.data_tasks, name, 'index.js')
-      let u_exist = existSync(u_path)
-      if (u_exist) {
-        ret.cnt = await read(u_path)
-        ret.type = 'global'
-      }
+      await find(dir(options.data_tasks, name), 'global')
     }
 
     return ret
@@ -64,83 +62,56 @@ export default class Task {
   async all(opts, justNames, justAvailable) {
     const _this = this
     let names = {
-      locals: new Set(),
-      globals: new Set(),
+      local: new Set(),
+      global: new Set(),
       template: new Set()
     }
 
-    // template tasks
-    if (opts.template && opts.template !== '') {
-      const m_task_dir = dir(options.data_templates, opts.template, opts.paths.tasks)
-      let m_exist = await exist(m_task_dir)
-      if (m_exist) {
-        let m_modules = await readDir(m_task_dir)
-        m_modules = m_modules.filter(isTaskFile)
-
+    async function collect(_dir, type) {
+      let _exist = await exist(_dir)
+      let _modules
+      if (_exist) {
+        _modules = await readDir(_dir)
+        _modules = _modules.filter(isTaskFile)
         if (justNames) {
-          m_modules.map(item => {
+          _modules.map(item => {
             item = basename(item, '.js')
-            names.template.add(item)
+            names[type].add(item)
           })
-        } else if (m_modules.length) {
-          await Promise.all(m_modules.map(async (item) => {
-            _this.tasks[basename(item, '.js')] = await read(join(m_task_dir, item))
+        } else if (_modules.length) {
+          await Promise.all(_modules.map(async (item) => {
+            _this.tasks[basename(item, '.js')] = await read(join(_dir, item))
           }))
         }
       }
     }
 
-    // global tasks
-    const t_task_dir = dir(options.data_tasks)
-    let t_exist = await exist(t_task_dir)
-    if (t_exist) {
-      const t_modules = await readDir(t_task_dir, ['node_modules', 'package.json'])
-
-      if (justNames) {
-        names.globals = new Set(t_modules)
-      } else if (t_modules.length) {
-        await Promise.all(t_modules.map(async (item) => {
-          _this.tasks[item] = await read(join(t_task_dir, item, 'index.js'))
-        }))
-      }
+    // template tasks
+    if (opts.template && opts.template !== '') {
+      await collect(dir(
+        options.data_templates,
+        opts.template,
+        opts.paths.tasks), 'template')
     }
+
+    // global tasks
+    await collect(dir(options.data_tasks), 'global')
 
     // locals
-    const u_task_dir = cwd('fbi')
-    let u_exist = await exist(u_task_dir)
-    if (u_exist) {
-      let u_modules = await readDir(u_task_dir)
-      u_modules = u_modules.filter(isTaskFile)
-
-      if (justNames) {
-        u_modules.map(item => {
-          item = basename(item, '.js')
-          names.locals.add(item)
-        })
-      } else if (u_modules.length) {
-        await Promise.all(u_modules.map(async (item) => {
-          try {
-            _this.tasks[basename(item, '.js')] = await read(join(u_task_dir, item))
-          } catch (e) {
-            log(e)
-          }
-        }))
-      }
-      // names.locals = Array.from(new Set(names.locals)) // duplicate removal
-    }
+    await collect(cwd(opts.paths.tasks), 'local')
 
     if (justAvailable) {
       for (let item of names.template.values()) {
-        if (names.locals.has(item)) {
+        if (names.local.has(item)) {
           names.template.delete(item)
         }
       }
-      for (let item of names.globals.values()) {
-        if (names.locals.has(item)) {
-          names.globals.delete(item)
+      for (let item of names.global.values()) {
+        if (names.local.has(item)) {
+          names.global.delete(item)
         }
         if (names.template.has(item)) {
-          names.globals.delete(item)
+          names.global.delete(item)
         }
       }
     }
@@ -176,34 +147,12 @@ export default class Task {
     const module = new Module(ctx.options)
 
     function requireResolve(mod) {
-
       // find mod path
       let mod_path = module.get(mod, taskObj.type)
-
-      // if (isRelative(mod)) {
-      //   log(`${mod} isRelative`)
-      //   const _exist = existSync(join(mod_path, mod))
-      //   if (_exist) {
-      //     let cnt2 = fs.readFileSync(join(mod_path, mod), 'utf8')
-      //   }
-      // }
-
-
-      // if (mod_path) {
-      //   if (mod_path === 'global') {
-      //     return require(mod) // native or global module
-      //   } else {
-      //     return require(join(mod_path, mod))
-      //   }
-      // } else {
-      //   log(`Module not found: ${mod}, try 'fbi install'`, 0)
-      // }
-
       if (mod_path && mod_path !== 'global') {
         return require(join(mod_path, mod))
       } else {
         return mod ? require(mod) : require
-        // log(`Module not found: ${mod}, try 'fbi install'`, 0)
       }
     }
 
