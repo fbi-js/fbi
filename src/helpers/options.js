@@ -7,6 +7,11 @@ export const defaultOptions = {
     tasks: 'fbi/',
     options: 'fbi/config.js'
   },
+  data: {
+    root: './data',
+    tasks: './data/tasks',
+    templates: './data/templates'
+  },
   server: {
     root: './',
     host: 'localhost',

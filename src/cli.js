@@ -10,7 +10,7 @@ import {
   cwd, dir, join, exist, existSync, readDir,
   log, merge, read, write, install, copyFile,
   isTaskName, isTaskFile, basename, parseArgvs,
-  rmdir, rmfile, mkdir,
+  rmdir, rmfile, mkdir, isAbsolute,
   genTaskHelpTxt, genTmplHelpTxt, genNpmscriptsHelpTxt
 } from './helpers/utils'
 
@@ -26,7 +26,7 @@ let helps =
     Commands:
 
       ls, list                list all tasks & templates
-      new [template]          create a new project via template
+      init [template]         init a new project via template
       add-task                add task files in current folder
       add-tmpl [name]         add current folder as a template named [name]
       rm-task [name]          remove task
@@ -61,12 +61,14 @@ export default class Cli {
           this.version()
           await this.config()
           await this.help()
-          await this.create()
+          await this.init()
           await this.install()
           await this.remove()
           await this.cat()
           await this.list()
           await this.add()
+          this.backup()
+          this.recover()
           await this.run()
         } catch (e) {
           log(e, 0)
@@ -135,6 +137,13 @@ export default class Cli {
       }
       // merge user options
       this.options = getOptions(userOptions)
+
+      // parse data path
+      Object.keys(this.options.data).map(item => {
+        if(!isAbsolute(this.options.data[item])){
+          this.options.data[item] = dir(this.options.data[item])
+        }
+      })
 
     } catch (e) {
       log(e)
@@ -209,14 +218,14 @@ export default class Cli {
     }
   }
 
-  async create() {
+  async init() {
     if (!this.next) return
 
-    if (this.argvs[0] === 'new') {
+    if (this.argvs[0] === 'init') {
       this.next = false
 
       if (!this.argvs[1]) {
-        return log(`Usage: fbi new [template name]`, 0)
+        return log(`Usage: fbi init [template name]`, 0)
       }
       // log(this.argvs[1].match(/^[^\\/:*""<>|,]+$/i))
       try {
@@ -448,6 +457,28 @@ ${taskObj.cnt}
     }
   }
 
+  backup() {
+    if (!this.next) return
+
+    if (this.argvs[0] === 'backup') {
+      this.next = false
+
+      log('Start to backup data...', 1)
+      copy(dir(options.data), cwd(), ['node_modules', 'dst', '.DS_Store'])
+    }
+  }
+
+  recover() {
+    if (!this.next) return
+
+    if (this.argvs[0] === 'recover') {
+      this.next = false
+
+      log('Start to recover data...', 1)
+      copy(cwd(), dir(options.data), ['node_modules', 'dst', '.DS_Store'])
+    }
+  }
+
   async run() {
     if (!this.next) return
 
@@ -500,3 +531,11 @@ ${taskObj.cnt}
   }
 
 }
+
+/** TODO:
+ * backup
+ * recover
+ * handbook
+ *
+ */
+

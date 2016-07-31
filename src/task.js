@@ -15,8 +15,10 @@ export default class Task {
 
   async get(name, type, opts) {
     // if alias, get fullname from alias
+    // let desc = ''
     if (opts.alias && opts.alias[name]) {
       name = opts.alias[name]
+      // desc = opts.alias[name].split(' ')[1]
     }
 
     // local task > tempalte task => global task
@@ -25,6 +27,8 @@ export default class Task {
       cnt: '',
       type: '',
       path: ''
+      // ,
+      // desc: desc
     }
 
     async function find(_path, _type) {
@@ -123,8 +127,15 @@ export default class Task {
         // alias
         for (let i = 0, len = names[item].length; i < len; i++) {
           let alias = ''
+          let description = ''
           if (opts.alias) {
             Object.keys(opts.alias).map(a => {
+              // const name = opts.alias[a].split(' ')[0]
+              // const desc = opts.alias[a].split(' ')[1]
+              // if(name === names[item][i]){
+              //   alias = a
+              //   description = desc
+              // }
               if (opts.alias[a] === names[item][i]) {
                 alias = a
               }
@@ -133,7 +144,8 @@ export default class Task {
 
           names[item][i] = {
             name: names[item][i],
-            alias: alias
+            alias: alias,
+            desc: description
           }
         }
       })
