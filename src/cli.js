@@ -2,7 +2,6 @@ import { createInterface } from 'readline'
 import Task from './task'
 import Module from './module'
 import Template from './template'
-import options from './options'
 import copy from './helpers/copy'
 import { getOptions, defaultOptions } from './helpers/options'
 import { version } from '../package.json'
@@ -10,7 +9,7 @@ import {
   cwd, dir, join, exist, existSync, readDir,
   log, merge, read, write, install, copyFile,
   isTaskName, isTaskFile, basename, parseArgvs,
-  rmdir, rmfile, mkdir, isAbsolute,
+  rmdir, rmfile, mkdir, isAbsolute, clone,
   genTaskHelpTxt, genTmplHelpTxt, genNpmscriptsHelpTxt
 } from './helpers/utils'
 
@@ -38,10 +37,8 @@ let helps =
       -v, --version           output the version number
 `
 
-
-
 const task = new Task()
-const template = new Template(options)
+const template = new Template()
 
 export default class Cli {
 
@@ -95,7 +92,7 @@ export default class Cli {
       this.next = false
 
       helps += genTaskHelpTxt(await task.all(this.options, true, true))
-      helps += genTmplHelpTxt(await template.all())
+      helps += genTmplHelpTxt(await template.all(this.options))
       helps += `
       `
       console.log(helps)
@@ -107,24 +104,33 @@ export default class Cli {
 
     // user options > tempalte options > default options
     try {
-      // default options
-      this.options = defaultOptions
-
       // user options
-      const userOptionsPath = cwd(this.options.paths.options)
+      const userOptionsPath = cwd(defaultOptions.paths.options)
       this.isfbi = await exist(userOptionsPath)
       const userOptions = this.isfbi ? require(userOptionsPath) : null
 
+      // merge user options
+      this.options = getOptions(userOptions)
+
+
+      let data = clone(this.options.data)
+      // parse data path
+      Object.keys(data).map(item => {
+        if (!isAbsolute(data[item])) {
+          data[item] = dir(data[item])
+        }
+      })
+
       // template options
       if (userOptions && userOptions.template) {
-        this.options['node_modules_path'] = dir(
-          options.data_templates,
+        this.options['node_modules_path'] = join(
+          data.templates,
           userOptions.template,
           'node_modules'
         )
 
-        const templateOptionsPath = dir(
-          options.data_templates,
+        const templateOptionsPath = join(
+          data.templates,
           userOptions.template,
           this.options.paths.options
         )
@@ -132,19 +138,17 @@ export default class Cli {
         if (existSync(templateOptionsPath)) {
           const templateOptions = require(templateOptionsPath)
           // merge template options
-          this.options = getOptions(templateOptions)
+          merge(this.options, templateOptions)
         }
       }
       // merge user options
-      this.options = getOptions(userOptions)
-
+      merge(this.options, userOptions)
       // parse data path
       Object.keys(this.options.data).map(item => {
-        if(!isAbsolute(this.options.data[item])){
+        if (!isAbsolute(this.options.data[item])) {
           this.options.data[item] = dir(this.options.data[item])
         }
       })
-
     } catch (e) {
       log(e)
     }
@@ -170,7 +174,7 @@ export default class Cli {
 
       // template package.json => devDependencies
       if (opts.template) {
-        const tmplPkg = dir(options.data_templates, opts.template, 'package.json')
+        const tmplPkg = join(opts.data.templates, opts.template, 'package.json')
         const tmplPkg_exist = await exist(tmplPkg)
         if (tmplPkg_exist) {
           const tmplPkg_dev = require(tmplPkg)['devDependencies']
@@ -185,7 +189,7 @@ export default class Cli {
 
       // task package.json => devDependencies
       else {
-        const taskPkg = dir(options.data_tasks, 'package.json')
+        const taskPkg = join(opts.data.tasks, 'package.json')
         const taskPkg_exist = await exist(taskPkg)
         if (taskPkg_exist) {
           const taskPkg_dev = require(taskPkg).devDependencies
@@ -201,11 +205,11 @@ export default class Cli {
       const npms = opts.npm
 
       const installTmplDeps = Object.keys(tmplDeps).length
-        ? await install(tmplDeps, dir(options.data_templates, opts.template), npms.alias, npms.options)
+        ? await install(tmplDeps, join(opts.data.templates, opts.template), npms.alias, npms.options)
         : Promise.resolve()
 
       const installTaskDeps = Object.keys(taskDeps).length
-        ? await install(taskDeps, dir(options.data_tasks), npms.alias, npms.options)
+        ? await install(taskDeps, opts.data.tasks, npms.alias, npms.options)
         : Promise.resolve()
 
       // install
@@ -230,7 +234,7 @@ export default class Cli {
       // log(this.argvs[1].match(/^[^\\/:*""<>|,]+$/i))
       try {
         const name = this.argvs[1]
-        let succ = await template.copy(name, cwd())
+        let succ = await template.copy(name, cwd(), this.options)
         if (succ) {
           log(`Template '${name}' init in current folder`, 1)
         } else {
@@ -253,16 +257,16 @@ export default class Cli {
         log(`Usage: fbi rm-task [name]`, 0)
         process.exit(0)
       }
-      let tasks_path = dir(options.data_tasks)
+      let tasks_path = this.options.data.tasks
       let tmpl_name
       if (mods[0].indexOf('-') === 0) {
         tmpl_name = mods[0].slice(1)
         mods = mods.splice(1, 1)
         if (tmpl_name !== '') {
           if (mods.length) {
-            const tmpl_exist = await exist(dir(options.data_templates, tmpl_name))
+            const tmpl_exist = await exist(join(this.options.data.templates, tmpl_name))
             if (tmpl_exist) {
-              tasks_path = dir(options.data_templates, tmpl_name, this.options.paths.tasks)
+              tasks_path = join(this.options.data.templates, tmpl_name, this.options.paths.tasks)
             } else {
               log(`template '${tmpl_name}' not found`, 0)
               process.exit(0)
@@ -305,11 +309,11 @@ export default class Cli {
         log(`Usage: fbi rm-tmpl [name]`, 0)
         process.exit(0)
       }
-      const tmpls = await readDir(dir(options.data_templates))
+      const tmpls = await readDir(this.options.data.templates)
       mods.map(async (item) => {
         if (tmpls.includes(item)) {
           try {
-            rmdir(dir(options.data_templates, item), err => {
+            rmdir(join(this.options.data.templates, item), err => {
               if (err) {
                 log(err, 0)
               }
@@ -361,7 +365,7 @@ ${taskObj.cnt}
 
       let helps = genTaskHelpTxt(await task.all(this.options, true, false))
 
-      helps += genTmplHelpTxt(await template.all())
+      helps += genTmplHelpTxt(await template.all(this.options))
 
       if (await exist(cwd('package.json'))) {
         const usrpkg = require(cwd('package.json'))
@@ -385,7 +389,7 @@ ${taskObj.cnt}
 
       // add template
       const name = this.argvs[1] || basename(cwd(), '')
-      const isExist = await exist(dir(options.data_templates, name))
+      const isExist = await exist(join(this.options.data.templates, name))
 
       if (isExist) {
         log(`tempalte '${name}' already exist, type 'y' to replace, or type name to create new one`, -1)
@@ -409,21 +413,21 @@ ${taskObj.cnt}
           get()
         }).on('close', async () => {
           if (data.name === 'y') {
-            copy(cwd(), dir(options.data_templates, name), ['dst', 'dist'])
+            copy(cwd(), join(this.options.data.templates, name), ['dst', 'dist'])
           } else if (data.name === '') {
             log('name can\'t be empty', 0)
           } else {
-            const isExist2 = await exist(dir(options.data_templates, data.name))
+            const isExist2 = await exist(join(this.options.data.templates, data.name))
             if (isExist2) {
               log(`${data.name} already exist too`, 0)
               process.exit(0)
             } else {
-              copy(cwd(), dir(options.data_templates, data.name), ['dst', 'dist'])
+              copy(cwd(), join(this.options.data.templates, data.name), ['dst', 'dist'])
             }
           }
         })
       } else {
-        copy(cwd(), dir(options.data_templates, name), ['dst', 'dist'])
+        copy(cwd(), join(this.options.data.templates, name), ['dst', 'dist'])
       }
     }
 
@@ -439,7 +443,7 @@ ${taskObj.cnt}
           log(`no task found.`, 0)
         } else {
           ts.map(async (item) => {
-            const taskdir = dir(options.data_tasks)
+            const taskdir = join(this.options.data.tasks)
             const taskdir_exist = await exist(taskdir)
             const task_exist = await exist(join(taskdir, item))
             if (!taskdir_exist) {
@@ -463,8 +467,10 @@ ${taskObj.cnt}
     if (this.argvs[0] === 'backup') {
       this.next = false
 
+      const _dir = 'fbi-data-bak-' + Date.now()
+
       log('Start to backup data...', 1)
-      copy(dir(options.data), cwd(), ['node_modules', 'dst', '.DS_Store'])
+      copy(this.options.data.root, cwd(_dir), ['node_modules', 'dst', '.DS_Store'])
     }
   }
 
@@ -475,7 +481,7 @@ ${taskObj.cnt}
       this.next = false
 
       log('Start to recover data...', 1)
-      copy(cwd(), dir(options.data), ['node_modules', 'dst', '.DS_Store'])
+      copy(cwd(), this.options.data.root, ['node_modules', 'dst', '.DS_Store'])
     }
   }
 
@@ -533,8 +539,8 @@ ${taskObj.cnt}
 }
 
 /** TODO:
- * backup
- * recover
+ * backup-done
+ * recover-done
  * handbook
  *
  */

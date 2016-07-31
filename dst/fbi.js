@@ -124,6 +124,10 @@ function merge(target) {
   return target;
 }
 
+function clone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 function read(_p, charset) {
   return new Promise(function (resolve, reject) {
     fs.readFile(_p, charset || 'utf8', function (err, data) {
@@ -166,7 +170,7 @@ function install(source, rootPath, command, opts) {
     pkgs += item + '@' + source[item] + ' ';
     info += '\n       ' + item + '@' + source[item] + ' ';
   });
-  info += '\n       ' + (opts ? opts : '') + '\n  ...\n  ';
+  info += '\n       ' + (opts ? opts : '') + '\n    to:' + rootPath + '\n  ';
 
   process.chdir(rootPath);
   var cmd = command + ' install ' + pkgs + ' ' + (opts ? opts : '');
@@ -351,12 +355,6 @@ function genNpmscriptsHelpTxt(all) {
   return txt;
 }
 
-var options = {
-  data: './data',
-  data_tasks: './data/tasks',
-  data_templates: './data/templates'
-};
-
 var Module = function () {
   function Module(opts) {
     classCallCheck(this, Module);
@@ -371,9 +369,9 @@ var Module = function () {
      */
     this.modulePaths = [cwd('node_modules')];
     if (opts.template) {
-      this.modulePaths.push(dir(options.data_templates, opts.template, 'node_modules'));
+      this.modulePaths.push(join(opts.data.templates, opts.template, 'node_modules'));
     }
-    this.modulePaths.push(dir(options.data_tasks, 'node_modules'));
+    this.modulePaths.push(join(opts.data.tasks, 'node_modules'));
     this.modulePaths.push(''); // global
 
     this.opts = opts;
@@ -392,7 +390,7 @@ var Module = function () {
           ret = localTasks;
         } catch (e) {
           try {
-            var tmplTasks = dir(options.data_templates, this.opts.template, this.opts.paths.tasks);
+            var tmplTasks = join(this.opts.data.templates, this.opts.template, this.opts.paths.tasks);
             var _found = require.resolve(join(tmplTasks, name));
             ret = tmplTasks;
           } catch (e) {
@@ -500,11 +498,11 @@ var Task = function () {
         }
       }).then(function () {
         if (!ret.cnt && opts.template && opts.template !== '') {
-          return find(dir(options.data_templates, opts.template, opts.paths.tasks, name), 'template');
+          return find(join(opts.data.templates, opts.template, opts.paths.tasks, name), 'template');
         }
       }).then(function () {
         if (!ret.cnt || type === 'global') {
-          return find(dir(options.data_tasks, name), 'global');
+          return find(join(opts.data.tasks, name), 'global');
         }
       }).then(function () {
         return ret;
@@ -585,10 +583,10 @@ var Task = function () {
         // locals
 
         if (opts.template && opts.template !== '') {
-          return collect(dir(options.data_templates, opts.template, opts.paths.tasks), 'template');
+          return collect(join(opts.data.templates, opts.template, opts.paths.tasks), 'template');
         }
       }).then(function () {
-        return collect(dir(options.data_tasks), 'global');
+        return collect(join(opts.data.tasks), 'global');
       }).then(function () {
         return collect(cwd(opts.paths.tasks), 'local');
       }).then(function () {
@@ -785,25 +783,20 @@ function copy(src, dst, cb) {
 }
 
 var Template = function () {
-  function Template(opts) {
+  function Template() {
     classCallCheck(this, Template);
-
-    this.opts = opts;
   }
 
   createClass(Template, [{
     key: 'copy',
-    value: function copy(name, dst) {
-      var ret,
-          src,
-          has,
-          _this = this;
+    value: function copy(name, dst, opts) {
+      var ret, src, has;
 
       if (!name) {
         return false;
       } else {
         ret = false;
-        src = dir(_this.opts.data_templates, name);
+        src = join(opts.data.templates, name);
         has = existSync(src);
 
 
@@ -817,12 +810,10 @@ var Template = function () {
     }
   }, {
     key: 'all',
-    value: function all() {
-      var templates,
-          _this2 = this;
-
+    value: function all(opts) {
+      var templates;
       return Promise.resolve().then(function () {
-        return readDir(dir(_this2.opts.data_templates));
+        return readDir(join(opts.data.templates));
       }).then(function (_resp) {
         templates = _resp;
 
@@ -862,12 +853,12 @@ function getOptions(opts) {
   return merge(defaultOptions, opts || {});
 }
 
-var version = "2.0.0-alpha.1";
+var version = "2.0.0-alpha.4";
 
 var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n    Commands:\n\n      ls, list                list all tasks & templates\n      init [template]         init a new project via template\n      add-task                add task files in current folder\n      add-tmpl [name]         add current folder as a template named [name]\n      rm-task [name]          remove task\n      rm-tmpl [name]          remove template\n      cat [task][-t, -g]      cat task content\n      i, install              install dependencies\n      i -f, install -f        install dependencies force\n      -h, --help              output usage information\n      -v, --version           output the version number\n';
 
 var task = new Task();
-var template = new Template(options);
+var template = new Template();
 
 var Cli = function () {
   function Cli(argvs) {
@@ -936,7 +927,7 @@ var Cli = function () {
               return task.all(_this7.options, true, true);
             }).then(function (_resp) {
               helps += genTaskHelpTxt(_resp);
-              return template.all();
+              return template.all(_this7.options);
             }).then(function (_resp) {
               helps += genTmplHelpTxt(_resp);
               helps += '\n      ';
@@ -950,10 +941,6 @@ var Cli = function () {
     key: 'config',
     value: function config() {
       var _this2,
-          userOptionsPath,
-          userOptions,
-          templateOptionsPath,
-          templateOptions,
           _this12 = this;
 
       return Promise.resolve().then(function () {
@@ -963,40 +950,53 @@ var Cli = function () {
 
         if (!!_this12.next) {
           return Promise.resolve().then(function () {
-            // default options
-            _this12.options = defaultOptions;
+            return function () {
+              var userOptionsPath, userOptions, data, templateOptionsPath, templateOptions;
+              return Promise.resolve().then(function () {
+                // user options
+                userOptionsPath = cwd(defaultOptions.paths.options);
+                return exist(userOptionsPath);
+              }).then(function (_resp) {
+                _this2.isfbi = _resp;
+                userOptions = _this2.isfbi ? require(userOptionsPath) : null;
 
-            // user options
-            userOptionsPath = cwd(_this12.options.paths.options);
-            return exist(userOptionsPath);
-          }).then(function (_resp) {
-            _this12.isfbi = _resp;
-            userOptions = _this12.isfbi ? require(userOptionsPath) : null;
+                // merge user options
 
-            // template options
+                _this2.options = getOptions(userOptions);
 
-            if (userOptions && userOptions.template) {
-              _this12.options['node_modules_path'] = dir(options.data_templates, userOptions.template, 'node_modules');
+                data = clone(_this2.options.data);
+                // parse data path
 
-              templateOptionsPath = dir(options.data_templates, userOptions.template, _this12.options.paths.options);
+                Object.keys(data).map(function (item) {
+                  if (!isAbsolute(data[item])) {
+                    data[item] = dir(data[item]);
+                  }
+                });
+
+                // template options
+                if (userOptions && userOptions.template) {
+                  _this2.options['node_modules_path'] = join(data.templates, userOptions.template, 'node_modules');
+
+                  templateOptionsPath = join(data.templates, userOptions.template, _this2.options.paths.options);
 
 
-              if (existSync(templateOptionsPath)) {
-                templateOptions = require(templateOptionsPath);
-                // merge template options
+                  if (existSync(templateOptionsPath)) {
+                    templateOptions = require(templateOptionsPath);
+                    // merge template options
 
-                _this12.options = getOptions(templateOptions);
-              }
-            }
-            // merge user options
-            _this12.options = getOptions(userOptions);
-
-            // parse data path
-            Object.keys(_this12.options.data).map(function (item) {
-              if (!isAbsolute(_this2.options.data[item])) {
-                _this2.options.data[item] = dir(_this2.options.data[item]);
-              }
-            });
+                    merge(_this2.options, templateOptions);
+                  }
+                }
+                // merge user options
+                merge(_this2.options, userOptions);
+                // parse data path
+                Object.keys(_this2.options.data).map(function (item) {
+                  if (!isAbsolute(_this2.options.data[item])) {
+                    _this2.options.data[item] = dir(_this2.options.data[item]);
+                  }
+                });
+              });
+            }();
           }).catch(function (e) {
             log(e);
           });
@@ -1025,21 +1025,21 @@ var Cli = function () {
           _test,
           _test2,
           _test3,
-          _this15 = this;
+          _this16 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this15.next) {
+        if (!!_this16.next) {
           return Promise.resolve().then(function () {
-            _test = _this15.argvs[0] === 'i' || _this15.argvs[0] === 'install';
+            _test = _this16.argvs[0] === 'i' || _this16.argvs[0] === 'install';
 
             if (_test) {
-              _this15.next = false;
+              _this16.next = false;
 
-              force = _this15.argvs[1] === '-f' || _this15.argvs[1] === '-force';
+              force = _this16.argvs[1] === '-f' || _this16.argvs[1] === '-force';
               localdeps = {};
               tmplDeps = {};
               taskDeps = {};
-              opts = _this15.options;
+              opts = _this16.options;
 
               // local package.json => devDependencies
             }
@@ -1055,7 +1055,7 @@ var Cli = function () {
 
             if (_test2) {
               return Promise.resolve().then(function () {
-                tmplPkg = dir(options.data_templates, opts.template, 'package.json');
+                tmplPkg = join(opts.data.templates, opts.template, 'package.json');
                 return exist(tmplPkg);
               }).then(function (_resp) {
                 tmplPkg_exist = _resp;
@@ -1078,7 +1078,7 @@ var Cli = function () {
 
                 if (_test3) {
                   return Promise.resolve().then(function () {
-                    taskPkg = dir(options.data_tasks, 'package.json');
+                    taskPkg = join(opts.data.tasks, 'package.json');
                     return exist(taskPkg);
                   }).then(function (_resp) {
                     taskPkg_exist = _resp;
@@ -1102,10 +1102,10 @@ var Cli = function () {
             if (_test) {
               return Promise.resolve().then(function () {
                 npms = opts.npm;
-                return Object.keys(tmplDeps).length ? install(tmplDeps, dir(options.data_templates, opts.template), npms.alias, npms.options) : Promise.resolve();
+                return Object.keys(tmplDeps).length ? install(tmplDeps, join(opts.data.templates, opts.template), npms.alias, npms.options) : Promise.resolve();
               }).then(function (_resp) {
                 installTmplDeps = _resp;
-                return Object.keys(taskDeps).length ? install(taskDeps, dir(options.data_tasks), npms.alias, npms.options) : Promise.resolve();
+                return Object.keys(taskDeps).length ? install(taskDeps, opts.data.tasks, npms.alias, npms.options) : Promise.resolve();
               }).then(function (_resp) {
                 installTaskDeps = _resp;
 
@@ -1128,24 +1128,24 @@ var Cli = function () {
       var name,
           succ,
           _test4,
-          _this32 = this;
+          _this33 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this32.next) {
-          _test4 = _this32.argvs[0] === 'init';
+        if (!!_this33.next) {
+          _test4 = _this33.argvs[0] === 'init';
 
           // log(this.argvs[1].match(/^[^\\/:*""<>|,]+$/i))
           if (_test4) {
-            _this32.next = false;
+            _this33.next = false;
           }
 
-          if (_test4 && !_this32.argvs[1]) {
+          if (_test4 && !_this33.argvs[1]) {
             return log('Usage: fbi init [template name]', 0);
           } else {
             if (_test4) {
               return Promise.resolve().then(function () {
-                name = _this32.argvs[1];
-                return template.copy(name, cwd());
+                name = _this33.argvs[1];
+                return template.copy(name, cwd(), _this33.options);
               }).then(function (_resp) {
                 succ = _resp;
 
@@ -1166,15 +1166,15 @@ var Cli = function () {
     key: 'remove',
     value: function remove() {
       var _this3,
-          _this39 = this;
+          _this40 = this;
 
       return Promise.resolve().then(function () {
-        _this3 = _this39;
+        _this3 = _this40;
 
-        if (!!_this39.next) {
+        if (!!_this40.next) {
           return Promise.resolve().then(function () {
 
-            if (_this39.argvs[0] === 'rm-task') {
+            if (_this40.argvs[0] === 'rm-task') {
               return function () {
                 var mods, tasks_path, tmpl_name, tmpl_exist, tasks, _test5, _test6, _test7;
 
@@ -1187,7 +1187,7 @@ var Cli = function () {
                     log('Usage: fbi rm-task [name]', 0);
                     process.exit(0);
                   }
-                  tasks_path = dir(options.data_tasks);
+                  tasks_path = _this3.options.data.tasks;
                   tmpl_name = void 0;
                   _test5 = mods[0].indexOf('-') === 0;
 
@@ -1201,14 +1201,14 @@ var Cli = function () {
 
                   if (_test7) {
                     return Promise.resolve().then(function () {
-                      return exist(dir(options.data_templates, tmpl_name));
+                      return exist(join(_this3.options.data.templates, tmpl_name));
                     }).then(function (_resp) {
                       tmpl_exist = _resp;
                     });
                   }
                 }).then(function () {
                   if (_test7 && tmpl_exist) {
-                    tasks_path = dir(options.data_templates, tmpl_name, _this3.options.paths.tasks);
+                    tasks_path = join(_this3.options.data.templates, tmpl_name, _this3.options.paths.tasks);
                   } else {
                     if (_test7) {
                       log('template \'' + tmpl_name + '\' not found', 0);
@@ -1250,7 +1250,7 @@ var Cli = function () {
               }();
             }
           }).then(function () {
-            if (_this39.argvs[0] === 'rm-tmpl') {
+            if (_this40.argvs[0] === 'rm-tmpl') {
               return function () {
                 var mods, tmpls;
                 return Promise.resolve().then(function () {
@@ -1262,14 +1262,14 @@ var Cli = function () {
                     log('Usage: fbi rm-tmpl [name]', 0);
                     process.exit(0);
                   }
-                  return readDir(dir(options.data_templates));
+                  return readDir(_this3.options.data.templates);
                 }).then(function (_resp) {
                   tmpls = _resp;
 
                   mods.map(function (item) {
                     if (tmpls.includes(item)) {
                       try {
-                        rmdir(dir(options.data_templates, item), function (err) {
+                        rmdir(join(_this3.options.data.templates, item), function (err) {
                           if (err) {
                             log(err, 0);
                           }
@@ -1296,36 +1296,36 @@ var Cli = function () {
           type,
           taskObj,
           _test8,
-          _this52 = this;
+          _this53 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this52.next) {
-          _test8 = _this52.argvs[0] === 'cat';
+        if (!!_this53.next) {
+          _test8 = _this53.argvs[0] === 'cat';
 
           if (_test8) {
-            _this52.next = false;
+            _this53.next = false;
           }
 
-          if (_test8 && !_this52.argvs[1]) {
+          if (_test8 && !_this53.argvs[1]) {
             return log('Usage: fbi cat [task] [-t, -g]', 0);
           } else {
             if (_test8) {
-              name = _this52.argvs[1];
+              name = _this53.argvs[1];
               type = 'local';
             }
 
-            if (_test8 && _this52.argvs[2] === '-g') {
+            if (_test8 && _this53.argvs[2] === '-g') {
               type = 'global';
             } else {
               if (_test8) {
-                if (_this52.argvs[2] === '-t') {
+                if (_this53.argvs[2] === '-t') {
                   type = 'template';
                 }
               }
             }
             if (_test8) {
               return Promise.resolve().then(function () {
-                return task.get(name, type, _this52.options);
+                return task.get(name, type, _this53.options);
               }).then(function (_resp) {
                 taskObj = _resp;
 
@@ -1344,21 +1344,21 @@ var Cli = function () {
           usrpkg,
           _test9,
           _test10,
-          _this59 = this;
+          _this60 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this59.next) {
+        if (!!_this60.next) {
           return Promise.resolve().then(function () {
-            _test9 = _this59.argvs[0] === 'ls' || _this59.argvs[0] === 'list';
+            _test9 = _this60.argvs[0] === 'ls' || _this60.argvs[0] === 'list';
 
             if (_test9) {
               return Promise.resolve().then(function () {
-                _this59.next = false;
+                _this60.next = false;
 
-                return task.all(_this59.options, true, false);
+                return task.all(_this60.options, true, false);
               }).then(function (_resp) {
                 _helps = genTaskHelpTxt(_resp);
-                return template.all();
+                return template.all(_this60.options);
               }).then(function (_resp) {
 
                 _helps += genTmplHelpTxt(_resp);
@@ -1392,15 +1392,15 @@ var Cli = function () {
     value: function add() {
       var _this4,
           ts,
-          _this65 = this;
+          _this66 = this;
 
       return Promise.resolve().then(function () {
-        _this4 = _this65;
+        _this4 = _this66;
 
-        if (!!_this65.next) {
+        if (!!_this66.next) {
           return Promise.resolve().then(function () {
 
-            if (_this65.argvs[0] === 'add-tmpl') {
+            if (_this66.argvs[0] === 'add-tmpl') {
               return function () {
                 var name, isExist;
                 return Promise.resolve().then(function () {
@@ -1408,7 +1408,7 @@ var Cli = function () {
 
                   // add template
                   name = _this4.argvs[1] || basename(cwd(), '');
-                  return exist(dir(options.data_templates, name));
+                  return exist(join(_this4.options.data.templates, name));
                 }).then(function (_resp) {
                   isExist = _resp;
 
@@ -1437,13 +1437,13 @@ var Cli = function () {
                         var isExist2;
                         return Promise.resolve().then(function () {
                           if (data.name === 'y') {
-                            _copy(cwd(), dir(options.data_templates, name), ['dst', 'dist']);
+                            _copy(cwd(), join(_this4.options.data.templates, name), ['dst', 'dist']);
                           } else {
                             if (data.name === '') {
                               log('name can\'t be empty', 0);
                             } else {
                               return Promise.resolve().then(function () {
-                                return exist(dir(options.data_templates, data.name));
+                                return exist(join(_this4.options.data.templates, data.name));
                               }).then(function (_resp) {
                                 isExist2 = _resp;
 
@@ -1451,7 +1451,7 @@ var Cli = function () {
                                   log(data.name + ' already exist too', 0);
                                   process.exit(0);
                                 } else {
-                                  _copy(cwd(), dir(options.data_templates, data.name), ['dst', 'dist']);
+                                  _copy(cwd(), join(_this4.options.data.templates, data.name), ['dst', 'dist']);
                                 }
                               });
                             }
@@ -1460,19 +1460,19 @@ var Cli = function () {
                       });
                     })();
                   } else {
-                    _copy(cwd(), dir(options.data_templates, name), ['dst', 'dist']);
+                    _copy(cwd(), join(_this4.options.data.templates, name), ['dst', 'dist']);
                   }
                 });
               }();
             }
           }).then(function () {
-            if (_this65.argvs[0] === 'add-task') {
-              _this65.next = false;
+            if (_this66.argvs[0] === 'add-task') {
+              _this66.next = false;
 
-              if (!_this65.argvs[1]) {
+              if (!_this66.argvs[1]) {
                 log('Usage: fbi add-task [*] or [name.js]', 0);
               } else {
-                ts = _this65.argvs.slice(1);
+                ts = _this66.argvs.slice(1);
 
                 ts = ts.filter(isTaskFile);
                 if (!ts.length) {
@@ -1481,7 +1481,7 @@ var Cli = function () {
                   ts.map(function (item) {
                     var taskdir, taskdir_exist, task_exist;
                     return Promise.resolve().then(function () {
-                      taskdir = dir(options.data_tasks);
+                      taskdir = join(_this4.options.data.tasks);
                       return exist(taskdir);
                     }).then(function (_resp) {
                       taskdir_exist = _resp;
@@ -1517,8 +1517,10 @@ var Cli = function () {
       if (this.argvs[0] === 'backup') {
         this.next = false;
 
+        var _dir = 'fbi-data-bak-' + Date.now();
+
         log('Start to backup data...', 1);
-        _copy(dir(options.data), cwd(), ['node_modules', 'dst', '.DS_Store']);
+        _copy(this.options.data.root, cwd(_dir), ['node_modules', 'dst', '.DS_Store']);
       }
     }
   }, {
@@ -1530,7 +1532,7 @@ var Cli = function () {
         this.next = false;
 
         log('Start to recover data...', 1);
-        _copy(cwd(), dir(options.data), ['node_modules', 'dst', '.DS_Store']);
+        _copy(cwd(), this.options.data.root, ['node_modules', 'dst', '.DS_Store']);
       }
     }
   }, {
@@ -1538,14 +1540,14 @@ var Cli = function () {
     value: function run() {
       var _this5,
           cmds,
-          _this79 = this;
+          _this80 = this;
 
-      _this5 = _this79;
+      _this5 = _this80;
 
-      if (!!_this79.next) {
-        cmds = _this79.argvs;
+      if (!!_this80.next) {
+        cmds = _this80.argvs;
 
-        if (_this79.argvs.length > 0) {
+        if (_this80.argvs.length > 0) {
           (function () {
             var ret = void 0;
             var prefix = _this5.options.task_param_prefix;
@@ -1608,6 +1610,13 @@ var Cli = function () {
   }]);
   return Cli;
 }();
+
+/** TODO:
+ * backup-done
+ * recover-done
+ * handbook
+ *
+ */
 
 var Fbi = function () {
   function Fbi() {

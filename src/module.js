@@ -1,5 +1,6 @@
-import {cwd, dir, join, log, exist, isRelative} from './helpers/utils'
-import options from './options'
+import {
+  cwd, dir, join, log, exist, isRelative
+} from './helpers/utils'
 
 export default class Module {
 
@@ -15,10 +16,10 @@ export default class Module {
     this.modulePaths = [cwd('node_modules')]
     if (opts.template) {
       this.modulePaths.push(
-        dir(options.data_templates, opts.template, 'node_modules')
+        join(opts.data.templates, opts.template, 'node_modules')
       )
     }
-    this.modulePaths.push(dir(options.data_tasks, 'node_modules'))
+    this.modulePaths.push(join(opts.data.tasks, 'node_modules'))
     this.modulePaths.push('') // global
 
     this.opts = opts
@@ -35,7 +36,7 @@ export default class Module {
         ret = localTasks
       } catch (e) {
         try {
-          const tmplTasks = dir(options.data_templates, this.opts.template, this.opts.paths.tasks)
+          const tmplTasks = join(this.opts.data.templates, this.opts.template, this.opts.paths.tasks)
           const found = require.resolve(join(tmplTasks, name))
           ret = tmplTasks
         } catch (e) {

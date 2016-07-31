@@ -1,5 +1,7 @@
 ctx.next = false
 
+// ctx.log(ctx)
+
 const npm = require('global-npm')
 
 let cmdName = ctx.argvs[1]

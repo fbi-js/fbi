@@ -1,7 +1,6 @@
 import fs from 'fs'
 import vm from 'vm'
 import Module from './module'
-import options from './options'
 import {
   dir, join, cwd, readDir, log, read, exist,
   existSync, isTaskFile, basename, isRelative
@@ -48,8 +47,8 @@ export default class Task {
 
     // find in template
     if (!ret.cnt && opts.template && opts.template !== '') {
-      await find(dir(
-        options.data_templates,
+      await find(join(
+        opts.data.templates,
         opts.template,
         opts.paths.tasks,
         name), 'template')
@@ -57,7 +56,7 @@ export default class Task {
 
     // find in global
     if (!ret.cnt || type === 'global') {
-      await find(dir(options.data_tasks, name), 'global')
+      await find(join(opts.data.tasks, name), 'global')
     }
 
     return ret
@@ -92,14 +91,14 @@ export default class Task {
 
     // template tasks
     if (opts.template && opts.template !== '') {
-      await collect(dir(
-        options.data_templates,
+      await collect(join(
+        opts.data.templates,
         opts.template,
         opts.paths.tasks), 'template')
     }
 
     // global tasks
-    await collect(dir(options.data_tasks), 'global')
+    await collect(join(opts.data.tasks), 'global')
 
     // locals
     await collect(cwd(opts.paths.tasks), 'local')

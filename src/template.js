@@ -6,16 +6,15 @@ import copy from './helpers/copy'
 
 export default class Template {
 
-  constructor(opts) {
-    this.opts = opts
+  constructor() {
   }
 
-  async copy(name, dst) {
+  async copy(name, dst, opts) {
     if (!name) {
       return false
     }
     let ret = false
-    const src = dir(this.opts.data_templates, name)
+    const src = join(opts.data.templates, name)
     const has = existSync(src)
 
     if (has) {
@@ -25,8 +24,8 @@ export default class Template {
     return ret
   }
 
-  async all() {
-    let templates = await readDir(dir(this.opts.data_templates))
+  async all(opts) {
+    let templates = await readDir(join(opts.data.templates))
     templates = templates.filter(isTemplate)
     return templates
   }

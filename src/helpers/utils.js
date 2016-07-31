@@ -75,6 +75,10 @@ export function merge(target) {
   return target
 }
 
+export function clone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 export function validJson(data) {
   try {
     var o = JSON.parse(data)
@@ -132,7 +136,7 @@ export function install(source, rootPath, command, opts) {
   })
   info += `
        ${opts ? opts : ''}
-  ...
+    to:${rootPath}
   `;
 
   process.chdir(rootPath)
