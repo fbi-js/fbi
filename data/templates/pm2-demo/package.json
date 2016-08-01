@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "dev": "pm2-dev start config/pm2-dev.json",
-    "pro": "pm2 start config/pm2-pro.json"
+    "pro": "pm2 start config/pm2-pro.json",
+    "debug": "devtool app.js"
   },
   "author": "",
   "license": "ISC",

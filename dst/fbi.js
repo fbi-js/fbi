@@ -407,7 +407,6 @@ var Module = function () {
             var item = _step.value;
 
             var _p = join(item, name);
-
             try {
               var _found2 = require.resolve(_p);
 
@@ -1610,13 +1609,6 @@ var Cli = function () {
   }]);
   return Cli;
 }();
-
-/** TODO:
- * backup-done
- * recover-done
- * handbook
- *
- */
 
 var Fbi = function () {
   function Fbi() {

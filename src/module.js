@@ -46,7 +46,6 @@ export default class Module {
     } else {
       for (let item of this.modulePaths) {
         let _p = join(item, name)
-
         try {
           let found = require.resolve(_p)
 
