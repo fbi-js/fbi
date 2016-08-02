@@ -1,10 +1,12 @@
 module.exports = {
   template: 'rollup-demo',
+  // test
   data: {
-    root: './data2',
-    tasks: './data2/tasks',
-    templates: './data2/templates'
+    root: './data',
+    tasks: './data/tasks',
+    templates: './data/templates'
   },
+  // end test
   alias: {
     b: 'build',
     s: 'serve'

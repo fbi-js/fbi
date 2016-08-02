@@ -293,6 +293,15 @@ export function parseArgvs(arr, prefix) {
   return ret
 }
 
+export function fillGap(str, max, gap) {
+  gap = gap === undefined ? ' ' : gap
+  if (str.length >= max) {
+    return str
+  } else {
+    return str + gap.repeat(max - str.length)
+  }
+}
+
 export function genTaskHelpTxt(all) {
   if (!Object.keys(all).length) {
     return ''
@@ -304,7 +313,7 @@ export function genTaskHelpTxt(all) {
     if (all[type].length) {
       all[type].map(item => {
         txt += `
-      ${item.name} ${item.alias} <${type}>`;
+      ${fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' ')} <${type}>`;
       })
     }
   })
@@ -339,4 +348,14 @@ export function genNpmscriptsHelpTxt(all) {
       ${item}: '${all[item]}'`;
   })
   return txt
+}
+
+export function flatLog(cnt) {
+  console.log(
+    `
+
+${cnt}
+
+`
+  )
 }

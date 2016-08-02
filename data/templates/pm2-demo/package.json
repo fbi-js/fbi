@@ -8,7 +8,7 @@
     "pro": "pm2 start config/pm2-pro.json",
     "debug": "devtool app.js"
   },
-  "author": "",
+  "author": "fbi",
   "license": "ISC",
   "devDependencies": {
     "babel-plugin-transform-async-to-generator": "^6.8.0",

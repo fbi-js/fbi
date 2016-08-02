@@ -6,10 +6,7 @@ import copy from './helpers/copy'
 
 export default class Template {
 
-  constructor() {
-  }
-
-  async copy(name, dst, opts) {
+  async init(name, dst, opts) {
     if (!name) {
       return false
     }
@@ -18,7 +15,7 @@ export default class Template {
     const has = existSync(src)
 
     if (has) {
-      copy(src, dst, ['node_modules', 'dst', 'dist'])
+      copy(src, dst, opts.TEMPLATE_INIT_IGNORE)
       return true
     }
     return ret

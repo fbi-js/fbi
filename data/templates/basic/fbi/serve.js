@@ -6,11 +6,9 @@
 const http = require('http');
 const Koa = require('koa')
 const serve = require('koa-static')
+const opn = require('opn')
 const app = new Koa()
 const config = require('./some.config')
-
-// ctx is FBI Cli
-// ctx.log(ctx)
 
 ctx.log(`Start time: ${config.time}`)
 
@@ -45,4 +43,6 @@ function autoPortServer(cb) {
 // listen
 autoPortServer(port => {
   ctx.log(`Server runing at http://${ctx.options.server.host}:${port}`, 1)
+  ctx.log(`Server root: ${ctx.options.server.root}`)
+  opn(`http://${ctx.options.server.host}:${port}`)
 })

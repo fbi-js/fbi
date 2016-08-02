@@ -1,6 +1,4 @@
-import fs from 'fs'
 import vm from 'vm'
-import Module from './module'
 import {
   dir, join, cwd, readDir, log, read, exist,
   existSync, isTaskFile, basename, isRelative
@@ -14,10 +12,8 @@ export default class Task {
 
   async get(name, type, opts) {
     // if alias, get fullname from alias
-    // let desc = ''
     if (opts.alias && opts.alias[name]) {
       name = opts.alias[name]
-      // desc = opts.alias[name].split(' ')[1]
     }
 
     // local task > tempalte task => global task
@@ -26,8 +22,6 @@ export default class Task {
       cnt: '',
       type: '',
       path: ''
-      // ,
-      // desc: desc
     }
 
     async function find(_path, _type) {
@@ -129,12 +123,6 @@ export default class Task {
           let description = ''
           if (opts.alias) {
             Object.keys(opts.alias).map(a => {
-              // const name = opts.alias[a].split(' ')[0]
-              // const desc = opts.alias[a].split(' ')[1]
-              // if(name === names[item][i]){
-              //   alias = a
-              //   description = desc
-              // }
               if (opts.alias[a] === names[item][i]) {
                 alias = a
               }
@@ -153,9 +141,8 @@ export default class Task {
     return justNames ? names : _this.tasks
   }
 
-  run(name, ctx, taskObj) {
+  run(name, ctx, taskObj, module) {
     let taskCnt = taskObj.cnt || this.tasks[name]
-    const module = new Module(ctx.options)
 
     function requireResolve(mod) {
       // find mod path
@@ -171,7 +158,7 @@ export default class Task {
     (function(require, ctx) {
       if(!ctx.next || ctx.next === 'false') return false;
 
-      ctx.log('Running ${taskObj.type} task "${taskObj.name}${taskObj.params}\"...', 1);
+      ctx.log('Running ${taskObj.type} task "${taskObj.name}${taskObj.params}"...', 1);
       try {
         ${taskCnt}
       } catch (e) {

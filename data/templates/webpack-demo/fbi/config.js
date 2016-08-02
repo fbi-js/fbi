@@ -1,7 +1,7 @@
 module.exports = {
   template: 'webpack-demo',
   server: {
-    root: './dst',
+    root: 'dst/',
     host: 'localhost',
     port: 8888
   },
@@ -13,6 +13,7 @@ module.exports = {
   alias: {
     b: 'build',
     w: 'watch',
-    s: 'serve'
+    s: 'serve',
+    c: 'clean'
   }
 }

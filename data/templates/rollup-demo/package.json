@@ -2,9 +2,7 @@
   "name": "rollup-demo",
   "version": "1.0.0",
   "description": "",
-  "main": "",
-  "scripts": {},
-  "author": "",
+  "author": "fbi",
   "license": "ISC",
   "devDependencies": {
     "autoprefixer": "^6.3.7",

@@ -12,8 +12,10 @@ body {
 }
 
 .center {
+  padding: 1em;
+  background-color: #f8f8f8;
+  text-align: center;
   h2 {
-    text-align: center;
     font-size: 30px;
   }
   .desc {

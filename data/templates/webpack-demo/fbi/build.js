@@ -3,32 +3,24 @@
  * ctx => fbi
  * require => requireResolve
  */
+const ora = require('ora')
 const webpack = require('webpack')
 const webpackConfig = require('./webpack.config.js')(require, ctx)
 
 const isProduction = ctx.taskParams && ctx.taskParams[0] === 'p' // fbi build -p
+const env = isProduction ? 'production' : 'development'
+const spinner = ora(`Running webpack in env:${env}`).start()
 
-if (isProduction) {
-  ctx.log('env: production')
-  webpackConfig['plugins'].push(
-    new webpack.optimize.UglifyJsPlugin({ // js ugllify
-      compress: {
-        warnings: false
-      }
-    })
-  )
-}
-
-const compiler = webpack(webpackConfig)
-
-compiler.run(function (err, stats) {
+webpack(webpackConfig, (err, stats) => {
+  spinner.succeed()
   if (err) {
-    ctx.log(err, 0)
+    console.log(err, 0)
   }
 
-  ctx.log(`webpack output:
+  console.log(`
 ${stats.toString({
       chunks: false,
       colors: true
-    })}`)
+    })}
+    `)
 })

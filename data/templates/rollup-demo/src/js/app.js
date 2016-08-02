@@ -8,7 +8,7 @@ async function init() {
   const txt = await red()
   console.log(txt)
 
-  const modal = new Modal()
+  const modal = new Modal('pop modal')
   modal.init()
 
   window.setTimeout(() => {

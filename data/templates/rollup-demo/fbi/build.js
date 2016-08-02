@@ -53,6 +53,7 @@ try {
   fs.accessSync(dst)
 } catch (e) {
   fs.mkdirSync(dst)
+  fs.mkdirSync(dst + '/js')
 }
 
 rollup.rollup({

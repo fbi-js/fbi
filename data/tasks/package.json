@@ -7,17 +7,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "brunch": "^2.8.2",
-    "fs": "0.0.2",
     "global-npm": "^0.3.0",
-    "gulp": "^3.9.1",
-    "http": "0.0.0",
     "koa": "^2.0.0",
-    "koa-static": "^3.0.0",
-    "rollup": "^0.34.1",
-    "uglify-js": "^2.7.0",
-    "webpack": "^2.1.0-beta.20",
-    "babel-plugin-transform-async-to-generator": "^6.8.0",
-    "babel-register": "^6.11.6"
+    "koa-static": "^3.0.0"
   }
 }
