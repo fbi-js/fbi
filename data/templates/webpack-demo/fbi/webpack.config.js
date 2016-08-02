@@ -2,7 +2,6 @@ module.exports = (requireReslove, ctx) => {
   const webpack = requireReslove('webpack')
   const ExtractTextPlugin = requireReslove('extract-text-webpack-plugin')
   const HtmlWebpackPlugin = requireReslove('html-webpack-plugin')
-  const es2015 = requireReslove('babel-preset-es2015')
   const nodeModulesPath = ctx.options.node_modules_path
   const isProduction = ctx.taskParams && ctx.taskParams[0] === 'p' // fbi build -p
   const autoprefixerBrowsers = [
