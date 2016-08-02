@@ -766,7 +766,7 @@ function _copy(src, dst) {
   readable.pipe(writable);
 
   var _path = path.relative(process.cwd(), dst);
-  console.log('copied => ' + _path);
+  log('copied => ' + _path);
 }
 
 function copy$1(src, dst, cb) {

@@ -10,7 +10,8 @@ import {
   log, merge, read, write, install, copyFile,
   isTaskName, isTaskFile, basename, parseArgvs,
   rmdir, rmfile, mkdir, isAbsolute, clone, flatLog,
-  genTaskHelpTxt, genTmplHelpTxt, genNpmscriptsHelpTxt
+  genTaskHelpTxt, genTmplHelpTxt, genNpmscriptsHelpTxt,
+  writeSync
 } from './helpers/utils'
 
 let helps =

@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import {log} from './utils'
 
 let ignore = []
 
@@ -51,7 +52,7 @@ function _copy(src, dst) {
   readable.pipe(writable)
 
   let _path = path.relative(process.cwd(), dst)
-  console.log(`copied => ${_path}`)
+  log(`copied => ${_path}`)
 }
 
 function copy(src, dst, cb) {
