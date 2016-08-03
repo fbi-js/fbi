@@ -30,7 +30,7 @@ let helps =
       rta,   rm-task  [-t] [name]     remove task
       rtm,   rm-tmpl  [name]          remove template
       i,     install                  install dependencies
-      ls,    list                    list all tasks & templates
+      ls,    list                     list all tasks & templates
       cat    [task]   [-t, -g]        cat task content
       init   [template]               init a new project via template
       backup                          backup tasks & templates
