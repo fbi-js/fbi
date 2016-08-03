@@ -1,7 +1,7 @@
 {
   "name": "fbi",
   "version": "2.0.0",
-  "description": "Tasks & Templates Management",
+  "description": "Node.js workflow tool",
   "engines": {
     "node": ">=6.0",
     "npm": ">= 3.0"

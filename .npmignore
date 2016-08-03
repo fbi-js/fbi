@@ -9,10 +9,9 @@
 .wafpickle-*
 CVS
 npm-debug.log
-.Ulysses-Group.plist
 demo*
 test*
-data
+data/*
 bench
 coverage
 test
