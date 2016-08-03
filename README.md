@@ -3,6 +3,8 @@
   <p style="font-size:16px;">Node.js workflow tool</p>
 </div>
 
+[中文版](./README_zh-cn.md)
+
 ### Features
 
 * Tasks Management -  manage your js files as global tasks
@@ -145,7 +147,3 @@ $ fbi ls              # see available Tasks & Templates
 
 * How does FBI to identify template?
   1. fbi/config.js => template
-
-
-
-[FBI Handbook 中文](https://neikvon.gitbooks.io/fbi/content/)
