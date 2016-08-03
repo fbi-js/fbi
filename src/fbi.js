@@ -109,11 +109,10 @@ export default class Fbi {
 
       // template options
       if (userConfig && userConfig.template) {
-        this.options['node_modules_path'] = join(
-          data.templates,
-          userConfig.template,
-          'node_modules'
-        )
+        const _existTmpl = await exist(join(data.templates, userConfig.template))
+        this.options['node_modules_path'] = _existTmpl
+          ? join(data.templates, userConfig.template, 'node_modules')
+          : cwd('node_modules')
 
         const templateOptionsPath = join(
           data.templates,

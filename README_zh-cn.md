@@ -48,6 +48,7 @@ $ fbi -v,    --version                # 显示版本号
 
 #### 添加任务
 
+[查看完整示例](https://github.com/neikvon/fbi-tasks-demo)
 
 ```js
 // showtime.js
@@ -69,6 +70,8 @@ $ fbi showtime
 你可以像编写普通node.js程序一样编写任务，如果有依赖第三方模块，在```fbi ata [name].js```添加任务后，还需要```fbi i```安装依赖，依赖将会安装在全局任务目录。
 
 #### 添加模板
+
+[查看完整示例](https://github.com/neikvon/fbi-template-webpack-demo)
 
 ```bash
 |-- proj-name
@@ -130,11 +133,22 @@ ${stats.toString({
 })
 ```
 
+**测试**
+```bash
+$ fbi b
+```
+
+**添加**
 ```bash
 $ fbi atm
 # or
-$ fbi atm [new-name]
+$ fbi atm [new-name]  # [new-name] should equal to config.js=>template
 ```
+**安装**
+```bash
+$ fbi i               # install dependencies
+```
+**检查**
 ```bash
 $ fbi ls              # see available Tasks & Templates
 ```
@@ -147,3 +161,8 @@ $ fbi ls              # see available Tasks & Templates
 
 * FBI 怎么识别模版?
   1. fbi/config.js => template  配置项指定的模版名称
+
+* FBI查找任务的顺序是什么?
+  1. 本地 => ./fbi/ 目录下的js文件
+  1. 是模版 ? => 全局模版任务
+  1. 全局 => 全局任务

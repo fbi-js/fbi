@@ -48,6 +48,8 @@ $ fbi -v,    --version                # output the version number
 
 #### Add task
 
+[see full demo](https://github.com/neikvon/fbi-tasks-demo)
+
 
 ```js
 // showtime.js
@@ -69,6 +71,8 @@ $ fbi showtime
 you can write a task as normal node.js program, if required npm modules, after ```fbi ata [name].js```, you should ```fbi i``` to install dependencies, dependencies will be installed in the global tasks folder.
 
 #### Add template
+
+[see full demo](https://github.com/neikvon/fbi-template-webpack-demo)
 
 ```bash
 |-- proj-name
@@ -130,11 +134,22 @@ ${stats.toString({
 })
 ```
 
+**test**
+```bash
+$ fbi b
+```
+
+**add**
 ```bash
 $ fbi atm
 # or
-$ fbi atm [new-name]
+$ fbi atm [new-name]  # [new-name] should equal to config.js=>template
 ```
+**install**
+```bash
+$ fbi i               # install dependencies
+```
+**check**
 ```bash
 $ fbi ls              # see available Tasks & Templates
 ```
@@ -147,3 +162,8 @@ $ fbi ls              # see available Tasks & Templates
 
 * How does FBI to identify template?
   1. fbi/config.js => template
+
+* What's the order does FBI find a task?
+  1. local => ./fbi/
+  1. is template ? => global template tasks
+  1. global => global tasks
