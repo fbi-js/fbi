@@ -1,0 +1,17 @@
+.*.swp
+._*
+*.log
+.DS_Store
+.git
+.hg
+.lock-wscript
+.svn
+.wafpickle-*
+CVS
+npm-debug.log
+demo*
+test*
+data/*
+bench
+coverage
+test

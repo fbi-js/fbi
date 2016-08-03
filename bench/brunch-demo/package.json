@@ -1,0 +1,12 @@
+{
+  "name": "brunch-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "brunch": "^2.8.2"
+  }
+}

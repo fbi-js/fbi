@@ -1,0 +1,45 @@
+{
+  "name": "fbi",
+  "version": "2.0.0",
+  "description": "Node.js workflow tool",
+  "engines": {
+    "node": ">=6.0",
+    "npm": ">= 3.0"
+  },
+  "bin": {
+    "fbi": "./bin/fbi"
+  },
+  "main": "dst/index.js",
+  "scripts": {
+    "build": "rollup -c --environment entry:fbi",
+    "watch": "rollup -c -w --environment entry:fbi",
+    "watch2": "rollup -c -w --environment entry:index",
+    "test": "ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neikvon/fbi.git"
+  },
+  "keywords": [
+    "fbi",
+    "node",
+    "task",
+    "template",
+    "management"
+  ],
+  "bugs": {
+    "url": "https://github.com/neikvon/fbi/issues"
+  },
+  "homepage": "https://github.com/neikvon/fbi#readme",
+  "author": "shawnnxiao <neikvon@icloud.com>",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "babel-plugin-async-to-promises": "^1.0.5",
+    "babel-preset-es2015-rollup": "^1.1.0",
+    "rollup": "^0.34.1",
+    "rollup-plugin-babel": "^2.6.1",
+    "rollup-plugin-json": "^2.0.1",
+    "rollup-watch": "^2.5.0"
+  }
+}

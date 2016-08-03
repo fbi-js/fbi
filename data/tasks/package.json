@@ -1,0 +1,14 @@
+{
+  "name": "data",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "global-npm": "^0.3.0",
+    "koa": "^2.0.0",
+    "koa-static": "^3.0.0"
+  }
+}

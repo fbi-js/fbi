@@ -1,0 +1,24 @@
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.center {
+  padding: 1em;
+  background-color: #f8f8f8;
+  text-align: center;
+  h2 {
+    font-size: 30px;
+  }
+  .desc {
+    color: #999
+  }
+}

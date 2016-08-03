@@ -1,0 +1,21 @@
+{
+  "name": "npm-scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "dev": "pm2-dev start config/pm2-dev.json",
+    "pro": "pm2 start config/pm2-pro.json",
+    "debug": "devtool app.js"
+  },
+  "author": "fbi",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-plugin-transform-async-to-generator": "^6.8.0",
+    "babel-register": "^6.11.6"
+  },
+  "dependencies": {
+    "koa": "^2.0.0-alpha.4",
+    "koa-static": "^3.0.0"
+  }
+}

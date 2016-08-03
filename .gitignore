@@ -1,2 +1,9 @@
+<<<<<<< HEAD
 data
 bench
+=======
+*.log
+node_modules
+.DS_Store
+dst/
+>>>>>>> v2.x
