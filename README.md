@@ -64,11 +64,7 @@ $ fbi showtime
 # FBI => Running global task "showtime"...
 # 2016-08-03T09:06:28.349Z
 ```
-you can write a task as normal node.js program,
-
-if required npm modules, after ```fbi ata [name].js```, you should ```fbi i``` to install dependencies,
-
-dependencies will be installed in the global tasks folder.
+you can write a task as normal node.js program, if required npm modules, after ```fbi ata [name].js```, you should ```fbi i``` to install dependencies, dependencies will be installed in the global tasks folder.
 
 #### Add template
 
@@ -141,6 +137,15 @@ $ fbi atm [new-name]
 $ fbi ls              # see available Tasks & Templates
 ```
 
-### Rules
+### Q&A
+* How does FBI to identify task?
+  1. fbi/config.js => paths.tasks
+  1. '.js' file
+  1. Does not contain 'config' characters
+
+* How does FBI to identify template?
+  1. fbi/config.js => template
+
+
 
 [FBI Handbook 中文](https://neikvon.gitbooks.io/fbi/content/)
