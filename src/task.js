@@ -116,28 +116,28 @@ export default class Task {
     if (justNames) {
       Object.keys(names).map(item => {
         names[item] = Array.from(names[item]) // Set => Array
-
         // alias
-        for (let i = 0, len = names[item].length; i < len; i++) {
-          let alias = ''
-          let description = ''
-          if (opts.alias) {
-            Object.keys(opts.alias).map(a => {
-              if (opts.alias[a] === names[item][i]) {
-                alias = a
-              }
-            })
-          }
+        if (names[item].length) {
+          for (let i = 0, len = names[item].length; i < len; i++) {
+            let alias = ''
+            let description = ''
+            if (opts.alias) {
+              Object.keys(opts.alias).map(a => {
+                if (opts.alias[a] === names[item][i]) {
+                  alias = a
+                }
+              })
+            }
 
-          names[item][i] = {
-            name: names[item][i],
-            alias: alias,
-            desc: description
+            names[item][i] = {
+              name: names[item][i],
+              alias: alias,
+              desc: description
+            }
           }
         }
       })
     }
-
     return justNames ? names : _this.tasks
   }
 

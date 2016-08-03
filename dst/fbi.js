@@ -332,14 +332,15 @@ function genTaskHelpTxt(all) {
     return '';
   }
   var txt = '\n    Tasks:\n    ';
+  var tasksTxt = '';
   ['global', 'template', 'local'].map(function (type) {
     if (all[type].length) {
       all[type].map(function (item) {
-        txt += '\n      ' + fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' ') + ' <' + type + '>';
+        tasksTxt += '\n      ' + fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' ') + ' <' + type + '>';
       });
     }
   });
-  return txt;
+  return tasksTxt ? txt + tasksTxt : '';
 }
 
 function genTmplHelpTxt(all) {
@@ -579,33 +580,32 @@ var Task = function () {
         if (justNames) {
           Object.keys(names).map(function (item) {
             names[item] = Array.from(names[item]); // Set => Array
-
             // alias
+            if (names[item].length) {
+              var _loop = function _loop(i, len) {
+                var alias = '';
+                var description = '';
+                if (opts.alias) {
+                  Object.keys(opts.alias).map(function (a) {
+                    if (opts.alias[a] === names[item][i]) {
+                      alias = a;
+                    }
+                  });
+                }
 
-            var _loop = function _loop(i, len) {
-              var alias = '';
-              var description = '';
-              if (opts.alias) {
-                Object.keys(opts.alias).map(function (a) {
-                  if (opts.alias[a] === names[item][i]) {
-                    alias = a;
-                  }
-                });
-              }
-
-              names[item][i] = {
-                name: names[item][i],
-                alias: alias,
-                desc: description
+                names[item][i] = {
+                  name: names[item][i],
+                  alias: alias,
+                  desc: description
+                };
               };
-            };
 
-            for (var i = 0, len = names[item].length; i < len; i++) {
-              _loop(i, len);
+              for (var i = 0, len = names[item].length; i < len; i++) {
+                _loop(i, len);
+              }
             }
           });
         }
-
         return justNames ? names : _this.tasks;
       });
     }
@@ -812,13 +812,25 @@ var Template = function () {
   }, {
     key: 'all',
     value: function all(opts) {
-      var templates;
-      return Promise.resolve().then(function () {
-        return readDir(join(opts.data.templates));
-      }).then(function (_resp) {
-        templates = _resp;
+      var _exist, templates;
 
-        templates = templates.filter(isTemplate);
+      return Promise.resolve().then(function () {
+        return exist(join(opts.data.templates));
+      }).then(function (_resp) {
+        _exist = _resp;
+        templates = void 0;
+
+        if (_exist) {
+          return Promise.resolve().then(function () {
+            return readDir(join(opts.data.templates));
+          }).then(function (_resp) {
+            templates = _resp;
+            templates = templates.filter(isTemplate);
+          });
+        } else {
+          templates = [];
+        }
+      }).then(function () {
         return templates;
       });
     }
@@ -846,15 +858,15 @@ var opts = {
     alias: 'npm',
     options: '--save-dev'
   },
-  TEMPLATE_ADD_IGNORE: ['dst', 'dist', '.DS_Store', '.svn', '.git'],
+  TEMPLATE_ADD_IGNORE: ['node_modules', 'dst', 'dist', '.DS_Store', '.svn', '.git'],
   TEMPLATE_INIT_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'],
   BACKUP_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'],
   RECOVER_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist']
 };
 
-var version = "2.0.0-alpha.5";
+var version = "2.0.0";
 
-var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n    Commands:\n\n      ata,   add-task [*, name.js]    add task files in current folder\n      atm,   add-tmpl [name]          add current folder as a template named [name]\n      rta,   rm-task  [-t] [name]     remove task\n      rtm,   rm-tmpl  [name]          remove template\n      i,     install                  install dependencies\n      ls,    list                    list all tasks & templates\n      cat    [task]   [-t, -g]        cat task content\n      init   [template]               init a new project via template\n      backup                          backup tasks & templates\n      recover                         recover tasks & templates from current folder\n\n      -h,    --help                   output usage information\n      -v,    --version                output the version number\n';
+var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n    Commands:\n\n      ata,   add-task [*, name.js]    add task files in current folder\n      atm,   add-tmpl [name]          add current folder as a template named [name]\n      rta,   rm-task  [-t] [name]     remove task\n      rtm,   rm-tmpl  [name]          remove template\n      i,     install                  install dependencies\n      ls,    list                     list all tasks & templates\n      cat    [task]   [-t, -g]        cat task content\n      init   [template]               init a new project via template\n      backup                          backup tasks & templates\n      recover                         recover tasks & templates from current folder\n\n      -h,    --help                   output usage information\n      -v,    --version                output the version number\n';
 
 var task = new Task();
 var template = new Template();

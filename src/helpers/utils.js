@@ -309,15 +309,16 @@ export function genTaskHelpTxt(all) {
   let txt = `
     Tasks:
     `;
+  let tasksTxt = '';
   ['global', 'template', 'local'].map(type => {
     if (all[type].length) {
       all[type].map(item => {
-        txt += `
+        tasksTxt += `
       ${fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' ')} <${type}>`;
       })
     }
   })
-  return txt
+  return tasksTxt ? txt + tasksTxt : ''
 }
 
 export function genTmplHelpTxt(all) {

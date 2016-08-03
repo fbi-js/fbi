@@ -22,8 +22,14 @@ export default class Template {
   }
 
   async all(opts) {
-    let templates = await readDir(join(opts.data.templates))
-    templates = templates.filter(isTemplate)
+    const _exist = await exist(join(opts.data.templates))
+    let templates
+    if(_exist) {
+      templates = await readDir(join(opts.data.templates))
+      templates = templates.filter(isTemplate)
+    } else {
+      templates = []
+    }
     return templates
   }
 
