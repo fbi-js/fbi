@@ -11,7 +11,6 @@ CVS
 npm-debug.log
 demo*
 test*
-data/*
 bench
 coverage
 test
