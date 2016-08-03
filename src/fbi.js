@@ -30,7 +30,7 @@ let helps =
       rta,   rm-task  [-t] [name]     remove task
       rtm,   rm-tmpl  [name]          remove template
       i,     install                  install dependencies
-      l,     list                     list all tasks & templates
+      ls,    list                    list all tasks & templates
       cat    [task]   [-t, -g]        cat task content
       init   [template]               init a new project via template
       backup                          backup tasks & templates
@@ -77,7 +77,7 @@ export default class Fbi {
   }
 
   version() {
-    if (!this.next) return
+    if (!this.next || !this.argvs.length) return
 
     if (this.argvs[0] === '-v'
       || this.argvs[0] === '--verison') {
@@ -359,7 +359,7 @@ export default class Fbi {
   async list() {
     if (!this.next) return
 
-    if (this.argvs[0] === 'l'
+    if (this.argvs[0] === 'ls'
       || this.argvs[0] === 'list') {
       this.next = false
 

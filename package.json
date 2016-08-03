@@ -1,6 +1,6 @@
 {
   "name": "fbi",
-  "version": "2.0.0-alpha.5",
+  "version": "2.0.0",
   "description": "Tasks & Templates Management",
   "engines": {
     "node": ">=6.0",
@@ -9,10 +9,11 @@
   "bin": {
     "fbi": "./bin/fbi"
   },
-  "main": "dst/Fbi.js",
+  "main": "dst/index.js",
   "scripts": {
     "build": "rollup -c --environment entry:fbi",
     "watch": "rollup -c -w --environment entry:fbi",
+    "watch2": "rollup -c -w --environment entry:index",
     "test": "ava"
   },
   "repository": {

@@ -854,7 +854,7 @@ var opts = {
 
 var version = "2.0.0-alpha.5";
 
-var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n    Commands:\n\n      ata,   add-task [*, name.js]    add task files in current folder\n      atm,   add-tmpl [name]          add current folder as a template named [name]\n      rta,   rm-task  [-t] [name]     remove task\n      rtm,   rm-tmpl  [name]          remove template\n      i,     install                  install dependencies\n      l,     list                     list all tasks & templates\n      cat    [task]   [-t, -g]        cat task content\n      init   [template]               init a new project via template\n      backup                          backup tasks & templates\n      recover                         recover tasks & templates from current folder\n\n      -h,    --help                   output usage information\n      -v,    --version                output the version number\n';
+var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n    Commands:\n\n      ata,   add-task [*, name.js]    add task files in current folder\n      atm,   add-tmpl [name]          add current folder as a template named [name]\n      rta,   rm-task  [-t] [name]     remove task\n      rtm,   rm-tmpl  [name]          remove template\n      i,     install                  install dependencies\n      ls,    list                    list all tasks & templates\n      cat    [task]   [-t, -g]        cat task content\n      init   [template]               init a new project via template\n      backup                          backup tasks & templates\n      recover                         recover tasks & templates from current folder\n\n      -h,    --help                   output usage information\n      -v,    --version                output the version number\n';
 
 var task = new Task();
 var template = new Template();
@@ -904,7 +904,7 @@ var Fbi = function () {
   createClass(Fbi, [{
     key: 'version',
     value: function version$$() {
-      if (!this.next) return;
+      if (!this.next || !this.argvs.length) return;
 
       if (this.argvs[0] === '-v' || this.argvs[0] === '--verison') {
         this.next = false;
@@ -1349,7 +1349,7 @@ var Fbi = function () {
       return Promise.resolve().then(function () {
         if (!!_this60.next) {
           return Promise.resolve().then(function () {
-            _test9 = _this60.argvs[0] === 'l' || _this60.argvs[0] === 'list';
+            _test9 = _this60.argvs[0] === 'ls' || _this60.argvs[0] === 'list';
 
             if (_test9) {
               return Promise.resolve().then(function () {

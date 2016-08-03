@@ -1,22 +1,19 @@
-import Cli from './cli'
+const Fbi = require('./fbi')
+const fbi = new Fbi([])
 
-export default class Fbi {
-
-  constructor() {
-    this.Cli = Cli
-  }
-
-  static get cli() {
-    return Cli
-  }
-
-  run(cmds) {
-    if (!cmds) {
-      return
+export default {
+  async run(tasks) {
+    if (Array.isArray(tasks)) {
+      if(!tasks.length){
+        return
+      }
+    } else if (typeof tasks === 'string') {
+      tasks = [tasks]
     }
 
-    new Fbi.cli(typeof cmds === 'string' ? [cmds] : cmds)
+    fbi.argvs = tasks
+
+    await fbi.config()
+    await fbi.run()
   }
-
 }
-
