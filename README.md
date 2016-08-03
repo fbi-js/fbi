@@ -1,25 +1,24 @@
-<div style="text-align:center;border-bottom:1px solid #eaeaea;">
-  <h2 style="color:#48abd6;font-weight:600;">F B I</h2>
+<div align="center">
+  <h3 style="color:#48abd6;font-weight:600;">F B I</h3>
   <p style="font-size:16px;">Node.js workflow tool</p>
 </div>
 
-## Features
+### Features
 
 * Tasks Management -  manage your js files as global tasks
 * Templates Management - reuse projects as global templates
-* node_modules Management - host devDependencies away from project's folder
+* node_modules Management - host devDependencies away from project's folder, and, it's faster
 * Lightweight
 * No dependency
-* Efficient
 
-## Installation
+### Installation
 
 ```bash
 $ npm i -g fbi
 ```
 
 
-## Usage
+### Usage
 
 ```bash
 $ fbi [task]              # run a local preference task
@@ -43,9 +42,9 @@ $ fbi -h,    --help                   # output usage information
 $ fbi -v,    --version                # output the version number
 ```
 
-## Quick Start
+### Quick Start
 
-### Add a task
+#### Add task
 
 
 ```js
@@ -71,7 +70,7 @@ if required npm modules, after ```fbi ata [name].js```, you should ```fbi i``` t
 
 dependencies will be installed in the global tasks folder.
 
-### Add a template
+#### Add template
 
 ```bash
 |-- proj-name
@@ -142,6 +141,6 @@ $ fbi atm [new-name]
 $ fbi ls              # see available Tasks & Templates
 ```
 
-## Rules
+### Rules
 
 [FBI Handbook 中文](https://neikvon.gitbooks.io/fbi/content/)
