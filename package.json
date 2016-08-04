@@ -13,8 +13,7 @@
   "scripts": {
     "build": "rollup -c --environment entry:fbi",
     "build-index": "rollup -c --environment entry:index",
-    "watch": "rollup -c -w --environment entry:fbi",
-    "test": "ava"
+    "watch": "rollup -c -w --environment entry:fbi"
   },
   "repository": {
     "type": "git",

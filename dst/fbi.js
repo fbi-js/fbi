@@ -864,7 +864,7 @@ var opts = {
   RECOVER_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist']
 };
 
-var version = "2.0.3";
+var version = "2.0.4";
 
 var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n    Commands:\n\n      ata,   add-task [*, name.js]    add task files in current folder\n      atm,   add-tmpl [name]          add current folder as a template named [name]\n      rta,   rm-task  [-t] [name]     remove task\n      rtm,   rm-tmpl  [name]          remove template\n      i,     install                  install dependencies\n      ls,    list                     list all tasks & templates\n      cat    [task]   [-t, -g]        cat task content\n      init   [template]               init a new project via template\n      backup                          backup tasks & templates\n      recover                         recover tasks & templates from current folder\n\n      -h,    --help                   output usage information\n      -v,    --version                output the version number\n';
 
