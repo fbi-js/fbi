@@ -4,6 +4,5 @@
   "description": "fbi tasks dependencies",
   "author": "fbi",
   "license": "ISC",
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

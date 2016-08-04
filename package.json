@@ -1,6 +1,6 @@
 {
   "name": "fbi",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Node.js workflow tool",
   "engines": {
     "node": ">=6.0",
@@ -12,8 +12,8 @@
   "main": "dst/index.js",
   "scripts": {
     "build": "rollup -c --environment entry:fbi",
+    "build-index": "rollup -c --environment entry:index",
     "watch": "rollup -c -w --environment entry:fbi",
-    "watch2": "rollup -c -w --environment entry:index",
     "test": "ava"
   },
   "repository": {
