@@ -22,15 +22,20 @@ export default class Template {
   }
 
   async all(opts) {
-    const _exist = await exist(join(opts.data.templates))
-    let templates
-    if(_exist) {
-      templates = await readDir(join(opts.data.templates))
+    const _exist = await exist(opts.data.templates)
+    let ret = []
+    if (_exist) {
+      let templates = await readDir(opts.data.templates)
       templates = templates.filter(isTemplate)
-    } else {
-      templates = []
+      templates.map(item => {
+        const config = require(join(opts.data.templates, item, opts.paths.config))
+        ret.push({
+          name: item,
+          desc: config.templateDescription || ''
+        })
+      })
     }
-    return templates
+    return ret
   }
 
 }

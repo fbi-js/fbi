@@ -4,5 +4,9 @@
   "description": "fbi tasks dependencies",
   "author": "fbi",
   "license": "ISC",
-  "devDependencies": {}
+  "devDependencies": {
+    "global-npm": "^0.3.0",
+    "koa": "^2.0.0",
+    "koa-static": "^3.0.0"
+  }
 }

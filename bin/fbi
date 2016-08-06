@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 'use strict'
 
-var Fbi = require('../dst/fbi')
-new Fbi(process.argv.slice(2))
+var Cli = require('../dst/cli')
+new Cli(process.argv.slice(2))

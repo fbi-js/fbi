@@ -1,19 +1,18 @@
-const Fbi = require('./fbi')
-const fbi = new Fbi([])
+const Cli = require('./cli')
+const cli = new Cli([])
 
 export default {
-  async run(tasks) {
-    if (Array.isArray(tasks)) {
-      if(!tasks.length){
+
+  async run(cmds) {
+    if (Array.isArray(cmds)) {
+      if(!cmds.length){
         return
       }
-    } else if (typeof tasks === 'string') {
-      tasks = [tasks]
+    } else if (typeof cmds === 'string') {
+      cmds = [cmds]
     }
 
-    fbi.argvs = tasks
-
-    await fbi.config()
-    await fbi.run()
+    cli.argvs = cmds
   }
+
 }

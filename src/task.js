@@ -146,7 +146,7 @@ export default class Task {
 
     function requireResolve(mod) {
       // find mod path
-      let mod_path = module.get(mod, taskObj.type)
+      const mod_path = module.get(mod, taskObj.type)
       if (mod_path && mod_path !== 'global') {
         return require(join(mod_path, mod))
       } else {
@@ -155,6 +155,7 @@ export default class Task {
     }
 
     let code = `
+    'use strict';
     (function(require, ctx) {
       if(!ctx.next || ctx.next === 'false') return false;
 

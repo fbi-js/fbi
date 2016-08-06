@@ -1,7 +1,7 @@
 import fs from 'fs'
 import util from 'util'
 import path from 'path'
-import { exec } from 'child_process'
+import { exec, spawn } from 'child_process'
 
 export function colors() {
   function colorize(color, text) {
@@ -9,8 +9,8 @@ export function colors() {
     return `\x1b[${codes[0]}m${text}\x1b[${codes[1]}m`
   }
   let returnValue = {}
-  Object.keys(util.inspect.colors).map((color) => {
-    returnValue[color] = (text) => colorize(color, text)
+  Object.keys(util.inspect.colors).map(color => {
+    returnValue[color] = text => colorize(color, text)
   })
   return returnValue
 }
@@ -64,19 +64,20 @@ export function dir(...args) {
 export function merge(target) {
   var sources = [].slice.call(arguments, 1)
   sources.forEach(function (source) {
-    for (var p in source)
+    for (var p in source) {
       if (typeof source[p] === 'object') {
         target[p] = target[p] || (Array.isArray(source[p]) ? [] : {})
         merge(target[p], source[p])
       } else {
         target[p] = source[p]
       }
+    }
   })
   return target
 }
 
 export function clone(obj) {
-  return JSON.parse(JSON.stringify(obj));
+  return JSON.parse(JSON.stringify(obj))
 }
 
 export function validJson(data) {
@@ -101,7 +102,7 @@ export function read(_p, charset) {
 
 export function write(file, data) {
   return new Promise((resolve, reject) => {
-    fs.writeFile(file, data, (err) => {
+    fs.writeFile(file, data, err => {
       return err ? reject(err) : resolve(true)
     })
   })
@@ -124,7 +125,7 @@ export function existSync(src) {
   }
 }
 
-export function install(source, rootPath, command, opts) {
+export function install2(source, rootPath, command, opts) {
   const prevDir = process.cwd()
   let pkgs = ''
   let info = ''
@@ -135,12 +136,12 @@ export function install(source, rootPath, command, opts) {
        ${item}@${source[item]} `
   })
   info += `
-       ${opts ? opts : ''}
+       ${opts || ''}
     to:${rootPath}
-  `;
+  `
 
   process.chdir(rootPath)
-  const cmd = `${command} install ${pkgs} ${opts ? opts : ''}`
+  const cmd = `${command} install ${pkgs} ${opts || ''}`
   log(`${command} install ${info}`)
   return new Promise((resolve, reject) => {
     exec(cmd, (error, stdout, stderr) => {
@@ -154,6 +155,41 @@ export function install(source, rootPath, command, opts) {
       log(`
 ${stdout}`)
       resolve(stdout)
+    })
+  })
+}
+
+export function install(source, rootPath, command, opts) {
+  const prevDir = process.cwd()
+  let pkgs = ''
+  let info = ''
+
+  Object.keys(source).map(item => {
+    pkgs += `${item}@${source[item]} `
+    info += `
+       ${item}@${source[item]} `
+  })
+  info += `
+       ${opts || ''}
+    to:${rootPath}
+  `
+
+  process.chdir(rootPath)
+  const cmd = `${command} install ${pkgs} ${opts || ''}`
+  log(`${command} install ${info}`)
+  return new Promise((resolve, reject) => {
+    const installer = spawn(command, ['install', opts || ''], {
+      cwd: rootPath,
+      stdio: [0, 1, 2] // child_process log style
+    })
+
+    installer.on('error', (err) => {
+      log(`Failed to '${cmd}'`, 0)
+      reject(err)
+    })
+
+    installer.on('close', function () {
+      resolve()
     })
   })
 }
@@ -224,7 +260,9 @@ export function rmdir(dir, callback) {
 }
 
 export function isTaskFile(file) {
-  return path.extname(file) === '.js' && file.indexOf('config') < 0
+  return basename(file).indexOf('.') !== 0
+    && path.extname(file) === '.js'
+    && file.indexOf('config') < 0
 }
 
 export function isTemplate(name) {
@@ -303,37 +341,54 @@ export function fillGap(str, max, gap) {
 }
 
 export function genTaskHelpTxt(all) {
-  if (!Object.keys(all).length) {
-    return ''
-  }
+
   let txt = `
     Tasks:
+
+      Usage: fbi [task] [-t, -g]
     `;
   let tasksTxt = '';
-  ['global', 'template', 'local'].map(type => {
-    if (all[type].length) {
-      all[type].map(item => {
-        tasksTxt += `
-      ${fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' ')} <${type}>`;
-      })
-    }
-  })
-  return tasksTxt ? txt + tasksTxt : ''
+  if (!Object.keys(all).length) {
+    tasksTxt = `
+      No tasks.
+    `
+  } else {
+    ['global', 'template', 'local'].map(type => {
+      if (all[type].length) {
+        all[type].map(item => {
+          if (type === 'local') {
+            tasksTxt += `
+      ${colors().yellow(fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' '))}`;
+          } else {
+            tasksTxt += `
+      ${fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' ')} ${colors().grey(type === 'template' ? '-t' : '-g')}`;
+          }
+        })
+      }
+    })
+  }
+  return txt + tasksTxt
 }
 
-export function genTmplHelpTxt(all) {
-  if (!all.length) {
-    return ''
-  }
+export function genTmplHelpTxt(all, curr, desc) {
   let txt = `
 
     Templates:
+
+      Usage: fbi init [template]
     `;
-  all.map(item => {
-    txt += `
-      ${item}`;
-  })
-  return txt
+  let tmplsTxt = ''
+  if (!all.length) {
+    tmplsTxt = `
+      No templates.
+    `
+  } else {
+    all.map(item => {
+      tmplsTxt += `
+      ${colors().yellow('★')}  ${colors().green(item.name) + (item.name === curr ? colors().yellow(' <current>') : '') + ' - ' + item.desc}`;
+    })
+  }
+  return txt + tmplsTxt
 }
 
 export function genNpmscriptsHelpTxt(all) {

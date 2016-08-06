@@ -18,7 +18,7 @@ export default {
     alias: 'npm',
     options: '--save-dev'
   },
-  TEMPLATE_ADD_IGNORE: ['node_modules', 'dst', 'dist', '.DS_Store', '.svn', '.git'],
+  TEMPLATE_ADD_IGNORE: ['.DS_Store', '.svn', '.git'],
   TEMPLATE_INIT_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'],
   BACKUP_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'],
   RECOVER_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist']

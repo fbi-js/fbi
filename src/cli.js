@@ -43,10 +43,10 @@ let helps =
 const task = new Task()
 const template = new Template()
 
-export default class Fbi {
+export default class Cli {
 
   constructor(argvs) {
-    this.argvs = argvs
+    this.argvs = argvs || []
     this.next = true
     this.log = log
     this.options = {}
@@ -58,8 +58,10 @@ export default class Fbi {
 
       ; (async () => {
         try {
-          this.version()
           await this.config()
+          this.version()
+          this.backup()
+          this.recover()
           await this.help()
           await this.init()
           await this.install()
@@ -67,25 +69,13 @@ export default class Fbi {
           await this.cat()
           await this.list()
           await this.add()
-          this.backup()
-          this.recover()
           await this.run()
         } catch (e) {
           log(e, 0)
         }
       })()
+
   }
-
-  version() {
-    if (!this.next || !this.argvs.length) return
-
-    if (this.argvs[0] === '-v'
-      || this.argvs[0] === '--verison') {
-      this.next = false
-      console.log(version)
-    }
-  }
-
   async config() {
     if (!this.next) return
 
@@ -139,16 +129,24 @@ export default class Fbi {
     }
   }
 
+  version() {
+    if (!this.next) return
+
+    if (this.argvs[0] === '-v' || this.argvs[0] === '--verison') {
+      this.next = false
+      console.log(version)
+    }
+  }
+
   async help() {
     if (!this.next) return
 
-    if (!this.argvs.length
-      || this.argvs[0] === '-h'
-      || this.argvs[0] === '--help') {
+    if (!this.argvs.length || this.argvs[0] === '-h' || this.argvs[0] === '--help') {
       this.next = false
 
       helps += genTaskHelpTxt(await task.all(this.options, true, true))
-      helps += genTmplHelpTxt(await template.all(this.options))
+      helps += genTmplHelpTxt(await template.all(this.options),
+        this.options.template, this.options.templateDescription)
       helps += `
       `
       console.log(helps)
@@ -161,7 +159,7 @@ export default class Fbi {
     if (this.argvs[0] === 'i' || this.argvs[0] === 'install') {
       this.next = false
 
-      let force = this.argvs[1] === '-f' || this.argvs[1] === '-force'
+      // let force = this.argvs[1] === '-f' || this.argvs[1] === '-force'
 
       let localdeps = {}
       let tmplDeps = {}
@@ -314,6 +312,7 @@ export default class Fbi {
       mods.map(async (item) => {
         if (tmpls.includes(item)) {
           try {
+            log(`start to remove template '${item}'...`)
             rmdir(join(this.options.data.templates, item), err => {
               if (err) {
                 log(err, 0)
@@ -364,7 +363,8 @@ export default class Fbi {
 
       let helps = genTaskHelpTxt(await task.all(this.options, true, false))
 
-      helps += genTmplHelpTxt(await template.all(this.options))
+      helps += genTmplHelpTxt(await template.all(this.options),
+        this.options.template, this.options.templateDescription)
 
       if (await exist(cwd('package.json'))) {
         const usrpkg = require(cwd('package.json'))
@@ -387,7 +387,7 @@ export default class Fbi {
       this.next = false
 
       // add template
-      const name = this.argvs[1] || basename(cwd(), '')
+      const name = this.argvs[1] || this.options.template || basename(cwd(), '')
       const isExist = await exist(join(this.options.data.templates, name))
 
       if (isExist) {
@@ -411,8 +411,9 @@ export default class Fbi {
           }
           get()
         }).on('close', async () => {
+          log(`Start to add template '${name}' ...`)
           if (data.name === 'y') {
-            copy(cwd(), join(this.options.data.templates, name), this.options.TEMPLATE_ADD_IGNORE)
+            await copy(cwd(), join(this.options.data.templates, name), this.options.TEMPLATE_ADD_IGNORE)
           } else if (data.name === '') {
             log('name can\'t be empty', 0)
           } else {
@@ -421,12 +422,15 @@ export default class Fbi {
               log(`${data.name} already exist too`, 0)
               process.exit(0)
             } else {
-              copy(cwd(), join(this.options.data.templates, data.name), this.options.TEMPLATE_ADD_IGNORE)
+              await copy(cwd(), join(this.options.data.templates, data.name), this.options.TEMPLATE_ADD_IGNORE)
             }
           }
+          log(`Template '${name}' added successfully`, 1)
         })
       } else {
-        copy(cwd(), join(this.options.data.templates, name), this.options.TEMPLATE_ADD_IGNORE)
+        log(`Start to add template '${name}' ...`)
+        await copy(cwd(), join(this.options.data.templates, name), this.options.TEMPLATE_ADD_IGNORE)
+        log(`Template '${name}' added successfully`, 1)
       }
     }
 

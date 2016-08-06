@@ -1,5 +1,5 @@
 import {
-  cwd, dir, join, log, exist, isRelative
+  cwd, dir, join, log, exist, isRelative, existSync
 } from './helpers/utils'
 
 export default class Module {
@@ -23,6 +23,17 @@ export default class Module {
     this.modulePaths.push('') // global
 
     this.opts = opts
+
+    /*
+    this.modulePaths:
+
+     [
+      '.../test/webpack-demo/node_modules',
+      '.../fbi/data/templates/webpack-demo/node_modules',
+      '.../fbi/data/tasks/node_modules',
+      ''
+    ]
+   */
   }
 
   get(name, type) {
@@ -30,31 +41,69 @@ export default class Module {
 
     if (isRelative(name)) {
       // local => template
-      try {
-        const localTasks = cwd(this.opts.paths.tasks)
-        const found = require.resolve(join(localTasks, name))
-        ret = localTasks
-      } catch (e) {
+      // try {
+      //   const localTasks = cwd(this.opts.paths.tasks)
+      //   const found = require.resolve(join(localTasks, name))
+      //   ret = localTasks
+      // } catch (e) {
+      //   try {
+      //     const tmplTasks = join(this.opts.data.templates, this.opts.template, this.opts.paths.tasks)
+      //     const found = require.resolve(join(tmplTasks, name))
+      //     ret = tmplTasks
+      //   } catch (e) {
+      //     log(`can't find module ${name} in template '${this.opts.template}'`, 0)
+      //   }
+      // }
+
+      let localTasks
+      if (type === 'local') {
+        localTasks = cwd(this.opts.paths.tasks)
         try {
-          const tmplTasks = join(this.opts.data.templates, this.opts.template, this.opts.paths.tasks)
-          const found = require.resolve(join(tmplTasks, name))
-          ret = tmplTasks
+          // local
+          const found = require.resolve(join(localTasks, name))
+          ret = localTasks
+        } catch (e) {
+          try {
+            // template
+            localTasks = join(this.opts.data.templates, this.opts.template, this.opts.paths.tasks)
+            const found = require.resolve(join(localTasks, name))
+            ret = localTasks
+          } catch (e) {
+            log(`can't find module ${name} in template '${this.opts.template}'`, 0)
+          }
+        }
+      } else if (type === 'template') {
+        try {
+          // template
+          localTasks = join(this.opts.data.templates, this.opts.template, this.opts.paths.tasks)
+          const found = require.resolve(join(localTasks, name))
+          ret = localTasks
         } catch (e) {
           log(`can't find module ${name} in template '${this.opts.template}'`, 0)
+        }
+      } else if (type === 'global') {
+        try {
+          // template
+          localTasks = join(this.opts.data.tasks)
+          const found = require.resolve(join(localTasks, name))
+          ret = localTasks
+        } catch (e) {
+          log(`can't find module ${name} in global tasks folder`, 0)
         }
       }
     } else {
       for (let item of this.modulePaths) {
-        let _p = join(item, name)
+        const _p = join(item, name)
         try {
           let found = require.resolve(_p)
-
+          // const found = existSync(_p)
+          // log(found + ' - ' + name + ' : ' + _p)
           if (found) {
-            ret = item ? item : 'global'
+            ret = item || 'global'
             break
           }
         } catch (e) {
-
+          // log(e, 0)
         }
       }
     }

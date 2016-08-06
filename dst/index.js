@@ -1,29 +1,23 @@
 'use strict';
 
-var Fbi = require('./fbi');
-var fbi = new Fbi([]);
+var Cli = require('./cli');
+var cli = new Cli([]);
 
 var index = {
-  run: function run(tasks) {
+  run: function run(cmds) {
     var _test;
 
     return Promise.resolve().then(function () {
-      _test = Array.isArray(tasks);
+      _test = Array.isArray(cmds);
 
-      if (!(_test && !tasks.length)) {
-        return Promise.resolve().then(function () {
-          if (typeof tasks === 'string') {
-            tasks = [tasks];
-          }
+      if (!(_test && !cmds.length)) {
+        if (typeof cmds === 'string') {
+          cmds = [cmds];
+        }
 
-          fbi.argvs = tasks;
-
-          return fbi.config();
-        }).then(function () {
-          return fbi.run();
-        });
+        cli.argvs = cmds;
       }
-    }).then(function () {});
+    });
   }
 };
 
