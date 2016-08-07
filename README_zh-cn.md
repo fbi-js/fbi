@@ -3,6 +3,8 @@
   <p style="font-size:16px;">Node.js 工作流工具</p>
 </div>
 
+**要求: node v4.0+, npm v3.0+ **
+
 [English Version](./README.md)
 
 ### 特性
@@ -26,10 +28,12 @@ $ npm i -g fbi
 $ fbi [task]              # 运行一个本地优先的任务
 $ fbi [task] -g           # 运行一个全局任务
 $ fbi [task] -t           # 运行一个模板任务
+
+使用 'fbi ls' 查看可用任务和模板
 ```
 
 ```bash
-$ fbi ata,   add-task [*, name.js]    # 添加任务
+$ fbi ata,   add-task [name]          # 添加任务
 $ fbi atm,   add-tmpl [name]          # 将当前目录添加为模板
 $ fbi rta,   rm-task  [-t] [name]     # 移除任务
 $ fbi rtm,   rm-tmpl  [name]          # 移除模板
@@ -155,14 +159,16 @@ $ fbi ls              # see available Tasks & Templates
 
 ### Q&A
 * FBI 怎么识别任务?
-  1. fbi/config.js => paths.tasks  配置项指定的任务目录
-  1. '.js' 文件
-  1. 文件名不包含 'config' 字符
+  1. `fbi/config.js` => `paths.tasks`  配置项指定的任务目录(默认为`./fbi`)
+  1. `.js` 文件
+  1. 文件名不包含 `config` 字符
 
 * FBI 怎么识别模版?
   1. fbi/config.js => template  配置项指定的模版名称
 
 * FBI查找任务的顺序是什么?
-  1. 本地 => ./fbi/ 目录下的js文件
+  1. 本地 => `./fbi/` 目录下的js文件
   1. 是模版 ? => 全局模版任务
   1. 全局 => 全局任务
+
+[修改纪录](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)

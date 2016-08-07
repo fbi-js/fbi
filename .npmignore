@@ -10,7 +10,6 @@
 .babelrc
 npm-debug.log
 src/
-demo/
 test/
 bench/
 rollup.config.js

@@ -827,75 +827,6 @@ var Module = function () {
 
 var ignore = [];
 
-// export default (src, dst, ign) => {
-//   ignore = ign || ignore
-//   copy(src, dst, walk)
-// }
-
-// // src: dir or file
-// // dst: dir
-// function walk(src, dst) {
-//   fs.stat(src, (err, stats) => {
-//     if (err) {
-//       log(err
-//     }
-
-//     if (stats.isDirectory()) {
-//       return fs.readdir(src, (err, files) => {
-//         if (err) {
-//           log(err
-//         }
-
-//         files = files.filter(f => {
-//           if (ignore.includes(f)) {
-//             return false
-//           } else if (f[0] === '.' && ignore.includes('.')) {
-//             return false
-//           } else {
-//             return true
-//           }
-//         })
-
-//         files.map(f => {
-//           let
-//             _src = join(src, f),
-//             _dst = join(dst, f),
-//             stat = fs.statSync(_src)
-
-//           if (stat.isDirectory()) {
-//             copy(_src, _dst, walk)
-//           } else {
-//             _copy(_src, _dst)
-//           }
-//         })
-//       })
-//     } else {
-//       return _copy(src, join(dst, path.basename(src)))
-//     }
-//   })
-// }
-
-// function _copy(src, dst) {
-//   // const _path = path.relative(process.cwd(), dst)
-//   const readable = fs.createReadStream(src)
-//   const writable = fs.createWriteStream(dst)
-//   readable.pipe(writable)
-//   log(`copied => ${dst}`)
-// }
-
-// function copy(src, dst, cb) {
-//   fs.access(dst, fs.constants.R_OK | fs.constants.W_OK, (err) => {
-//     if (err) {
-//       fs.mkdir(dst, () => {
-//         cb(src, dst)
-//       })
-//     } else {
-//       cb(src, dst)
-//     }
-//   })
-// }
-
-
 var copy = (function (src, dst, ign) {
   return Promise.resolve().then(function () {
     return Promise.resolve().then(function () {
@@ -908,7 +839,6 @@ var copy = (function (src, dst, ign) {
   }).then(function () {});
 });
 
-// v4
 function copy$1(src, dst, cb) {
   var _exist;
 
@@ -975,18 +905,6 @@ function stats(src) {
     });
   });
 }
-
-// function copyFile(src, dst) {
-//   try {
-//     // const _path = path.relative(process.cwd(), dst)
-//     const readable = fs.createReadStream(src)
-//     const writable = fs.createWriteStream(dst)
-//     readable.pipe(writable)
-//     // log(`copied => ${dst}`)
-//   } catch (e) {
-//     log(e)
-//   }
-// }
 
 var Template = function () {
   function Template() {
@@ -1704,36 +1622,6 @@ var Cli = function () {
             }
           }).then(function () {
             tasks_path = _this64.options.paths.tasks;
-
-
-            // if (!this.argvs[1]) {
-            //   log(`Usage: fbi add-task [*] or [name.js]`, 0)
-            // } else {
-            //   // let ts = await indexDir(this.argvs.slice(1))
-            //   ts = ts.filter(isTaskFile)
-            //   if (!ts.length) {
-            //     log(`Tasks files not found.`, 0)
-            //   } else {
-            //     const taskdir = join(this.options.data.tasks)
-            //     const taskdir_exist = await exist(taskdir)
-            //     if (!taskdir_exist) {
-            //       await mkdir(taskdir)
-            //     }
-            //     // copy task files
-            //     ts.map(async (item) => {
-            //       const task_exist = await exist(join(taskdir, item))
-            //       try {
-            //         await copyFile(cwd(item), join(taskdir, item), 'quiet')
-            //         log(`task '${basename(item, '.js')}' ${task_exist ? 'updated' : 'added'}`, 1)
-            //       } catch (e) {
-            //         log(e, 0)
-            //       }
-            //     })
-
-            //     // copy node_modules
-            //     copy(cwd('node_modules'), join(taskdir, 'node_modules'))
-            //   }
-            // }
             _test13 = _this64.argvs[0] === 'add-task' || _this64.argvs[0] === 'ata';
 
             if (_test13) {
@@ -1751,7 +1639,7 @@ var Cli = function () {
             } else {
               if (_test13) {
                 return function () {
-                  var name, taskdir, taskdir_exist, file, files;
+                  var name, taskdir, taskdir_exist, usr_psk, tsk_pkg, file, files;
                   return Promise.resolve().then(function () {
                     name = _this4.argvs[1];
                     taskdir = join(_this4.options.data.tasks);
@@ -1765,6 +1653,19 @@ var Cli = function () {
                   }).then(function () {
                     // copy node_modules
                     copy(cwd('node_modules'), join(taskdir, 'node_modules'));
+
+                    // merge package.json
+                    usr_psk = {};
+
+
+                    try {
+                      usr_psk = require(cwd('package.json')).devDependencies;
+                    } catch (e) {}
+                    tsk_pkg = require(join(_this4.options.data.tasks, 'package.json'));
+
+                    merge(tsk_pkg.devDependencies, usr_psk);
+                    return write(join(_this4.options.data.tasks, 'package.json'), JSON.stringify(tsk_pkg, null, 2));
+                  }).then(function () {
 
                     if (name) {
                       file = path.extname(name) ? name : name + '.js';

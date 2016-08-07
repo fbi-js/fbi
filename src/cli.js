@@ -440,6 +440,18 @@ export default class Cli {
         // copy node_modules
         copy(cwd('node_modules'), join(taskdir, 'node_modules'))
 
+        // merge package.json
+        let usr_psk = {}
+
+        try{
+          usr_psk = require(cwd('package.json')).devDependencies
+        }catch(e){
+
+        }
+        let tsk_pkg = require(join(this.options.data.tasks, 'package.json'))
+        merge(tsk_pkg.devDependencies, usr_psk)
+        await write(join(this.options.data.tasks, 'package.json'), JSON.stringify(tsk_pkg, null, 2))
+
         if (name) {
           const file = path.extname(name) ? name : name + '.js'
           await addTaskFile(file, taskdir)
@@ -455,36 +467,6 @@ export default class Cli {
           }))
         }
       }
-
-
-      // if (!this.argvs[1]) {
-      //   log(`Usage: fbi add-task [*] or [name.js]`, 0)
-      // } else {
-      //   // let ts = await indexDir(this.argvs.slice(1))
-      //   ts = ts.filter(isTaskFile)
-      //   if (!ts.length) {
-      //     log(`Tasks files not found.`, 0)
-      //   } else {
-      //     const taskdir = join(this.options.data.tasks)
-      //     const taskdir_exist = await exist(taskdir)
-      //     if (!taskdir_exist) {
-      //       await mkdir(taskdir)
-      //     }
-      //     // copy task files
-      //     ts.map(async (item) => {
-      //       const task_exist = await exist(join(taskdir, item))
-      //       try {
-      //         await copyFile(cwd(item), join(taskdir, item), 'quiet')
-      //         log(`task '${basename(item, '.js')}' ${task_exist ? 'updated' : 'added'}`, 1)
-      //       } catch (e) {
-      //         log(e, 0)
-      //       }
-      //     })
-
-      //     // copy node_modules
-      //     copy(cwd('node_modules'), join(taskdir, 'node_modules'))
-      //   }
-      // }
     }
   }
 
