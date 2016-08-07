@@ -34,7 +34,7 @@ $ fbi [task] -t           # 运行一个模板任务
 
 ```bash
 $ fbi ata,   add-task [name]          # 添加任务
-$ fbi atm,   add-tmpl [name]          # 将当前目录添加为模板
+$ fbi atm,   add-tmpl                 # 将当前目录添加为模板
 $ fbi rta,   rm-task  [-t] [name]     # 移除任务
 $ fbi rtm,   rm-tmpl  [name]          # 移除模板
 $ fbi i,     install                  # 安装依赖
@@ -62,7 +62,7 @@ console.log(new Date())
 ```bash
 $ cd path/to/showtime.js
 
-$ fbi ata showtime.js   # short for 'fbi add-task showtime.js'
+$ fbi ata showtime   # short for 'fbi add-task showtime'
 ```
 ```bash
 $ fbi showtime
@@ -71,7 +71,7 @@ $ fbi showtime
 # FBI => Running global task "showtime"...
 # 2016-08-03T09:06:28.349Z
 ```
-你可以像编写普通node.js程序一样编写任务，如果有依赖第三方模块，在```fbi ata [name].js```添加任务后，还需要```fbi i```安装依赖，依赖将会安装在全局任务目录。
+你可以像编写普通node.js程序一样编写任务，~~如果有依赖第三方模块，在```fbi ata [name].js```添加任务后，还需要```fbi i```安装依赖，依赖将会安装在全局任务目录。~~(更新：v2.0.5, 添加任务时会拷贝`node_modules`文件夹)
 
 #### 添加模板
 
@@ -94,6 +94,7 @@ $ fbi showtime
 // config.js
 module.exports = {
   template: 'webpack-demo', // required, template name
+  templateDescription: 'template description',
   alias: {
     b: 'build' // task name alias
   }
@@ -148,7 +149,7 @@ $ fbi atm
 # or
 $ fbi atm [new-name]  # [new-name] should equal to config.js=>template
 ```
-**安装**
+~~**安装**~~ (更新: v2.0.5, 不需要该操作)
 ```bash
 $ fbi i               # install dependencies
 ```

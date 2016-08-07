@@ -62,7 +62,7 @@ console.log(new Date())
 ```bash
 $ cd path/to/showtime.js
 
-$ fbi ata showtime.js   # short for 'fbi add-task showtime.js'
+$ fbi ata showtime   # short for 'fbi add-task showtime'
 ```
 ```bash
 $ fbi showtime
@@ -71,7 +71,7 @@ $ fbi showtime
 # FBI => Running global task "showtime"...
 # 2016-08-03T09:06:28.349Z
 ```
-you can write a task as normal node.js program, if required npm modules, after ```fbi ata [name].js```, you should ```fbi i``` to install dependencies, dependencies will be installed in the global tasks folder.
+you can write a task as normal node.js program, if required npm modules, ~~after ```fbi ata [name]```, you should ```fbi i``` to install dependencies, dependencies will be installed in the global tasks folder.~~ (update: v2.0.5 the `add` action will also copy the `node_modules` folder.)
 
 #### Add template
 
@@ -94,6 +94,7 @@ you can write a task as normal node.js program, if required npm modules, after `
 // config.js
 module.exports = {
   template: 'webpack-demo', // required, template name
+  templateDescription: 'template description',
   alias: {
     b: 'build' // task name alias
   }
@@ -146,9 +147,9 @@ $ fbi b
 ```bash
 $ fbi atm
 # or
-$ fbi atm [new-name]  # [new-name] should equal to config.js=>template
+$ fbi atm             # fbi will use the name in 'config.js=>template' as template name
 ```
-**install**
+~~**install**~~ (update: v2.0.5, you don't need to do this)
 ```bash
 $ fbi i               # install dependencies
 ```
