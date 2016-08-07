@@ -172,4 +172,6 @@ $ fbi ls              # see available Tasks & Templates
   1. is template ? => global template tasks
   1. global => global tasks
 
-[Change log](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
+### [Change log](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
+
+### [Compatible with v1.x](https://github.com/neikvon/fbi-template-backward-compatibility)

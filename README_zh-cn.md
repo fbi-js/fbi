@@ -172,4 +172,7 @@ $ fbi ls              # see available Tasks & Templates
   1. 是模版 ? => 全局模版任务
   1. 全局 => 全局任务
 
-[修改纪录](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
+
+### [修改纪录](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
+
+### [与 v1.x 兼容](https://github.com/neikvon/fbi-template-backward-compatibility)

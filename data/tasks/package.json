@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "fbi tasks dependencies",
   "author": "fbi",
-  "license": "ISC",
-  "devDependencies": {
-  }
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neikvon/fbi.git"
+  },
+  "devDependencies": {}
 }

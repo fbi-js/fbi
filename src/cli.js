@@ -163,8 +163,6 @@ export default class Cli {
     if (this.argvs[0] === 'i' || this.argvs[0] === 'install') {
       this.next = false
 
-      // let force = this.argvs[1] === '-f' || this.argvs[1] === '-force'
-
       let localdeps = {}
       let tmplDeps = {}
       let taskDeps = {}
@@ -175,57 +173,59 @@ export default class Cli {
         localdeps = require(cwd('package.json')).devDependencies
       }
 
-      log(opts)
-
       // template package.json => devDependencies
       if (opts.template) {
-        const tmplPkg = join(opts.data.templates, opts.template, 'package.json')
-        const tmplPkg_exist = await exist(tmplPkg)
-        if (tmplPkg_exist) {
+        try {
+          const tmplPkg = join(opts.data.templates, opts.template, 'package.json')
           const tmplPkg_dev = require(tmplPkg)['devDependencies']
           tmplDeps = merge(tmplPkg_dev, localdeps)
-        }
-        if (Object.keys(tmplDeps).length) {
-          let tmplPkgCnt = require(tmplPkg)
-          tmplPkgCnt['devDependencies'] = tmplDeps
-          await write(tmplPkg, JSON.stringify(tmplPkgCnt, null, 2))
+          if (Object.keys(tmplDeps).length) {
+            let tmplPkgCnt = require(tmplPkg)
+            tmplPkgCnt['devDependencies'] = tmplDeps
+            write(tmplPkg, JSON.stringify(tmplPkgCnt, null, 2))
+          }
+        } catch (e) {
         }
       }
 
       // task package.json => devDependencies
       else {
-        const taskPkg = join(opts.data.tasks, 'package.json')
-        const taskPkg_exist = await exist(taskPkg)
-        if (taskPkg_exist) {
+        try {
+          const taskPkg = join(opts.data.tasks, 'package.json')
           const taskPkg_dev = require(taskPkg).devDependencies
           taskDeps = merge(taskPkg_dev, localdeps)
-        }
-        if (Object.keys(taskDeps).length) {
-          let taskPkgCnt = require(taskPkg)
-          taskPkgCnt['devDependencies'] = taskDeps
-          await write(taskPkg, JSON.stringify(taskPkgCnt, null, 2))
+          if (Object.keys(taskDeps).length) {
+            let taskPkgCnt = require(taskPkg)
+            taskPkgCnt['devDependencies'] = taskDeps
+            write(taskPkg, JSON.stringify(taskPkgCnt, null, 2))
+          }
+        } catch (e) {
         }
       }
 
       const npms = opts.npm
 
-      log(taskDeps)
+      if (Object.keys(tmplDeps).length) {
+        install(tmplDeps, join(opts.data.templates, opts.template), npms.alias, npms.options)
+          .then(s => {
+            log('Tempaltes dependencies installed.', 1)
+          })
+          .catch(err => {
+            log('Tasks dependencies installtion error', 0)
+            log(err, 0)
+          })
+      }
 
-      const installTmplDeps = Object.keys(tmplDeps).length
-        ? await install(tmplDeps, join(opts.data.templates, opts.template), npms.alias, npms.options)
-        : Promise.resolve()
-
-      const installTaskDeps = Object.keys(taskDeps).length
-        ? await install(taskDeps, opts.data.tasks, npms.alias, npms.options)
-        : Promise.resolve()
-
-      // install
-      Promise.all([installTmplDeps, installTaskDeps]).then(ret => {
-        log('All Dependencies Installed', 1)
-      }).catch(err => {
-        log(err, 0)
-      })
-
+      if (Object.keys(taskDeps).length) {
+        install(taskDeps, opts.data.tasks, npms.alias, npms.options)
+          .then(s => {
+            log('Tasks dependencies installed.', 1)
+          })
+          .catch(err => {
+            log('Tasks dependencies installtion error', 0)
+            log(err, 0)
+          })
+      }
     }
   }
 
@@ -443,9 +443,9 @@ export default class Cli {
         // merge package.json
         let usr_psk = {}
 
-        try{
+        try {
           usr_psk = require(cwd('package.json')).devDependencies
-        }catch(e){
+        } catch (e) {
 
         }
         let tsk_pkg = require(join(this.options.data.tasks, 'package.json'))

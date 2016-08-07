@@ -40,20 +40,6 @@ export default class Module {
     let ret
 
     if (isRelative(name)) {
-      // local => template
-      // try {
-      //   const localTasks = cwd(this.opts.paths.tasks)
-      //   const found = require.resolve(join(localTasks, name))
-      //   ret = localTasks
-      // } catch (e) {
-      //   try {
-      //     const tmplTasks = join(this.opts.data.templates, this.opts.template, this.opts.paths.tasks)
-      //     const found = require.resolve(join(tmplTasks, name))
-      //     ret = tmplTasks
-      //   } catch (e) {
-      //     log(`can't find module ${name} in template '${this.opts.template}'`, 0)
-      //   }
-      // }
 
       let localTasks
       if (type === 'local') {
@@ -92,20 +78,16 @@ export default class Module {
         }
       }
     } else {
-      for (let item of this.modulePaths) {
-        const _p = join(item, name)
-        try {
-          let found = require.resolve(_p)
-          // const found = existSync(_p)
-          // log(found + ' - ' + name + ' : ' + _p)
-          if (found) {
-            ret = item || 'global'
-            break
+      this.modulePaths.map(item => {
+        if (!ret) {
+          try {
+            require.resolve(join(item, name))
+            ret = item
+          } catch (e) {
+
           }
-        } catch (e) {
-          // log(e, 0)
         }
-      }
+      })
     }
     return ret
   }
