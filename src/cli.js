@@ -1,3 +1,4 @@
+import path from 'path'
 import { createInterface } from 'readline'
 import Task from './task'
 import Module from './module'
@@ -11,7 +12,7 @@ import {
   isTaskName, isTaskFile, basename, parseArgvs,
   rmdir, rmfile, mkdir, isAbsolute, clone, flatLog,
   genTaskHelpTxt, genTmplHelpTxt, genNpmscriptsHelpTxt,
-  writeSync
+  writeSync, indexDir, colors, prompt
 } from './helpers/utils'
 
 let helps =
@@ -23,10 +24,12 @@ let helps =
       fbi [task] -g           run a global task
       fbi [task] -t           run a template task
 
+      ${colors().yellow('use \'fbi ls\' to see available tasks & templates')}
+
     Commands:
 
-      ata,   add-task [*, name.js]    add task files in current folder
-      atm,   add-tmpl [name]          add current folder as a template named [name]
+      ata,   add-task [name]          add task file of files in 'fbi' folder
+      atm,   add-tmpl                 add current folder as a template
       rta,   rm-task  [-t] [name]     remove task
       rtm,   rm-tmpl  [name]          remove template
       i,     install                  install dependencies
@@ -76,6 +79,7 @@ export default class Cli {
       })()
 
   }
+
   async config() {
     if (!this.next) return
 
@@ -144,11 +148,11 @@ export default class Cli {
     if (!this.argvs.length || this.argvs[0] === '-h' || this.argvs[0] === '--help') {
       this.next = false
 
-      helps += genTaskHelpTxt(await task.all(this.options, true, true))
-      helps += genTmplHelpTxt(await template.all(this.options),
-        this.options.template, this.options.templateDescription)
-      helps += `
-      `
+      // helps += genTaskHelpTxt(await task.all(this.options, true, true))
+      // helps += genTmplHelpTxt(await template.all(this.options),
+      //   this.options.template, this.options.templateDescription)
+      // helps += `
+      // `
       console.log(helps)
     }
   }
@@ -170,6 +174,8 @@ export default class Cli {
       if (await exist(cwd('package.json'))) {
         localdeps = require(cwd('package.json')).devDependencies
       }
+
+      log(opts)
 
       // template package.json => devDependencies
       if (opts.template) {
@@ -202,6 +208,8 @@ export default class Cli {
       }
 
       const npms = opts.npm
+
+      log(taskDeps)
 
       const installTmplDeps = Object.keys(tmplDeps).length
         ? await install(tmplDeps, join(opts.data.templates, opts.template), npms.alias, npms.options)
@@ -387,46 +395,20 @@ export default class Cli {
       this.next = false
 
       // add template
-      const name = this.argvs[1] || this.options.template || basename(cwd(), '')
+      const name = this.options.template
       const isExist = await exist(join(this.options.data.templates, name))
 
       if (isExist) {
-        log(`tempalte '${name}' already exist, type 'y' to replace, or type name to create new one`, -1)
-        let
-          rl = createInterface(process.stdin, process.stdout),
-          prompts = ['name'],
-          p = 0,
-          data = {}
-        let get = function () {
-          rl.setPrompt(prompts[p] + ': ')
-          rl.prompt()
+        log(`Tempalte '${name}' already exist, input 'y' to update, or change the field 'template' value in './fbi/config.js' to create a new one.`, 'yellow')
 
-          p++
+        const answer = await prompt('update')
+        if (answer['update'] === 'y') {
+          log(`Start to update template '${name}' ...`)
+          await copy(cwd(), join(this.options.data.templates, name), this.options.TEMPLATE_ADD_IGNORE)
+          log(`Template '${name}' updated successfully`, 1)
+        } else {
+          process.exit(0)
         }
-        get()
-        rl.on('line', (line) => {
-          data[prompts[p - 1]] = line
-          if (p === prompts.length) {
-            return rl.close()
-          }
-          get()
-        }).on('close', async () => {
-          log(`Start to add template '${name}' ...`)
-          if (data.name === 'y') {
-            await copy(cwd(), join(this.options.data.templates, name), this.options.TEMPLATE_ADD_IGNORE)
-          } else if (data.name === '') {
-            log('name can\'t be empty', 0)
-          } else {
-            const isExist2 = await exist(join(this.options.data.templates, data.name))
-            if (isExist2) {
-              log(`${data.name} already exist too`, 0)
-              process.exit(0)
-            } else {
-              await copy(cwd(), join(this.options.data.templates, data.name), this.options.TEMPLATE_ADD_IGNORE)
-            }
-          }
-          log(`Template '${name}' added successfully`, 1)
-        })
       } else {
         log(`Start to add template '${name}' ...`)
         await copy(cwd(), join(this.options.data.templates, name), this.options.TEMPLATE_ADD_IGNORE)
@@ -434,33 +416,75 @@ export default class Cli {
       }
     }
 
+    const tasks_path = this.options.paths.tasks
+    async function addTaskFile(file, to) {
+      const name = file.replace(path.extname(file), '')
+      const task_exist = await exist(cwd(tasks_path, file))
+      await copyFile(cwd(tasks_path, file), join(to, file), 'quiet')
+      log(`Task '${name}' ${task_exist ? 'updated' : 'added'} successfully`, 1)
+    }
+
     if (this.argvs[0] === 'add-task' || this.argvs[0] === 'ata') {
       this.next = false
 
-      if (!this.argvs[1]) {
-        log(`Usage: fbi add-task [*] or [name.js]`, 0)
+      const local_tasks_folder_exist = await exist(cwd(tasks_path))
+      if (!local_tasks_folder_exist) {
+        log(`Local tasks folder '${tasks_path}' not found.`, 0)
       } else {
-        let ts = this.argvs.slice(1)
-        ts = ts.filter(isTaskFile)
-        if (!ts.length) {
-          log(`no task found.`, 0)
+        let name = this.argvs[1]
+        const taskdir = join(this.options.data.tasks)
+        const taskdir_exist = await exist(taskdir)
+        if (!taskdir_exist) {
+          await mkdir(taskdir)
+        }
+        // copy node_modules
+        copy(cwd('node_modules'), join(taskdir, 'node_modules'))
+
+        if (name) {
+          const file = path.extname(name) ? name : name + '.js'
+          await addTaskFile(file, taskdir)
         } else {
-          ts.map(async (item) => {
-            const taskdir = join(this.options.data.tasks)
-            const taskdir_exist = await exist(taskdir)
-            const task_exist = await exist(join(taskdir, item))
-            if (!taskdir_exist) {
-              await mkdir(taskdir)
-            }
+          const files = await readDir(cwd(tasks_path))
+          // copy task files
+          Promise.all(files.map(async (item) => {
             try {
-              await copyFile(cwd(item), join(taskdir, item), 'quiet')
-              log(`task '${basename(item, '.js')}' ${task_exist ? 'updated' : 'added'}`, 1)
+              await addTaskFile(item, taskdir)
             } catch (e) {
               log(e, 0)
             }
-          })
+          }))
         }
       }
+
+
+      // if (!this.argvs[1]) {
+      //   log(`Usage: fbi add-task [*] or [name.js]`, 0)
+      // } else {
+      //   // let ts = await indexDir(this.argvs.slice(1))
+      //   ts = ts.filter(isTaskFile)
+      //   if (!ts.length) {
+      //     log(`Tasks files not found.`, 0)
+      //   } else {
+      //     const taskdir = join(this.options.data.tasks)
+      //     const taskdir_exist = await exist(taskdir)
+      //     if (!taskdir_exist) {
+      //       await mkdir(taskdir)
+      //     }
+      //     // copy task files
+      //     ts.map(async (item) => {
+      //       const task_exist = await exist(join(taskdir, item))
+      //       try {
+      //         await copyFile(cwd(item), join(taskdir, item), 'quiet')
+      //         log(`task '${basename(item, '.js')}' ${task_exist ? 'updated' : 'added'}`, 1)
+      //       } catch (e) {
+      //         log(e, 0)
+      //       }
+      //     })
+
+      //     // copy node_modules
+      //     copy(cwd('node_modules'), join(taskdir, 'node_modules'))
+      //   }
+      // }
     }
   }
 

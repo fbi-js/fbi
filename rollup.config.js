@@ -3,6 +3,7 @@ import json from 'rollup-plugin-json'
 
 let pkg = require('./package.json');
 let external = Object.keys(pkg.dependencies).concat([
+  'os',
   'fs',
   'util',
   'path',

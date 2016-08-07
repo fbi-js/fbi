@@ -2,11 +2,12 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
+var path = _interopDefault(require('path'));
 var readline = require('readline');
 var vm = _interopDefault(require('vm'));
 var fs = _interopDefault(require('fs'));
+var os = _interopDefault(require('os'));
 var util = _interopDefault(require('util'));
-var path = _interopDefault(require('path'));
 var child_process = require('child_process');
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
@@ -39,6 +40,12 @@ var createClass = function () {
   };
 }();
 
+var win = os.type() === 'Windows_NT';
+
+/*
+ * bold, italic, underline, inverse, white, grey,
+ * black, blue, cyan, green, magenta, red, yellow
+ */
 function colors() {
   function colorize(color, text) {
     var codes = util.inspect.colors[color];
@@ -176,10 +183,18 @@ function install(source, rootPath, command, opts) {
   var cmd = command + ' install ' + pkgs + ' ' + (opts || '');
   log(command + ' install ' + info);
   return new Promise(function (resolve, reject) {
-    var installer = child_process.spawn(command, ['install', opts || ''], {
-      cwd: rootPath,
-      stdio: [0, 1, 2] // child_process log style
-    });
+    var installer = void 0;
+    if (win) {
+      installer = child_process.spawn('cmd', ['/s', '/c', command, 'install', opts || ''], {
+        cwd: rootPath,
+        stdio: [0, 1, 2] // child_process log style
+      });
+    } else {
+      installer = child_process.spawn(command, ['install', opts || ''], {
+        cwd: rootPath,
+        stdio: [0, 1, 2] // child_process log style
+      });
+    }
 
     installer.on('error', function (err) {
       log('Failed to \'' + cmd + '\'', 0);
@@ -253,6 +268,7 @@ function rmdir(dir, callback) {
 }
 
 function isTaskFile(file) {
+  // log(file)
   return basename(file).indexOf('.') !== 0 && path.extname(file) === '.js' && file.indexOf('config') < 0;
 }
 
@@ -330,17 +346,14 @@ function fillGap(str, max, gap) {
 }
 
 function genTaskHelpTxt(all) {
-
-  var txt = '\n    Tasks:\n\n      Usage: fbi [task] [-t, -g]\n    ';
+  var txt = '\n    Tasks:\n    ';
   var tasksTxt = '';
-  if (!Object.keys(all).length) {
-    tasksTxt = '\n      No tasks.\n    ';
-  } else {
+  if (Object.keys(all).length) {
     ['global', 'template', 'local'].map(function (type) {
       if (all[type].length) {
         all[type].map(function (item) {
           if (type === 'local') {
-            tasksTxt += '\n      ' + colors().yellow(fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' '));
+            tasksTxt += '\n      ' + colors().green(fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' '));
           } else {
             tasksTxt += '\n      ' + fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' ') + ' ' + colors().grey(type === 'template' ? '-t' : '-g');
           }
@@ -348,18 +361,27 @@ function genTaskHelpTxt(all) {
       }
     });
   }
+  if (!tasksTxt) {
+    tasksTxt = colors().grey('\n      No tasks, use \'fbi ata, fbi ata [name]\' to add tasks.');
+  } else {
+    tasksTxt = colors().grey('\n      usage: fbi [task] [-t, -g]\n    ') + tasksTxt;
+  }
+
   return txt + tasksTxt;
 }
 
 function genTmplHelpTxt(all, curr, desc) {
-  var txt = '\n\n    Templates:\n\n      Usage: fbi init [template]\n    ';
+  var txt = '\n\n    Templates:\n    ';
   var tmplsTxt = '';
-  if (!all.length) {
-    tmplsTxt = '\n      No templates.\n    ';
-  } else {
+  if (all.length) {
     all.map(function (item) {
       tmplsTxt += '\n      ' + colors().yellow('★') + '  ' + (colors().green(item.name) + (item.name === curr ? colors().yellow(' <current>') : '') + ' - ' + item.desc);
     });
+  }
+  if (!tmplsTxt) {
+    tmplsTxt = colors().grey('\n      No templates, use \'fbi atm\' to add templates.');
+  } else {
+    tmplsTxt = colors().grey('\n      usage: fbi init [template]\n    ') + tmplsTxt;
   }
   return txt + tmplsTxt;
 }
@@ -377,6 +399,31 @@ function genNpmscriptsHelpTxt(all) {
 
 function flatLog(cnt) {
   console.log('\n\n' + cnt + '\n\n');
+}
+
+function prompt(keys) {
+  var rl = readline.createInterface(process.stdin, process.stdout),
+      prompts = typeof keys === 'string' ? [keys] : keys,
+      p = 0,
+      data = {};
+  var get = function get() {
+    rl.setPrompt(prompts[p] + ': ');
+    rl.prompt();
+    p++;
+  };
+  get();
+
+  return new Promise(function (resolve, reject) {
+    rl.on('line', function (line) {
+      data[prompts[p - 1]] = line;
+      if (p === prompts.length) {
+        return rl.close();
+      }
+      get();
+    }).on('close', function () {
+      resolve(data);
+    });
+  });
 }
 
 var Task = function () {
@@ -1030,7 +1077,7 @@ var opts = {
 
 var version = "2.0.5";
 
-var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n    Commands:\n\n      ata,   add-task [*, name.js]    add task files in current folder\n      atm,   add-tmpl [name]          add current folder as a template named [name]\n      rta,   rm-task  [-t] [name]     remove task\n      rtm,   rm-tmpl  [name]          remove template\n      i,     install                  install dependencies\n      ls,    list                     list all tasks & templates\n      cat    [task]   [-t, -g]        cat task content\n      init   [template]               init a new project via template\n      backup                          backup tasks & templates\n      recover                         recover tasks & templates from current folder\n\n      -h,    --help                   output usage information\n      -v,    --version                output the version number\n';
+var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n      ' + colors().yellow('use \'fbi ls\' to see available tasks & templates') + '\n\n    Commands:\n\n      ata,   add-task [name]          add task file of files in \'fbi\' folder\n      atm,   add-tmpl                 add current folder as a template\n      rta,   rm-task  [-t] [name]     remove task\n      rtm,   rm-tmpl  [name]          remove template\n      i,     install                  install dependencies\n      ls,    list                     list all tasks & templates\n      cat    [task]   [-t, -g]        cat task content\n      init   [template]               init a new project via template\n      backup                          backup tasks & templates\n      recover                         recover tasks & templates from current folder\n\n      -h,    --help                   output usage information\n      -v,    --version                output the version number\n';
 
 var task = new Task();
 var template = new Template();
@@ -1167,25 +1214,19 @@ var Cli = function () {
     value: function help() {
       var _this13 = this;
 
-      return Promise.resolve().then(function () {
-        if (!!_this13.next) {
+      if (!!_this13.next) {
 
-          if (!_this13.argvs.length || _this13.argvs[0] === '-h' || _this13.argvs[0] === '--help') {
-            return Promise.resolve().then(function () {
-              _this13.next = false;
+        if (!_this13.argvs.length || _this13.argvs[0] === '-h' || _this13.argvs[0] === '--help') {
+          _this13.next = false;
 
-              return task.all(_this13.options, true, true);
-            }).then(function (_resp) {
-              helps += genTaskHelpTxt(_resp);
-              return template.all(_this13.options);
-            }).then(function (_resp) {
-              helps += genTmplHelpTxt(_resp, _this13.options.template, _this13.options.templateDescription);
-              helps += '\n      ';
-              console.log(helps);
-            });
-          }
+          // helps += genTaskHelpTxt(await task.all(this.options, true, true))
+          // helps += genTmplHelpTxt(await template.all(this.options),
+          //   this.options.template, this.options.templateDescription)
+          // helps += `
+          // `
+          console.log(helps);
         }
-      }).then(function () {});
+      }
     }
   }, {
     key: 'install',
@@ -1208,22 +1249,22 @@ var Cli = function () {
           _test2,
           _test3,
           _test4,
-          _this18 = this;
+          _this14 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this18.next) {
+        if (!!_this14.next) {
           return Promise.resolve().then(function () {
-            _test2 = _this18.argvs[0] === 'i' || _this18.argvs[0] === 'install';
+            _test2 = _this14.argvs[0] === 'i' || _this14.argvs[0] === 'install';
 
             if (_test2) {
-              _this18.next = false;
+              _this14.next = false;
 
               // let force = this.argvs[1] === '-f' || this.argvs[1] === '-force'
 
               localdeps = {};
               tmplDeps = {};
               taskDeps = {};
-              _opts = _this18.options;
+              _opts = _this14.options;
 
               // local package.json => devDependencies
             }
@@ -1234,7 +1275,12 @@ var Cli = function () {
               localdeps = require(cwd('package.json')).devDependencies;
             }
 
-            // template package.json => devDependencies
+            if (_test2) {
+              log(_opts);
+
+              // template package.json => devDependencies
+            }
+
             _test3 = _test2 && _opts.template;
 
             if (_test3) {
@@ -1286,6 +1332,10 @@ var Cli = function () {
             if (_test2) {
               return Promise.resolve().then(function () {
                 npms = _opts.npm;
+
+
+                log(taskDeps);
+
                 return Object.keys(tmplDeps).length ? install(tmplDeps, join(_opts.data.templates, _opts.template), npms.alias, npms.options) : Promise.resolve();
               }).then(function (_resp) {
                 installTmplDeps = _resp;
@@ -1312,24 +1362,24 @@ var Cli = function () {
       var name,
           succ,
           _test5,
-          _this35 = this;
+          _this31 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this35.next) {
-          _test5 = _this35.argvs[0] === 'init';
+        if (!!_this31.next) {
+          _test5 = _this31.argvs[0] === 'init';
 
           // log(this.argvs[1].match(/^[^\\/:*""<>|,]+$/i))
           if (_test5) {
-            _this35.next = false;
+            _this31.next = false;
           }
 
-          if (_test5 && !_this35.argvs[1]) {
+          if (_test5 && !_this31.argvs[1]) {
             return log('Usage: fbi init [template name]', 0);
           } else {
             if (_test5) {
               return Promise.resolve().then(function () {
-                name = _this35.argvs[1];
-                return template.init(name, cwd(), _this35.options);
+                name = _this31.argvs[1];
+                return template.init(name, cwd(), _this31.options);
               }).then(function (_resp) {
                 succ = _resp;
 
@@ -1350,15 +1400,15 @@ var Cli = function () {
     key: 'remove',
     value: function remove() {
       var _this3,
-          _this42 = this;
+          _this38 = this;
 
       return Promise.resolve().then(function () {
-        _this3 = _this42;
+        _this3 = _this38;
 
-        if (!!_this42.next) {
+        if (!!_this38.next) {
           return Promise.resolve().then(function () {
 
-            if (_this42.argvs[0] === 'rm-task' || _this42.argvs[0] === 'rta') {
+            if (_this38.argvs[0] === 'rm-task' || _this38.argvs[0] === 'rta') {
               return function () {
                 var mods, tasks_path, tmpl_name, tmpl_exist, tasks, _test6, _test7, _test8;
 
@@ -1434,7 +1484,7 @@ var Cli = function () {
               }();
             }
           }).then(function () {
-            if (_this42.argvs[0] === 'rm-tmpl' || _this42.argvs[0] === 'rtm') {
+            if (_this38.argvs[0] === 'rm-tmpl' || _this38.argvs[0] === 'rtm') {
               return function () {
                 var mods, tmpls;
                 return Promise.resolve().then(function () {
@@ -1481,36 +1531,36 @@ var Cli = function () {
           type,
           taskObj,
           _test9,
-          _this55 = this;
+          _this51 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this55.next) {
-          _test9 = _this55.argvs[0] === 'cat';
+        if (!!_this51.next) {
+          _test9 = _this51.argvs[0] === 'cat';
 
           if (_test9) {
-            _this55.next = false;
+            _this51.next = false;
           }
 
-          if (_test9 && !_this55.argvs[1]) {
+          if (_test9 && !_this51.argvs[1]) {
             return log('Usage: fbi cat [task] [-t, -g]', 0);
           } else {
             if (_test9) {
-              name = _this55.argvs[1];
+              name = _this51.argvs[1];
               type = 'local';
             }
 
-            if (_test9 && _this55.argvs[2] === '-g') {
+            if (_test9 && _this51.argvs[2] === '-g') {
               type = 'global';
             } else {
               if (_test9) {
-                if (_this55.argvs[2] === '-t') {
+                if (_this51.argvs[2] === '-t') {
                   type = 'template';
                 }
               }
             }
             if (_test9) {
               return Promise.resolve().then(function () {
-                return task.get(name, type, _this55.options);
+                return task.get(name, type, _this51.options);
               }).then(function (_resp) {
                 taskObj = _resp;
 
@@ -1530,24 +1580,24 @@ var Cli = function () {
           usrpkg,
           _test10,
           _test11,
-          _this62 = this;
+          _this58 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this62.next) {
+        if (!!_this58.next) {
           return Promise.resolve().then(function () {
-            _test10 = _this62.argvs[0] === 'ls' || _this62.argvs[0] === 'list';
+            _test10 = _this58.argvs[0] === 'ls' || _this58.argvs[0] === 'list';
 
             if (_test10) {
               return Promise.resolve().then(function () {
-                _this62.next = false;
+                _this58.next = false;
 
-                return task.all(_this62.options, true, false);
+                return task.all(_this58.options, true, false);
               }).then(function (_resp) {
                 _helps = genTaskHelpTxt(_resp);
-                return template.all(_this62.options);
+                return template.all(_this58.options);
               }).then(function (_resp) {
 
-                _helps += genTmplHelpTxt(_resp, _this62.options.template, _this62.options.templateDescription);
+                _helps += genTmplHelpTxt(_resp, _this58.options.template, _this58.options.templateDescription);
               });
             }
           }).then(function () {
@@ -1576,127 +1626,169 @@ var Cli = function () {
   }, {
     key: 'add',
     value: function add() {
+      function addTaskFile(file, to) {
+        var name, task_exist;
+        return Promise.resolve().then(function () {
+          name = file.replace(path.extname(file), '');
+          return exist(cwd(tasks_path, file));
+        }).then(function (_resp) {
+          task_exist = _resp;
+          return copyFile(cwd(tasks_path, file), join(to, file), 'quiet');
+        }).then(function () {
+          log('Task \'' + name + '\' ' + (task_exist ? 'updated' : 'added') + ' successfully', 1);
+        });
+      }
+
       var _this4,
-          ts,
-          _this68 = this;
+          name,
+          isExist,
+          answer,
+          tasks_path,
+          local_tasks_folder_exist,
+          _test12,
+          _test13,
+          _test14,
+          _this64 = this;
 
       return Promise.resolve().then(function () {
-        _this4 = _this68;
+        _this4 = _this64;
 
-        if (!!_this68.next) {
+        if (!!_this64.next) {
           return Promise.resolve().then(function () {
+            _test12 = _this64.argvs[0] === 'add-tmpl' || _this64.argvs[0] === 'atm';
 
-            if (_this68.argvs[0] === 'add-tmpl' || _this68.argvs[0] === 'atm') {
-              return function () {
-                var name, isExist;
-                return Promise.resolve().then(function () {
-                  _this4.next = false;
+            if (_test12) {
+              return Promise.resolve().then(function () {
+                _this64.next = false;
 
-                  // add template
-                  name = _this4.argvs[1] || _this4.options.template || basename(cwd(), '');
-                  return exist(join(_this4.options.data.templates, name));
-                }).then(function (_resp) {
-                  isExist = _resp;
-
-
-                  if (isExist) {
-                    (function () {
-                      log('tempalte \'' + name + '\' already exist, type \'y\' to replace, or type name to create new one', -1);
-                      var rl = readline.createInterface(process.stdin, process.stdout),
-                          prompts = ['name'],
-                          p = 0,
-                          data = {};
-                      var get = function get() {
-                        rl.setPrompt(prompts[p] + ': ');
-                        rl.prompt();
-
-                        p++;
-                      };
-                      get();
-                      rl.on('line', function (line) {
-                        data[prompts[p - 1]] = line;
-                        if (p === prompts.length) {
-                          return rl.close();
-                        }
-                        get();
-                      }).on('close', function () {
-                        var isExist2;
-                        return Promise.resolve().then(function () {
-                          log('Start to add template \'' + name + '\' ...');
-                          if (data.name === 'y') {
-                            return copy(cwd(), join(_this4.options.data.templates, name), _this4.options.TEMPLATE_ADD_IGNORE);
-                          } else {
-                            if (data.name === '') {
-                              log('name can\'t be empty', 0);
-                            } else {
-                              return Promise.resolve().then(function () {
-                                return exist(join(_this4.options.data.templates, data.name));
-                              }).then(function (_resp) {
-                                isExist2 = _resp;
-
-                                if (isExist2) {
-                                  log(data.name + ' already exist too', 0);
-                                  process.exit(0);
-                                } else {
-                                  return copy(cwd(), join(_this4.options.data.templates, data.name), _this4.options.TEMPLATE_ADD_IGNORE);
-                                }
-                              });
-                            }
-                          }
-                        }).then(function () {
-                          log('Template \'' + name + '\' added successfully', 1);
-                        });
-                      });
-                    })();
-                  } else {
-                    return Promise.resolve().then(function () {
-                      log('Start to add template \'' + name + '\' ...');
-                      return copy(cwd(), join(_this4.options.data.templates, name), _this4.options.TEMPLATE_ADD_IGNORE);
-                    }).then(function () {
-                      log('Template \'' + name + '\' added successfully', 1);
-                    });
-                  }
-                }).then(function () {});
-              }();
+                // add template
+                name = _this64.options.template;
+                return exist(join(_this64.options.data.templates, name));
+              }).then(function (_resp) {
+                isExist = _resp;
+              });
             }
           }).then(function () {
-            if (_this68.argvs[0] === 'add-task' || _this68.argvs[0] === 'ata') {
-              _this68.next = false;
+            _test14 = _test12 && isExist;
 
-              if (!_this68.argvs[1]) {
-                log('Usage: fbi add-task [*] or [name.js]', 0);
-              } else {
-                ts = _this68.argvs.slice(1);
+            if (_test14) {
+              return Promise.resolve().then(function () {
+                log('Tempalte \'' + name + '\' already exist, input \'y\' to update, or change the field \'template\' value in \'./fbi/config.js\' to create a new one.', 'yellow');
 
-                ts = ts.filter(isTaskFile);
-                if (!ts.length) {
-                  log('no task found.', 0);
-                } else {
-                  ts.map(function (item) {
-                    var taskdir, taskdir_exist, task_exist;
-                    return Promise.resolve().then(function () {
-                      taskdir = join(_this4.options.data.tasks);
-                      return exist(taskdir);
-                    }).then(function (_resp) {
-                      taskdir_exist = _resp;
-                      return exist(join(taskdir, item));
-                    }).then(function (_resp) {
-                      task_exist = _resp;
+                return prompt('update');
+              }).then(function (_resp) {
+                answer = _resp;
+              });
+            }
+          }).then(function () {
+            if (_test14 && answer['update'] === 'y') {
+              return Promise.resolve().then(function () {
+                log('Start to update template \'' + name + '\' ...');
+                return copy(cwd(), join(_this64.options.data.templates, name), _this64.options.TEMPLATE_ADD_IGNORE);
+              }).then(function () {
+                log('Template \'' + name + '\' updated successfully', 1);
+              });
+            } else {
+              if (_test14) {
+                process.exit(0);
+              }
 
-                      if (!taskdir_exist) {
-                        return mkdir(taskdir);
-                      }
-                    }).then(function () {
+              if (_test12) {
+                return Promise.resolve().then(function () {
+                  log('Start to add template \'' + name + '\' ...');
+                  return copy(cwd(), join(_this64.options.data.templates, name), _this64.options.TEMPLATE_ADD_IGNORE);
+                }).then(function () {
+                  log('Template \'' + name + '\' added successfully', 1);
+                });
+              }
+            }
+          }).then(function () {
+            tasks_path = _this64.options.paths.tasks;
+
+
+            // if (!this.argvs[1]) {
+            //   log(`Usage: fbi add-task [*] or [name.js]`, 0)
+            // } else {
+            //   // let ts = await indexDir(this.argvs.slice(1))
+            //   ts = ts.filter(isTaskFile)
+            //   if (!ts.length) {
+            //     log(`Tasks files not found.`, 0)
+            //   } else {
+            //     const taskdir = join(this.options.data.tasks)
+            //     const taskdir_exist = await exist(taskdir)
+            //     if (!taskdir_exist) {
+            //       await mkdir(taskdir)
+            //     }
+            //     // copy task files
+            //     ts.map(async (item) => {
+            //       const task_exist = await exist(join(taskdir, item))
+            //       try {
+            //         await copyFile(cwd(item), join(taskdir, item), 'quiet')
+            //         log(`task '${basename(item, '.js')}' ${task_exist ? 'updated' : 'added'}`, 1)
+            //       } catch (e) {
+            //         log(e, 0)
+            //       }
+            //     })
+
+            //     // copy node_modules
+            //     copy(cwd('node_modules'), join(taskdir, 'node_modules'))
+            //   }
+            // }
+            _test13 = _this64.argvs[0] === 'add-task' || _this64.argvs[0] === 'ata';
+
+            if (_test13) {
+              return Promise.resolve().then(function () {
+                _this64.next = false;
+
+                return exist(cwd(tasks_path));
+              }).then(function (_resp) {
+                local_tasks_folder_exist = _resp;
+              });
+            }
+          }).then(function () {
+            if (_test13 && !local_tasks_folder_exist) {
+              log('Local tasks folder \'' + tasks_path + '\' not found.', 0);
+            } else {
+              if (_test13) {
+                return function () {
+                  var name, taskdir, taskdir_exist, file, files;
+                  return Promise.resolve().then(function () {
+                    name = _this4.argvs[1];
+                    taskdir = join(_this4.options.data.tasks);
+                    return exist(taskdir);
+                  }).then(function (_resp) {
+                    taskdir_exist = _resp;
+
+                    if (!taskdir_exist) {
+                      return mkdir(taskdir);
+                    }
+                  }).then(function () {
+                    // copy node_modules
+                    copy(cwd('node_modules'), join(taskdir, 'node_modules'));
+
+                    if (name) {
+                      file = path.extname(name) ? name : name + '.js';
+                      return addTaskFile(file, taskdir);
+                    } else {
                       return Promise.resolve().then(function () {
-                        return copyFile(cwd(item), join(taskdir, item), 'quiet');
-                      }).then(function () {
-                        log('task \'' + basename(item, '.js') + '\' ' + (task_exist ? 'updated' : 'added'), 1);
-                      }).catch(function (e) {
-                        log(e, 0);
+                        return readDir(cwd(tasks_path));
+                      }).then(function (_resp) {
+                        files = _resp;
+                        // copy task files
+
+                        Promise.all(files.map(function (item) {
+                          return Promise.resolve().then(function () {
+                            return Promise.resolve().then(function () {
+                              return addTaskFile(item, taskdir);
+                            }).catch(function (e) {
+                              log(e, 0);
+                            });
+                          }).then(function () {});
+                        }));
                       });
-                    }).then(function () {});
-                  });
-                }
+                    }
+                  }).then(function () {});
+                }();
               }
             }
           });
@@ -1734,14 +1826,14 @@ var Cli = function () {
     value: function run() {
       var _this5,
           cmds,
-          _this87 = this;
+          _this90 = this;
 
-      _this5 = _this87;
+      _this5 = _this90;
 
-      if (!!_this87.next) {
-        cmds = _this87.argvs;
+      if (!!_this90.next) {
+        cmds = _this90.argvs;
 
-        if (_this87.argvs.length > 0) {
+        if (_this90.argvs.length > 0) {
           (function () {
             var ret = void 0;
             var prefix = _this5.options.task_param_prefix;

@@ -1,8 +1,16 @@
 import fs from 'fs'
+import os from 'os'
 import util from 'util'
 import path from 'path'
 import { exec, spawn } from 'child_process'
+import { createInterface } from 'readline'
 
+const win = os.type() === 'Windows_NT'
+
+/*
+ * bold, italic, underline, inverse, white, grey,
+ * black, blue, cyan, green, magenta, red, yellow
+ */
 export function colors() {
   function colorize(color, text) {
     const codes = util.inspect.colors[color]
@@ -178,10 +186,18 @@ export function install(source, rootPath, command, opts) {
   const cmd = `${command} install ${pkgs} ${opts || ''}`
   log(`${command} install ${info}`)
   return new Promise((resolve, reject) => {
-    const installer = spawn(command, ['install', opts || ''], {
-      cwd: rootPath,
-      stdio: [0, 1, 2] // child_process log style
-    })
+    let installer
+    if (win) {
+      installer = spawn('cmd', ['/s', '/c', command, 'install', opts || ''], {
+        cwd: rootPath,
+        stdio: [0, 1, 2] // child_process log style
+      })
+    } else {
+      installer = spawn(command, ['install', opts || ''], {
+        cwd: rootPath,
+        stdio: [0, 1, 2] // child_process log style
+      })
+    }
 
     installer.on('error', (err) => {
       log(`Failed to '${cmd}'`, 0)
@@ -260,6 +276,7 @@ export function rmdir(dir, callback) {
 }
 
 export function isTaskFile(file) {
+  // log(file)
   return basename(file).indexOf('.') !== 0
     && path.extname(file) === '.js'
     && file.indexOf('config') < 0
@@ -341,24 +358,17 @@ export function fillGap(str, max, gap) {
 }
 
 export function genTaskHelpTxt(all) {
-
   let txt = `
     Tasks:
-
-      Usage: fbi [task] [-t, -g]
     `;
   let tasksTxt = '';
-  if (!Object.keys(all).length) {
-    tasksTxt = `
-      No tasks.
-    `
-  } else {
+  if (Object.keys(all).length) {
     ['global', 'template', 'local'].map(type => {
       if (all[type].length) {
         all[type].map(item => {
           if (type === 'local') {
             tasksTxt += `
-      ${colors().yellow(fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' '))}`;
+      ${colors().green(fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' '))}`;
           } else {
             tasksTxt += `
       ${fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' ')} ${colors().grey(type === 'template' ? '-t' : '-g')}`;
@@ -367,6 +377,15 @@ export function genTaskHelpTxt(all) {
       }
     })
   }
+  if (!tasksTxt) {
+    tasksTxt = colors().grey(`
+      No tasks, use 'fbi ata, fbi ata [name]' to add tasks.`)
+  } else {
+    tasksTxt = colors().grey(`
+      usage: fbi [task] [-t, -g]
+    `) + tasksTxt
+  }
+
   return txt + tasksTxt
 }
 
@@ -374,19 +393,21 @@ export function genTmplHelpTxt(all, curr, desc) {
   let txt = `
 
     Templates:
-
-      Usage: fbi init [template]
     `;
   let tmplsTxt = ''
-  if (!all.length) {
-    tmplsTxt = `
-      No templates.
-    `
-  } else {
+  if (all.length) {
     all.map(item => {
       tmplsTxt += `
       ${colors().yellow('★')}  ${colors().green(item.name) + (item.name === curr ? colors().yellow(' <current>') : '') + ' - ' + item.desc}`;
     })
+  }
+  if (!tmplsTxt) {
+    tmplsTxt = colors().grey(`
+      No templates, use 'fbi atm' to add templates.`)
+  } else {
+    tmplsTxt = colors().grey(`
+      usage: fbi init [template]
+    `) + tmplsTxt
   }
   return txt + tmplsTxt
 }
@@ -414,4 +435,50 @@ ${cnt}
 
 `
   )
+}
+
+export function indexDir(arr) {
+  let ret = []
+  return new Promise((resolve, reject) => {
+    Promise.all(arr.map(async (item) => {
+      if (win) {
+        if (item === '*') {
+          const all = await readDir(cwd())
+          ret = ret.concat(all)
+        } else {
+          ret.push(item)
+        }
+      } else {
+        ret.push(item)
+      }
+    })).then(() => {
+      resolve(ret)
+    })
+  })
+}
+
+export function prompt(keys) {
+  let
+    rl = createInterface(process.stdin, process.stdout),
+    prompts = typeof keys === 'string' ? [keys] : keys,
+    p = 0,
+    data = {}
+  const get = function () {
+    rl.setPrompt(prompts[p] + ': ')
+    rl.prompt()
+    p++
+  }
+  get()
+
+  return new Promise((resolve, reject) => {
+    rl.on('line', (line) => {
+      data[prompts[p - 1]] = line
+      if (p === prompts.length) {
+        return rl.close()
+      }
+      get()
+    }).on('close', () => {
+      resolve(data)
+    })
+  })
 }

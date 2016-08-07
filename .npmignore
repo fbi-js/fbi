@@ -9,6 +9,7 @@
 *.bak
 .babelrc
 npm-debug.log
+src/
 demo/
 test/
 bench/
