@@ -55,12 +55,12 @@ $ fbi -v,    --version                # 显示版本号
 [查看完整示例](https://github.com/neikvon/fbi-tasks-demo)
 
 ```js
-// showtime.js
+// ./fbi/showtime.js
 
 console.log(new Date())
 ```
 ```bash
-$ cd path/to/showtime.js
+$ cd path/to/fbi/showtime
 
 $ fbi ata showtime   # short for 'fbi add-task showtime'
 ```
@@ -140,7 +140,7 @@ ${stats.toString({
 
 **安装**
 ```bash
-$ npm i               # install dependencies
+$ npm i               # 安装依赖到本地
 ```
 
 **测试**
@@ -150,14 +150,12 @@ $ fbi b
 
 **添加**
 ```bash
-$ fbi atm
-# or
-$ fbi atm [new-name]  # [new-name] should equal to config.js=>template
+$ fbi atm             # fbi 会使用 'config.js=>template' 的值作为模板名称
 ```
 
 **检查**
 ```bash
-$ fbi ls              # see available Tasks & Templates
+$ fbi ls              # 查看可用任务和模板
 ```
 
 ### Q&A

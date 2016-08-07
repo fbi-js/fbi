@@ -150,8 +150,6 @@ $ fbi b
 
 **add**
 ```bash
-$ fbi atm
-# or
 $ fbi atm             # fbi will use the name in 'config.js=>template' as template name
 ```
 
