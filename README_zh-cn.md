@@ -138,6 +138,11 @@ ${stats.toString({
 })
 ```
 
+**安装**
+```bash
+$ npm i               # install dependencies
+```
+
 **测试**
 ```bash
 $ fbi b
@@ -149,10 +154,7 @@ $ fbi atm
 # or
 $ fbi atm [new-name]  # [new-name] should equal to config.js=>template
 ```
-~~**安装**~~ (更新: v2.0.5, 不需要该操作)
-```bash
-$ fbi i               # install dependencies
-```
+
 **检查**
 ```bash
 $ fbi ls              # see available Tasks & Templates
@@ -173,6 +175,6 @@ $ fbi ls              # see available Tasks & Templates
   1. 全局 => 全局任务
 
 
-### [修改纪录](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
+### [变更日志](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
 
 ### [与 v1.x 兼容](https://github.com/neikvon/fbi-template-backward-compatibility)
