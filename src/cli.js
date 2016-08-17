@@ -17,7 +17,7 @@ import {
 
 let helps =
   `
-    Usage:
+    Usage:11
 
       fbi [command]           run command
       fbi [task]              run a local preference task
@@ -163,26 +163,29 @@ export default class Cli {
     if (this.argvs[0] === 'i' || this.argvs[0] === 'install') {
       this.next = false
 
-      let localdeps = {}
+      let localDeps = {}
+      let localDeps_dev = {}
       let tmplDeps = {}
       let taskDeps = {}
       const opts = this.options
 
-      // local package.json => devDependencies
+      // local package.json => dependencies && devDependencies
       if (await exist(cwd('package.json'))) {
-        localdeps = require(cwd('package.json')).devDependencies
+        const pkgs = require(cwd('package.json'))
+        localDeps = pkgs.dependencies || {}
+        localDeps_dev = pkgs.devDependencies || {}
       }
 
       // template package.json => devDependencies
       if (opts.template) {
         try {
-          const tmplPkg = join(opts.data.templates, opts.template, 'package.json')
-          const tmplPkg_dev = require(tmplPkg)['devDependencies']
-          tmplDeps = merge(tmplPkg_dev, localdeps)
+          const _path = join(opts.data.templates, opts.template, 'package.json')
+          const _dev = require(_path)['devDependencies']
+          tmplDeps = merge(_dev, localDeps_dev)
           if (Object.keys(tmplDeps).length) {
-            let tmplPkgCnt = require(tmplPkg)
+            let tmplPkgCnt = require(_path)
             tmplPkgCnt['devDependencies'] = tmplDeps
-            write(tmplPkg, JSON.stringify(tmplPkgCnt, null, 2))
+            write(_path, JSON.stringify(tmplPkgCnt, null, 2))
           }
         } catch (e) {
         }
@@ -193,7 +196,7 @@ export default class Cli {
         try {
           const taskPkg = join(opts.data.tasks, 'package.json')
           const taskPkg_dev = require(taskPkg).devDependencies
-          taskDeps = merge(taskPkg_dev, localdeps)
+          taskDeps = merge(taskPkg_dev, localDeps_dev)
           if (Object.keys(taskDeps).length) {
             let taskPkgCnt = require(taskPkg)
             taskPkgCnt['devDependencies'] = taskDeps
@@ -205,24 +208,35 @@ export default class Cli {
 
       const npms = opts.npm
 
-      if (Object.keys(tmplDeps).length) {
-        install(tmplDeps, join(opts.data.templates, opts.template), npms.alias, npms.options)
+      if (Object.keys(localDeps).length) {
+        await install(localDeps, cwd(''), npms.alias, '--save ' + npms.options)
           .then(s => {
             log('Tempaltes dependencies installed.', 1)
           })
           .catch(err => {
-            log('Tasks dependencies installtion error', 0)
+            log('Tempaltes dependencies installtion error', 0)
+            log(err, 0)
+          })
+      }
+
+      if (Object.keys(tmplDeps).length) {
+        await install(tmplDeps, join(opts.data.templates, opts.template), npms.alias, '--save-dev ' + npms.options)
+          .then(s => {
+            log('Tempaltes devDependencies installed.', 1)
+          })
+          .catch(err => {
+            log('Tempaltes devDependencies installtion error', 0)
             log(err, 0)
           })
       }
 
       if (Object.keys(taskDeps).length) {
-        install(taskDeps, opts.data.tasks, npms.alias, npms.options)
+        await install(taskDeps, opts.data.tasks, npms.alias, '--save-dev ' + npms.options)
           .then(s => {
-            log('Tasks dependencies installed.', 1)
+            log('Tasks devDependencies installed.', 1)
           })
           .catch(err => {
-            log('Tasks dependencies installtion error', 0)
+            log('Tasks devDependencies installtion error', 0)
             log(err, 0)
           })
       }

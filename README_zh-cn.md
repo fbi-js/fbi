@@ -172,6 +172,11 @@ $ fbi ls              # 查看可用任务和模板
   1. 是模版 ? => 全局模版任务
   1. 全局 => 全局任务
 
+### 示例
+1. [tasks-demo](https://github.com/neikvon/fbi-tasks-demo)
+1. [template-vue2](https://github.com/neikvon/fbi-template-vue2)
+1. [template-webpack2](https://github.com/neikvon/fbi-template-webpack2)
+1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1)
 
 ### [变更日志](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
 

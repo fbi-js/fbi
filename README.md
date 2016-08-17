@@ -75,7 +75,7 @@ you can write a task as normal node.js program, ~~if required npm modules, after
 
 #### Add template
 
-[see full demo](https://github.com/neikvon/fbi-template-webpack-demo)
+[see full demo](https://github.com/neikvon/fbi-template-webpack2)
 
 ```bash
 |-- proj-name
@@ -171,6 +171,12 @@ $ fbi ls              # see available Tasks & Templates
   1. local => `./fbi/`
   1. is template ? => global template tasks
   1. global => global tasks
+
+### Demos
+1. [tasks-demo](https://github.com/neikvon/fbi-tasks-demo)
+1. [template-vue2](https://github.com/neikvon/fbi-template-vue2)
+1. [template-webpack2](https://github.com/neikvon/fbi-template-webpack2)
+1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1)
 
 ### [Change log](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
 

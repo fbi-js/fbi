@@ -1,3 +1,7 @@
+### v2.0.7
+2016-08-17 20:00
+- `fbi i`: install `dependencies` locally, install `devDependencies` in fbi global tempaltes folder.
+
 ### v2.0.6
 2016-08-07 22:20
 - fixed `fbi i` bugs

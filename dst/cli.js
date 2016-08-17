@@ -170,38 +170,37 @@ function existSync(src) {
 
 function install(source, rootPath, command, opts) {
   var prevDir = process.cwd();
-  var pkgs = '';
   var info = '';
 
+  var cmd = win ? 'cmd' : command;
+  var params = win ? ['/s', '/c', cmd] : ['install'];
+
   Object.keys(source).map(function (item) {
-    pkgs += item + '@' + source[item] + ' ';
+    params.push(item + '@' + source[item]);
     info += '\n       ' + item + '@' + source[item] + ' ';
   });
+  if (opts) {
+    params.push(opts);
+  }
   info += '\n       ' + (opts || '') + '\n    to:' + rootPath + '\n  ';
 
   process.chdir(rootPath);
-  var cmd = command + ' install ' + pkgs + ' ' + (opts || '');
   log(command + ' install ' + info);
+
   return new Promise(function (resolve, reject) {
-    var installer = void 0;
-    if (win) {
-      installer = child_process.spawn('cmd', ['/s', '/c', command, 'install', opts || ''], {
-        cwd: rootPath,
-        stdio: [0, 1, 2] // child_process log style
-      });
-    } else {
-      installer = child_process.spawn(command, ['install', opts || ''], {
-        cwd: rootPath,
-        stdio: [0, 1, 2] // child_process log style
-      });
-    }
+    var installer = child_process.spawn(cmd, params, {
+      cwd: rootPath,
+      stdio: [0, 1, 2] // child_process log style
+    });
 
     installer.on('error', function (err) {
+      // process.chdir(prevDir)
       log('Failed to \'' + cmd + '\'', 0);
       reject(err);
     });
 
     installer.on('close', function () {
+      // process.chdir(prevDir)
       resolve();
     });
   });
@@ -952,9 +951,9 @@ var opts = {
   RECOVER_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist']
 };
 
-var version = "2.0.6";
+var version = "2.0.7";
 
-var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n      ' + colors().yellow('use \'fbi ls\' to see available tasks & templates') + '\n\n    Commands:\n\n      ata,   add-task [name]          add task file of files in \'fbi\' folder\n      atm,   add-tmpl                 add current folder as a template\n      rta,   rm-task  [-t] [name]     remove task\n      rtm,   rm-tmpl  [name]          remove template\n      i,     install                  install dependencies\n      ls,    list                     list all tasks & templates\n      cat    [task]   [-t, -g]        cat task content\n      init   [template]               init a new project via template\n      backup                          backup tasks & templates\n      recover                         recover tasks & templates from current folder\n\n      -h,    --help                   output usage information\n      -v,    --version                output the version number\n';
+var helps = '\n    Usage:11\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n      ' + colors().yellow('use \'fbi ls\' to see available tasks & templates') + '\n\n    Commands:\n\n      ata,   add-task [name]          add task file of files in \'fbi\' folder\n      atm,   add-tmpl                 add current folder as a template\n      rta,   rm-task  [-t] [name]     remove task\n      rtm,   rm-tmpl  [name]          remove template\n      i,     install                  install dependencies\n      ls,    list                     list all tasks & templates\n      cat    [task]   [-t, -g]        cat task content\n      init   [template]               init a new project via template\n      backup                          backup tasks & templates\n      recover                         recover tasks & templates from current folder\n\n      -h,    --help                   output usage information\n      -v,    --version                output the version number\n';
 
 var task = new Task();
 var template = new Template();
@@ -1108,12 +1107,14 @@ var Cli = function () {
   }, {
     key: 'install',
     value: function install$$() {
-      var localdeps,
+      var localDeps,
+          localDeps_dev,
           tmplDeps,
           taskDeps,
           _opts,
-          tmplPkg,
-          tmplPkg_dev,
+          pkgs,
+          _path,
+          _dev,
           tmplPkgCnt,
           taskPkg,
           taskPkg_dev,
@@ -1130,32 +1131,36 @@ var Cli = function () {
             if (_test2) {
               _this14.next = false;
 
-              localdeps = {};
+              localDeps = {};
+              localDeps_dev = {};
               tmplDeps = {};
               taskDeps = {};
               _opts = _this14.options;
 
-              // local package.json => devDependencies
+              // local package.json => dependencies && devDependencies
             }
 
             return _test2 && exist(cwd('package.json'));
           }).then(function (_resp) {
             if (_resp) {
-              localdeps = require(cwd('package.json')).devDependencies;
+              pkgs = require(cwd('package.json'));
+
+              localDeps = pkgs.dependencies || {};
+              localDeps_dev = pkgs.devDependencies || {};
             }
 
             // template package.json => devDependencies
             if (_test2 && _opts.template) {
               try {
-                tmplPkg = join(_opts.data.templates, _opts.template, 'package.json');
-                tmplPkg_dev = require(tmplPkg)['devDependencies'];
+                _path = join(_opts.data.templates, _opts.template, 'package.json');
+                _dev = require(_path)['devDependencies'];
 
-                tmplDeps = merge(tmplPkg_dev, localdeps);
+                tmplDeps = merge(_dev, localDeps_dev);
                 if (Object.keys(tmplDeps).length) {
-                  tmplPkgCnt = require(tmplPkg);
+                  tmplPkgCnt = require(_path);
 
                   tmplPkgCnt['devDependencies'] = tmplDeps;
-                  write(tmplPkg, JSON.stringify(tmplPkgCnt, null, 2));
+                  write(_path, JSON.stringify(tmplPkgCnt, null, 2));
                 }
               } catch (e) {}
             }
@@ -1167,7 +1172,7 @@ var Cli = function () {
                     taskPkg = join(_opts.data.tasks, 'package.json');
                     taskPkg_dev = require(taskPkg).devDependencies;
 
-                    taskDeps = merge(taskPkg_dev, localdeps);
+                    taskDeps = merge(taskPkg_dev, localDeps_dev);
                     if (Object.keys(taskDeps).length) {
                       taskPkgCnt = require(taskPkg);
 
@@ -1182,20 +1187,29 @@ var Cli = function () {
               npms = _opts.npm;
             }
 
-            if (_test2 && Object.keys(tmplDeps).length) {
-              install(tmplDeps, join(_opts.data.templates, _opts.template), npms.alias, npms.options).then(function (s) {
+            if (_test2 && Object.keys(localDeps).length) {
+              return install(localDeps, cwd(''), npms.alias, '--save ' + npms.options).then(function (s) {
                 log('Tempaltes dependencies installed.', 1);
               }).catch(function (err) {
-                log('Tasks dependencies installtion error', 0);
+                log('Tempaltes dependencies installtion error', 0);
                 log(err, 0);
               });
             }
-
-            if (_test2 && Object.keys(taskDeps).length) {
-              install(taskDeps, _opts.data.tasks, npms.alias, npms.options).then(function (s) {
-                log('Tasks dependencies installed.', 1);
+          }).then(function () {
+            if (_test2 && Object.keys(tmplDeps).length) {
+              return install(tmplDeps, join(_opts.data.templates, _opts.template), npms.alias, '--save-dev ' + npms.options).then(function (s) {
+                log('Tempaltes devDependencies installed.', 1);
               }).catch(function (err) {
-                log('Tasks dependencies installtion error', 0);
+                log('Tempaltes devDependencies installtion error', 0);
+                log(err, 0);
+              });
+            }
+          }).then(function () {
+            if (_test2 && Object.keys(taskDeps).length) {
+              return install(taskDeps, _opts.data.tasks, npms.alias, '--save-dev ' + npms.options).then(function (s) {
+                log('Tasks devDependencies installed.', 1);
+              }).catch(function (err) {
+                log('Tasks devDependencies installtion error', 0);
                 log(err, 0);
               });
             }
@@ -1209,24 +1223,24 @@ var Cli = function () {
       var name,
           succ,
           _test3,
-          _this18 = this;
+          _this24 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this18.next) {
-          _test3 = _this18.argvs[0] === 'init';
+        if (!!_this24.next) {
+          _test3 = _this24.argvs[0] === 'init';
 
           // log(this.argvs[1].match(/^[^\\/:*""<>|,]+$/i))
           if (_test3) {
-            _this18.next = false;
+            _this24.next = false;
           }
 
-          if (_test3 && !_this18.argvs[1]) {
+          if (_test3 && !_this24.argvs[1]) {
             return log('Usage: fbi init [template name]', 0);
           } else {
             if (_test3) {
               return Promise.resolve().then(function () {
-                name = _this18.argvs[1];
-                return template.init(name, cwd(), _this18.options);
+                name = _this24.argvs[1];
+                return template.init(name, cwd(), _this24.options);
               }).then(function (_resp) {
                 succ = _resp;
 
@@ -1247,15 +1261,15 @@ var Cli = function () {
     key: 'remove',
     value: function remove() {
       var _this3,
-          _this25 = this;
+          _this31 = this;
 
       return Promise.resolve().then(function () {
-        _this3 = _this25;
+        _this3 = _this31;
 
-        if (!!_this25.next) {
+        if (!!_this31.next) {
           return Promise.resolve().then(function () {
 
-            if (_this25.argvs[0] === 'rm-task' || _this25.argvs[0] === 'rta') {
+            if (_this31.argvs[0] === 'rm-task' || _this31.argvs[0] === 'rta') {
               return function () {
                 var mods, tasks_path, tmpl_name, tmpl_exist, tasks, _test4, _test5, _test6;
 
@@ -1331,7 +1345,7 @@ var Cli = function () {
               }();
             }
           }).then(function () {
-            if (_this25.argvs[0] === 'rm-tmpl' || _this25.argvs[0] === 'rtm') {
+            if (_this31.argvs[0] === 'rm-tmpl' || _this31.argvs[0] === 'rtm') {
               return function () {
                 var mods, tmpls;
                 return Promise.resolve().then(function () {
@@ -1378,36 +1392,36 @@ var Cli = function () {
           type,
           taskObj,
           _test7,
-          _this38 = this;
+          _this44 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this38.next) {
-          _test7 = _this38.argvs[0] === 'cat';
+        if (!!_this44.next) {
+          _test7 = _this44.argvs[0] === 'cat';
 
           if (_test7) {
-            _this38.next = false;
+            _this44.next = false;
           }
 
-          if (_test7 && !_this38.argvs[1]) {
+          if (_test7 && !_this44.argvs[1]) {
             return log('Usage: fbi cat [task] [-t, -g]', 0);
           } else {
             if (_test7) {
-              name = _this38.argvs[1];
+              name = _this44.argvs[1];
               type = 'local';
             }
 
-            if (_test7 && _this38.argvs[2] === '-g') {
+            if (_test7 && _this44.argvs[2] === '-g') {
               type = 'global';
             } else {
               if (_test7) {
-                if (_this38.argvs[2] === '-t') {
+                if (_this44.argvs[2] === '-t') {
                   type = 'template';
                 }
               }
             }
             if (_test7) {
               return Promise.resolve().then(function () {
-                return task.get(name, type, _this38.options);
+                return task.get(name, type, _this44.options);
               }).then(function (_resp) {
                 taskObj = _resp;
 
@@ -1427,24 +1441,24 @@ var Cli = function () {
           usrpkg,
           _test8,
           _test9,
-          _this45 = this;
+          _this51 = this;
 
       return Promise.resolve().then(function () {
-        if (!!_this45.next) {
+        if (!!_this51.next) {
           return Promise.resolve().then(function () {
-            _test8 = _this45.argvs[0] === 'ls' || _this45.argvs[0] === 'list';
+            _test8 = _this51.argvs[0] === 'ls' || _this51.argvs[0] === 'list';
 
             if (_test8) {
               return Promise.resolve().then(function () {
-                _this45.next = false;
+                _this51.next = false;
 
-                return task.all(_this45.options, true, false);
+                return task.all(_this51.options, true, false);
               }).then(function (_resp) {
                 _helps = genTaskHelpTxt(_resp);
-                return template.all(_this45.options);
+                return template.all(_this51.options);
               }).then(function (_resp) {
 
-                _helps += genTmplHelpTxt(_resp, _this45.options.template, _this45.options.templateDescription);
+                _helps += genTmplHelpTxt(_resp, _this51.options.template, _this51.options.templateDescription);
               });
             }
           }).then(function () {
@@ -1495,22 +1509,22 @@ var Cli = function () {
           _test10,
           _test11,
           _test12,
-          _this51 = this;
+          _this57 = this;
 
       return Promise.resolve().then(function () {
-        _this4 = _this51;
+        _this4 = _this57;
 
-        if (!!_this51.next) {
+        if (!!_this57.next) {
           return Promise.resolve().then(function () {
-            _test10 = _this51.argvs[0] === 'add-tmpl' || _this51.argvs[0] === 'atm';
+            _test10 = _this57.argvs[0] === 'add-tmpl' || _this57.argvs[0] === 'atm';
 
             if (_test10) {
               return Promise.resolve().then(function () {
-                _this51.next = false;
+                _this57.next = false;
 
                 // add template
-                name = _this51.options.template;
-                return exist(join(_this51.options.data.templates, name));
+                name = _this57.options.template;
+                return exist(join(_this57.options.data.templates, name));
               }).then(function (_resp) {
                 isExist = _resp;
               });
@@ -1531,7 +1545,7 @@ var Cli = function () {
             if (_test12 && answer['update'] === 'y') {
               return Promise.resolve().then(function () {
                 log('Start to update template \'' + name + '\' ...');
-                return copy(cwd(), join(_this51.options.data.templates, name), _this51.options.TEMPLATE_ADD_IGNORE);
+                return copy(cwd(), join(_this57.options.data.templates, name), _this57.options.TEMPLATE_ADD_IGNORE);
               }).then(function () {
                 log('Template \'' + name + '\' updated successfully', 1);
               });
@@ -1543,19 +1557,19 @@ var Cli = function () {
               if (_test10) {
                 return Promise.resolve().then(function () {
                   log('Start to add template \'' + name + '\' ...');
-                  return copy(cwd(), join(_this51.options.data.templates, name), _this51.options.TEMPLATE_ADD_IGNORE);
+                  return copy(cwd(), join(_this57.options.data.templates, name), _this57.options.TEMPLATE_ADD_IGNORE);
                 }).then(function () {
                   log('Template \'' + name + '\' added successfully', 1);
                 });
               }
             }
           }).then(function () {
-            tasks_path = _this51.options.paths.tasks;
-            _test11 = _this51.argvs[0] === 'add-task' || _this51.argvs[0] === 'ata';
+            tasks_path = _this57.options.paths.tasks;
+            _test11 = _this57.argvs[0] === 'add-task' || _this57.argvs[0] === 'ata';
 
             if (_test11) {
               return Promise.resolve().then(function () {
-                _this51.next = false;
+                _this57.next = false;
 
                 return exist(cwd(tasks_path));
               }).then(function (_resp) {
@@ -1656,14 +1670,14 @@ var Cli = function () {
     value: function run() {
       var _this5,
           cmds,
-          _this77 = this;
+          _this83 = this;
 
-      _this5 = _this77;
+      _this5 = _this83;
 
-      if (!!_this77.next) {
-        cmds = _this77.argvs;
+      if (!!_this83.next) {
+        cmds = _this83.argvs;
 
-        if (_this77.argvs.length > 0) {
+        if (_this83.argvs.length > 0) {
           (function () {
             var ret = void 0;
             var prefix = _this5.options.task_param_prefix;

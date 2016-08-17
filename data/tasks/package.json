@@ -8,5 +8,6 @@
     "type": "git",
     "url": "git+https://github.com/neikvon/fbi.git"
   },
-  "devDependencies": {}
+  "devDependencies": {
+  }
 }

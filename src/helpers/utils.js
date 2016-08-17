@@ -169,42 +169,41 @@ ${stdout}`)
 
 export function install(source, rootPath, command, opts) {
   const prevDir = process.cwd()
-  let pkgs = ''
   let info = ''
 
+  const cmd = win ? 'cmd' : command
+  const params = win ? ['/s', '/c', cmd] : ['install']
+
   Object.keys(source).map(item => {
-    pkgs += `${item}@${source[item]} `
+    params.push(`${item}@${source[item]}`)
     info += `
        ${item}@${source[item]} `
   })
+  if (opts) {
+    params.push(opts)
+  }
   info += `
        ${opts || ''}
     to:${rootPath}
   `
 
   process.chdir(rootPath)
-  const cmd = `${command} install ${pkgs} ${opts || ''}`
   log(`${command} install ${info}`)
+
   return new Promise((resolve, reject) => {
-    let installer
-    if (win) {
-      installer = spawn('cmd', ['/s', '/c', command, 'install', opts || ''], {
-        cwd: rootPath,
-        stdio: [0, 1, 2] // child_process log style
-      })
-    } else {
-      installer = spawn(command, ['install', opts || ''], {
-        cwd: rootPath,
-        stdio: [0, 1, 2] // child_process log style
-      })
-    }
+    const installer = spawn(cmd, params, {
+      cwd: rootPath,
+      stdio: [0, 1, 2] // child_process log style
+    })
 
     installer.on('error', (err) => {
+      // process.chdir(prevDir)
       log(`Failed to '${cmd}'`, 0)
       reject(err)
     })
 
     installer.on('close', function () {
+      // process.chdir(prevDir)
       resolve()
     })
   })
