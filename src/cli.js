@@ -278,7 +278,7 @@ export default class Cli {
         log(`Usage: fbi rm-task [name]`, 0)
         process.exit(0)
       }
-      let tasks_path = this.options.data.tasks
+      let tasks_path = join(this.options.data.tasks, this.options.paths.tasks)
       let tmpl_name
       if (mods[0].indexOf('-') === 0) {
         tmpl_name = mods[0].slice(1)
@@ -450,9 +450,13 @@ export default class Cli {
         const taskdir_exist = await exist(taskdir)
         if (!taskdir_exist) {
           await mkdir(taskdir)
+          await mkdir(join(taskdir, this.options.paths.tasks))
         }
         // copy node_modules
-        copy(cwd('node_modules'), join(taskdir, 'node_modules'))
+        const node_modules_exist = await exist('node_modules')
+        if (node_modules_exist) {
+          copy(cwd('node_modules'), join(taskdir, 'node_modules'))
+        }
 
         // merge package.json
         let usr_psk = {}
@@ -468,13 +472,13 @@ export default class Cli {
 
         if (name) {
           const file = path.extname(name) ? name : name + '.js'
-          await addTaskFile(file, taskdir)
+          await addTaskFile(file, join(taskdir, this.options.paths.tasks))
         } else {
           const files = await readDir(cwd(tasks_path))
           // copy task files
           Promise.all(files.map(async (item) => {
             try {
-              await addTaskFile(item, taskdir)
+              await addTaskFile(item, join(taskdir, this.options.paths.tasks))
             } catch (e) {
               log(e, 0)
             }

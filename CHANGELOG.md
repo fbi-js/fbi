@@ -1,3 +1,9 @@
+### v2.0.8
+2016-08-18 20:40
+- change `data/tasks/task.js` to `data/tasks/fbi/task.js`
+
+You can host tasks and tempaltes in one git repository, see [fbi-tasks-demo](https://github.com/neikvon/fbi-tasks-demo) `clone.js` & `pull.js`
+
 ### v2.0.7
 2016-08-17 20:00
 - `fbi i`: install `dependencies` locally, install `devDependencies` in fbi global tempaltes folder.

@@ -1,6 +1,6 @@
 {
   "name": "fbi",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Node.js workflow tool",
   "engines": {
     "node": ">=4.0",

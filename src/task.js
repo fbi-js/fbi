@@ -50,7 +50,7 @@ export default class Task {
 
     // find in global
     if (!ret.cnt || type === 'global') {
-      await find(join(opts.data.tasks, name), 'global')
+      await find(join(opts.data.tasks, opts.paths.tasks, name), 'global')
     }
 
     return ret
@@ -92,7 +92,7 @@ export default class Task {
     }
 
     // global tasks
-    await collect(join(opts.data.tasks), 'global')
+    await collect(join(opts.data.tasks, opts.paths.tasks), 'global')
 
     // locals
     await collect(cwd(opts.paths.tasks), 'local')

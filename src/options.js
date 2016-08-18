@@ -16,7 +16,7 @@ export default {
   },
   npm: {
     alias: 'npm',
-    options: '--save-dev'
+    options: ''
   },
   TEMPLATE_ADD_IGNORE: ['.DS_Store', '.svn', '.git'],
   TEMPLATE_INIT_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'],

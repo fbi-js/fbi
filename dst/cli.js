@@ -485,7 +485,7 @@ var Task = function () {
         }
       }).then(function () {
         if (!ret.cnt || type === 'global') {
-          return find(join(opts.data.tasks, name), 'global');
+          return find(join(opts.data.tasks, opts.paths.tasks, name), 'global');
         }
       }).then(function () {
         return ret;
@@ -569,7 +569,7 @@ var Task = function () {
           return collect(join(opts.data.templates, opts.template, opts.paths.tasks), 'template');
         }
       }).then(function () {
-        return collect(join(opts.data.tasks), 'global');
+        return collect(join(opts.data.tasks, opts.paths.tasks), 'global');
       }).then(function () {
         return collect(cwd(opts.paths.tasks), 'local');
       }).then(function () {
@@ -943,7 +943,7 @@ var opts = {
   },
   npm: {
     alias: 'npm',
-    options: '--save-dev'
+    options: ''
   },
   TEMPLATE_ADD_IGNORE: ['.DS_Store', '.svn', '.git'],
   TEMPLATE_INIT_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'],
@@ -1282,7 +1282,7 @@ var Cli = function () {
                     log('Usage: fbi rm-task [name]', 0);
                     process.exit(0);
                   }
-                  tasks_path = _this3.options.data.tasks;
+                  tasks_path = join(_this3.options.data.tasks, _this3.options.paths.tasks);
                   tmpl_name = void 0;
                   _test4 = mods[0].indexOf('-') === 0;
 
@@ -1582,7 +1582,7 @@ var Cli = function () {
             } else {
               if (_test11) {
                 return function () {
-                  var name, taskdir, taskdir_exist, usr_psk, tsk_pkg, file, files;
+                  var name, taskdir, taskdir_exist, node_modules_exist, usr_psk, tsk_pkg, file, files;
                   return Promise.resolve().then(function () {
                     name = _this4.argvs[1];
                     taskdir = join(_this4.options.data.tasks);
@@ -1591,11 +1591,21 @@ var Cli = function () {
                     taskdir_exist = _resp;
 
                     if (!taskdir_exist) {
-                      return mkdir(taskdir);
+                      return Promise.resolve().then(function () {
+                        return mkdir(taskdir);
+                      }).then(function () {
+                        return mkdir(join(taskdir, _this4.options.paths.tasks));
+                      });
                     }
                   }).then(function () {
+                    return exist('node_modules');
+                  }).then(function (_resp) {
                     // copy node_modules
-                    copy(cwd('node_modules'), join(taskdir, 'node_modules'));
+                    node_modules_exist = _resp;
+
+                    if (node_modules_exist) {
+                      copy(cwd('node_modules'), join(taskdir, 'node_modules'));
+                    }
 
                     // merge package.json
                     usr_psk = {};
@@ -1612,7 +1622,7 @@ var Cli = function () {
 
                     if (name) {
                       file = path.extname(name) ? name : name + '.js';
-                      return addTaskFile(file, taskdir);
+                      return addTaskFile(file, join(taskdir, _this4.options.paths.tasks));
                     } else {
                       return Promise.resolve().then(function () {
                         return readDir(cwd(tasks_path));
@@ -1623,7 +1633,7 @@ var Cli = function () {
                         Promise.all(files.map(function (item) {
                           return Promise.resolve().then(function () {
                             return Promise.resolve().then(function () {
-                              return addTaskFile(item, taskdir);
+                              return addTaskFile(item, join(taskdir, _this4.options.paths.tasks));
                             }).catch(function (e) {
                               log(e, 0);
                             });
