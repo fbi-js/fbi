@@ -13,3 +13,4 @@ src/
 test/
 bench/
 rollup.config.js
+data/templates

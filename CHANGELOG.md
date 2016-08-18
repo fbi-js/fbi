@@ -1,3 +1,7 @@
+### v2.0.9
+2016-08-18 21:00
+- keep default task 'clone', usage: fbi clone path/to/git/repo.git
+
 ### v2.0.8
 2016-08-18 20:40
 - change `data/tasks/task.js` to `data/tasks/fbi/task.js`
