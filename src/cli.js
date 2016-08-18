@@ -17,7 +17,7 @@ import {
 
 let helps =
   `
-    Usage:11
+    Usage:
 
       fbi [command]           run command
       fbi [task]              run a local preference task
