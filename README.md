@@ -9,21 +9,21 @@
 
 [中文版说明](./README_zh-cn.md)
 
-### Features
+## Features
 
 * Tasks Management -  manage your js files as global tasks
 * Templates Management - reuse projects as global templates
 * node_modules Management - host devDependencies away from project's folder, and, it's faster
 * Lightweight, No dependencies
 
-### Installation
+## Installation
 
 ```bash
 $ npm i -g fbi
 ```
 
 
-### Usage
+## Usage
 
 ```bash
 $ fbi [task]              # run a local preference task
@@ -49,9 +49,9 @@ $ fbi -h,    --help                   # output usage information
 $ fbi -v,    --version                # output the version number
 ```
 
-### Quick Start
+## Quick Start
 
-#### Add task
+### Add task
 
 [see full demo](https://github.com/neikvon/fbi-tasks-demo)
 
@@ -75,7 +75,7 @@ $ fbi showtime
 ```
 `fbi` will add the `.js` files in `./fbi` folder to fbi's global tasks folder.
 
-#### Add template
+### Add template
 
 [see full demo](https://github.com/neikvon/fbi-template-webpack2)
 
@@ -160,33 +160,19 @@ $ fbi atm             # fbi will use the name in 'config.js=>template' as templa
 $ fbi ls              # see available Tasks & Templates
 ```
 
-### Q&A
-* How does FBI to identify task?
-  1. in `fbi/config.js` => `paths.tasks` folder (default `./fbi`)
-  1. `.js` file
-  1. Does not contain `config` characters
-
-* How does FBI to identify template?
-  1. `fbi/config.js` => `template`
-
-* What's the order does FBI find a task?
-  1. local => `./fbi/`
-  1. is template ? => global template tasks
-  1. global => global tasks
-
 ### Demos
 1. [tasks-demo](https://github.com/neikvon/fbi-tasks-demo)
 1. [template-vue2](https://github.com/neikvon/fbi-template-vue2)
 1. [template-webpack2](https://github.com/neikvon/fbi-template-webpack2)
-1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1)
+1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1) ( Compatible with fbi v1.x )
 
 ### [Change log](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
 
-### [Compatible with v1.x](https://github.com/neikvon/fbi-template-webpack1)
-
 ### Teamwork
 
-1. Create a remote git repository ` fbi-data `，repository structure：
+* Create a remote git repository ` fbi-data `，repository structure：
+
+
   ```
 |-- fbi-data
 |--   tasks
@@ -210,18 +196,18 @@ $ fbi ls              # see available Tasks & Templates
 |--     ...
   ```
 
-2. clone
+* clone
 ```bash
 $ fbi clone git@path/to/remote/fbi-data.git
 ```
 Tips: `fbi clone` only works on termial with `git`、 `rm -rf`、 `mkdir` commands，if using `windows`，you should use `git bash`.
 
-3. See available tasks & templates
+* See available tasks & templates
 ```bash
 $ fbi ls
 ```
 
-4. Create project and run
+* Create project and run
 ```bash
 $ cd path/to/empty/folder
 $ fbi init template1
@@ -229,7 +215,22 @@ $ fbi i
 $ fbi [task]
 ```
 
-5. update fbi-data
+* update fbi-data
 ```bash
 $ fbi pull
 ```
+
+### Q&A
+* How does FBI to identify task?
+  1. in `fbi/config.js` => `paths.tasks` folder (default `./fbi`)
+  1. `.js` file
+  1. Does not contain `config` characters
+
+* How does FBI to identify template?
+  1. `fbi/config.js` => `template`
+
+* What's the order does FBI find a task?
+  1. local => `./fbi/`
+  1. is template ? => global template tasks
+  1. global => global tasks
+

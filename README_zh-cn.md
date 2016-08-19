@@ -9,21 +9,21 @@
 
 [English Version](./README.md)
 
-### 特性
+## 特性
 
 * 任务托管 - 将js文件托管为全局任务
 * 模板托管 - 复用项目模板
 * node模块管理 - 从项目目录抽离node\_modules目录, 优化模块查找路径
 * 轻量, 无第三方依赖
 
-### 安装
+## 安装
 
 ```bash
 $ npm i -g fbi
 ```
 
 
-### 使用
+## 使用
 
 ```bash
 $ fbi [task]              # 运行一个本地优先的任务
@@ -49,9 +49,9 @@ $ fbi -h,    --help                   # 显示帮助
 $ fbi -v,    --version                # 显示版本号
 ```
 
-### 快速开始
+## 快速开始
 
-#### 添加任务
+### 添加任务
 
 [查看完整示例](https://github.com/neikvon/fbi-tasks-demo)
 
@@ -74,7 +74,7 @@ $ fbi showtime
 ```
 `fbi` 会把 `./fbi`文件夹内的`.js` 文件拷贝到全局任务目录.
 
-#### 添加模板
+### 添加模板
 
 [查看完整示例](https://github.com/neikvon/fbi-template-webpack-demo)
 
@@ -158,34 +158,19 @@ $ fbi atm             # fbi 会使用 'config.js=>template' 的值作为模板�
 ```bash
 $ fbi ls              # 查看可用任务和模板
 ```
-
-### Q&A
-* FBI 怎么识别任务?
-  1. `fbi/config.js` => `paths.tasks`  配置项指定的任务目录(默认为`./fbi`)
-  1. `.js` 文件
-  1. 文件名不包含 `config` 字符
-
-* FBI 怎么识别模版?
-  1. fbi/config.js => template  配置项指定的模版名称
-
-* FBI查找任务的顺序是什么?
-  1. 本地 => `./fbi/` 目录下的js文件
-  1. 是模版 ? => 全局模版任务
-  1. 全局 => 全局任务
-
-### 示例
+## 示例
 1. [tasks-demo](https://github.com/neikvon/fbi-tasks-demo)
 1. [template-vue2](https://github.com/neikvon/fbi-template-vue2)
 1. [template-webpack2](https://github.com/neikvon/fbi-template-webpack2)
-1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1)
+1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1) ( 与 fbi v1.x 兼容 )
 
-### [变更日志](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
+## [变更日志](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
 
-### [与 v1.x 兼容](https://github.com/neikvon/fbi-template-webpack1)
+## 团队协作
 
-### 团队协作
+* 远程git仓库 ` fbi-data `，仓库目录如下：
 
-1. 远程git仓库 ` fbi-data `，仓库目录如下：
+
   ```
 |-- fbi-data
 |--   tasks
@@ -209,18 +194,18 @@ $ fbi ls              # 查看可用任务和模板
 |--     ...
   ```
 
-2. 克隆仓库
+* 克隆仓库
 ```bash
 $ fbi clone git@path/to/remote/fbi-data.git
 ```
 注意：`fbi clone` 需要在支持`git`、 `rm -rf`、 `mkdir`的终端执行，如果你是windows用户，可以使用`git bash`。
 
-3. 查看可用任务和模板
+* 查看可用任务和模板
 ```bash
 $ fbi ls
 ```
 
-4. 新建项目并运行
+* 新建项目并运行
 ```bash
 $ cd path/to/empty/folder
 $ fbi init template1
@@ -228,7 +213,22 @@ $ fbi i
 $ fbi [task]
 ```
 
-5. 更新 fbi-data
+* 更新 fbi-data
 ```bash
 $ fbi pull
 ```
+
+## Q&A
+* FBI 怎么识别任务?
+  1. `fbi/config.js` => `paths.tasks`  配置项指定的任务目录(默认为`./fbi`)
+  1. `.js` 文件
+  1. 文件名不包含 `config` 字符
+
+* FBI 怎么识别模版?
+  1. fbi/config.js => template  配置项指定的模版名称
+
+* FBI查找任务的顺序是什么?
+  1. 本地 => `./fbi/` 目录下的js文件
+  1. 是模版 ? => 全局模版任务
+  1. 全局 => 全局任务
+
