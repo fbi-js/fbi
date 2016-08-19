@@ -1,3 +1,7 @@
+### v2.1.1
+2016-08-19 19:25
+- fixed `fbi i` bugs on windows. Passing tests on win8 & win10
+
 ### v2.0.9
 2016-08-18 21:00
 - keep default task 'clone', usage: fbi clone path/to/git/repo.git

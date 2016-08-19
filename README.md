@@ -2,7 +2,10 @@
   <h3 style="color:#48abd6;font-weight:600;">F B I</h3>
   <p style="font-size:16px;">Node.js workflow tool</p>
 </div>
-**Requirement: node v4.0+, npm v3.0+ **
+
+**Requirement: node v4.0+, npm v3.0+**
+
+**Recommend: node v6.0+, npm v3.10+**
 
 [中文版说明](./README_zh-cn.md)
 
@@ -11,8 +14,7 @@
 * Tasks Management -  manage your js files as global tasks
 * Templates Management - reuse projects as global templates
 * node_modules Management - host devDependencies away from project's folder, and, it's faster
-* Lightweight
-* No dependency
+* Lightweight, No dependencies
 
 ### Installation
 
@@ -55,14 +57,14 @@ $ fbi -v,    --version                # output the version number
 
 
 ```js
-// ./fbi/showtime.js
+// ./project/fbi/showtime.js
 
 console.log(new Date())
 ```
 ```bash
-$ cd path/to/fbi/
+$ cd path/to/project/
 
-$ fbi ata showtime   # short for 'fbi add-task showtime'
+$ fbi ata   # short for 'fbi add-task'
 ```
 ```bash
 $ fbi showtime
@@ -71,7 +73,7 @@ $ fbi showtime
 # FBI => Running global task "showtime"...
 # 2016-08-03T09:06:28.349Z
 ```
-you can write a task as normal node.js program, ~~if required npm modules, after `fbi ata [name]`, you should `fbi i` to install dependencies, dependencies will be installed in the global tasks folder.~~ (update: v2.0.5, the `ata` action will also copy the `node_modules` folder.)
+`fbi` will add the `.js` files in `./fbi` folder to fbi's global tasks folder.
 
 #### Add template
 
@@ -180,4 +182,54 @@ $ fbi ls              # see available Tasks & Templates
 
 ### [Change log](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
 
-### [Compatible with v1.x](https://github.com/neikvon/fbi-template-backward-compatibility)
+### [Compatible with v1.x](https://github.com/neikvon/fbi-template-webpack1)
+
+### Teamwork
+
+1. Create a remote git repository ` fbi-data `，repository structure：
+  ```
+|-- fbi-data
+|--   tasks
+|--     fbi
+|--       task1.js
+|--       task2.js
+|--       ...
+|--     package.json
+|--     node_modules
+|--
+|--   templates
+|--     template1
+|--       fbi
+|--         task1.js
+|--         task2.js
+|--       src
+|--       package.json
+|--       node_modules
+|--       README.md
+|--     template2
+|--     ...
+  ```
+
+2. clone
+```bash
+$ fbi clone git@path/to/remote/fbi-data.git
+```
+Tips: `fbi clone` only works on termial with `git`、 `rm -rf`、 `mkdir` commands，if using `windows`，you should use `git bash`.
+
+3. See available tasks & templates
+```bash
+$ fbi ls
+```
+
+4. Create project and run
+```bash
+$ cd path/to/empty/folder
+$ fbi init template1
+$ fbi i
+$ fbi [task]
+```
+
+5. update fbi-data
+```bash
+$ fbi pull
+```

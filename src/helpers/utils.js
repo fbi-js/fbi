@@ -171,8 +171,8 @@ export function install(source, rootPath, command, opts) {
   const prevDir = process.cwd()
   let info = ''
 
-  const cmd = win ? 'cmd' : command
-  const params = win ? ['/s', '/c', cmd] : ['install']
+  const cmd = win ? command + '.cmd' : command
+  const params = ['install']
 
   Object.keys(source).map(item => {
     params.push(`${item}@${source[item]}`)
@@ -187,7 +187,7 @@ export function install(source, rootPath, command, opts) {
     to:${rootPath}
   `
 
-  process.chdir(rootPath)
+  // process.chdir(rootPath)
   log(`${command} install ${info}`)
 
   return new Promise((resolve, reject) => {

@@ -3,7 +3,9 @@
   <p style="font-size:16px;">Node.js 工作流工具</p>
 </div>
 
-**要求: node v4.0+, npm v3.0+ **
+**要求: node v4.0+, npm v3.0+**
+
+**推荐: node v6.0+, npm v3.10+**
 
 [English Version](./README.md)
 
@@ -12,8 +14,7 @@
 * 任务托管 - 将js文件托管为全局任务
 * 模板托管 - 复用项目模板
 * node模块管理 - 从项目目录抽离node\_modules目录, 优化模块查找路径
-* 轻量
-* 无第三方依赖
+* 轻量, 无第三方依赖
 
 ### 安装
 
@@ -55,14 +56,14 @@ $ fbi -v,    --version                # 显示版本号
 [查看完整示例](https://github.com/neikvon/fbi-tasks-demo)
 
 ```js
-// ./fbi/showtime.js
+// ./project/fbi/showtime.js
 
 console.log(new Date())
 ```
 ```bash
-$ cd path/to/fbi/showtime
+$ cd path/to/project/
 
-$ fbi ata showtime   # short for 'fbi add-task showtime'
+$ fbi ata   # short for 'fbi add-task'
 ```
 ```bash
 $ fbi showtime
@@ -71,7 +72,7 @@ $ fbi showtime
 # FBI => Running global task "showtime"...
 # 2016-08-03T09:06:28.349Z
 ```
-你可以像编写普通node.js程序一样编写任务，~~如果有依赖第三方模块，在```fbi ata [name].js```添加任务后，还需要```fbi i```安装依赖，依赖将会安装在全局任务目录。~~(更新：v2.0.5, 添加任务时会拷贝`node_modules`文件夹)
+`fbi` 会把 `./fbi`文件夹内的`.js` 文件拷贝到全局任务目录.
 
 #### 添加模板
 
@@ -180,4 +181,54 @@ $ fbi ls              # 查看可用任务和模板
 
 ### [变更日志](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
 
-### [与 v1.x 兼容](https://github.com/neikvon/fbi-template-backward-compatibility)
+### [与 v1.x 兼容](https://github.com/neikvon/fbi-template-webpack1)
+
+### 团队协作
+
+1. 远程git仓库 ` fbi-data `，仓库目录如下：
+  ```
+|-- fbi-data
+|--   tasks
+|--     fbi
+|--       task1.js
+|--       task2.js
+|--       ...
+|--     package.json
+|--     node_modules
+|--
+|--   templates
+|--     template1
+|--       fbi
+|--         task1.js
+|--         task2.js
+|--       src
+|--       package.json
+|--       node_modules
+|--       README.md
+|--     template2
+|--     ...
+  ```
+
+2. 克隆仓库
+```bash
+$ fbi clone git@path/to/remote/fbi-data.git
+```
+注意：`fbi clone` 需要在支持`git`、 `rm -rf`、 `mkdir`的终端执行，如果你是windows用户，可以使用`git bash`。
+
+3. 查看可用任务和模板
+```bash
+$ fbi ls
+```
+
+4. 新建项目并运行
+```bash
+$ cd path/to/empty/folder
+$ fbi init template1
+$ fbi i
+$ fbi [task]
+```
+
+5. 更新 fbi-data
+```bash
+$ fbi pull
+```

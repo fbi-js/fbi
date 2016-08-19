@@ -172,8 +172,8 @@ function install(source, rootPath, command, opts) {
   var prevDir = process.cwd();
   var info = '';
 
-  var cmd = win ? 'cmd' : command;
-  var params = win ? ['/s', '/c', cmd] : ['install'];
+  var cmd = win ? command + '.cmd' : command;
+  var params = ['install'];
 
   Object.keys(source).map(function (item) {
     params.push(item + '@' + source[item]);
@@ -184,7 +184,7 @@ function install(source, rootPath, command, opts) {
   }
   info += '\n       ' + (opts || '') + '\n    to:' + rootPath + '\n  ';
 
-  process.chdir(rootPath);
+  // process.chdir(rootPath)
   log(command + ' install ' + info);
 
   return new Promise(function (resolve, reject) {
@@ -951,7 +951,7 @@ var opts = {
   RECOVER_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist']
 };
 
-var version = "2.0.9";
+var version = "2.1.1";
 
 var helps = '\n    Usage:\n\n      fbi [command]           run command\n      fbi [task]              run a local preference task\n      fbi [task] -g           run a global task\n      fbi [task] -t           run a template task\n\n      ' + colors().yellow('use \'fbi ls\' to see available tasks & templates') + '\n\n    Commands:\n\n      ata,   add-task [name]          add task file of files in \'fbi\' folder\n      atm,   add-tmpl                 add current folder as a template\n      rta,   rm-task  [-t] [name]     remove task\n      rtm,   rm-tmpl  [name]          remove template\n      i,     install                  install dependencies\n      ls,    list                     list all tasks & templates\n      cat    [task]   [-t, -g]        cat task content\n      init   [template]               init a new project via template\n      backup                          backup tasks & templates\n      recover                         recover tasks & templates from current folder\n\n      -h,    --help                   output usage information\n      -v,    --version                output the version number\n';
 
