@@ -12,5 +12,8 @@ npm-debug.log
 src/
 test/
 bench/
-rollup.config.js
 data/templates/*/
+.nyc_output
+coverage
+fbi
+node_modules

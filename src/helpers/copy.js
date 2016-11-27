@@ -1,6 +1,5 @@
 import fs from 'fs'
-import path from 'path'
-import { log, exist, existSync, mkdir, readDir, copyFile,
+import { exist, mkdir, readDir, copyFile,
   join, basename
 } from './utils'
 
@@ -12,7 +11,7 @@ export default async (src, dst, ign) => {
 
     await copy(src, dst, walk)
   } catch (e) {
-    log(e)
+    throw e
   }
 }
 
@@ -20,11 +19,12 @@ async function copy(src, dst, cb) {
   try {
     const _exist = await exist(dst)
     if (!_exist) {
-      fs.mkdirSync(dst)
+      // fs.mkdirSync(dst)
+      await mkdir(dst)
     }
     await walk(src, dst)
   } catch (e) {
-    log(e)
+    throw e
   }
 }
 
@@ -33,7 +33,7 @@ async function walk(src, dst) {
     const _stats = await stats(src)
     if (_stats.isDirectory()) {
       const files = await readDir(src, ignore)
-      return Promise.all(files.map(async (f) => {
+      return Promise.all(files.map(async f => {
         let
           _src = join(src, f),
           _dst = join(dst, f),
@@ -49,7 +49,7 @@ async function walk(src, dst) {
       return copyFile(src, join(dst, basename(src)), true)
     }
   } catch (e) {
-    log(e)
+    throw e
   }
 }
 

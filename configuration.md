@@ -22,7 +22,7 @@
     alias: 'npm', // npm别名
     options: '' // 选项，如：--registry=...
   },
-  TEMPLATE_ADD_IGNORE: ['.DS_Store', '.svn', '.git'], // 添加模板时的忽略项
+  TEMPLATE_ADD_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'], // 添加模板时的忽略项
   TEMPLATE_INIT_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'], // 初始化模板时的忽略项
   BACKUP_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'], // 数据备份时的忽略项
   RECOVER_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'] // 数据恢复时的忽略项
@@ -80,4 +80,4 @@ template
 templateDescription
 alias
 ```
-所以，请不要随意更改fbi使用到的配置项的结构和值类型，否则，会出错。
+更改fbi使用到的配置项的结构和值类型，可能会导致出错。

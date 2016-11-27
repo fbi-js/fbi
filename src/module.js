@@ -1,5 +1,5 @@
 import {
-  cwd, dir, join, log, exist, isRelative, existSync
+  cwd, join, log, isRelative
 } from './helpers/utils'
 
 export default class Module {
@@ -40,19 +40,18 @@ export default class Module {
     let ret
 
     if (isRelative(name)) {
-
       let localTasks
       if (type === 'local') {
         localTasks = cwd(this.opts.paths.tasks)
         try {
           // local
-          const found = require.resolve(join(localTasks, name))
+          // const found = require.resolve(join(localTasks, name))
           ret = localTasks
         } catch (e) {
           try {
             // template
             localTasks = join(this.opts.data.templates, this.opts.template, this.opts.paths.tasks)
-            const found = require.resolve(join(localTasks, name))
+            // const found = require.resolve(join(localTasks, name))
             ret = localTasks
           } catch (e) {
             log(`can't find module ${name} in template '${this.opts.template}'`, 0)
@@ -62,7 +61,7 @@ export default class Module {
         try {
           // template
           localTasks = join(this.opts.data.templates, this.opts.template, this.opts.paths.tasks)
-          const found = require.resolve(join(localTasks, name))
+          // const found = require.resolve(join(localTasks, name))
           ret = localTasks
         } catch (e) {
           log(`can't find module ${name} in template '${this.opts.template}'`, 0)
@@ -71,7 +70,7 @@ export default class Module {
         try {
           // template
           localTasks = join(this.opts.data.tasks)
-          const found = require.resolve(join(localTasks, name))
+          // const found = require.resolve(join(localTasks, name))
           ret = localTasks
         } catch (e) {
           log(`can't find module ${name} in global tasks folder`, 0)
@@ -83,9 +82,7 @@ export default class Module {
           try {
             require.resolve(join(item, name))
             ret = item
-          } catch (e) {
-
-          }
+          } catch (e) {}
         }
       })
     }

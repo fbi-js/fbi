@@ -3,9 +3,7 @@
   <p style="font-size:16px;">Node.js workflow tool</p>
 </div>
 
-**Requirement: node v4.0+, npm v3.0+**
-
-**Recommend: node v6.0+, npm v3.10+**
+> Requirement: node v6.9.1+, npm v3.10+
 
 [中文版说明](./README_zh-cn.md)
 
@@ -30,7 +28,7 @@ $ fbi [task]              # run a local preference task
 $ fbi [task] -g           # run a global task
 $ fbi [task] -t           # run a template task
 
-use 'fbi ls' to see available tasks & templates
+use 'fbi ls' to check available tasks & templates
 ```
 
 ```bash
@@ -42,8 +40,11 @@ $ fbi i,     install                  # install dependencies
 $ fbi ls,    list                     # list all tasks & templates
 $ fbi cat    [task]   [-t, -g]        # cat task content
 $ fbi init   [template]               # init a new project via template
-$ fbi backup                          # backup tasks & templates
+$ fbi backup                          # backup tasks & templates to current folder
 $ fbi recover                         # recover tasks & templates from current folder
+$ fbi update                          # update current local project with fbi template
+                                      # this will overwrite local "fbi" folder and "devDependencies" in package.json
+
 
 $ fbi -h,    --help                   # output usage information
 $ fbi -v,    --version                # output the version number
@@ -157,7 +158,7 @@ $ fbi atm             # fbi will use the name in 'config.js=>template' as templa
 
 **check**
 ```bash
-$ fbi ls              # see available Tasks & Templates
+$ fbi ls              # check available Tasks & Templates
 ```
 
 ### Demos
@@ -165,6 +166,8 @@ $ fbi ls              # see available Tasks & Templates
 1. [template-vue2](https://github.com/neikvon/fbi-template-vue2)
 1. [template-webpack2](https://github.com/neikvon/fbi-template-webpack2)
 1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1) ( Compatible with fbi v1.x )
+1. [template-fullpack](https://github.com/neikvon/fbi-template-fullpack)
+1. [template-restful](https://github.com/neikvon/fbi-template-restful)
 
 ### [Change log](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
 
@@ -233,4 +236,3 @@ $ fbi pull
   1. local => `./fbi/`
   1. is template ? => global template tasks
   1. global => global tasks
-

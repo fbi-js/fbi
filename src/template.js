@@ -1,7 +1,4 @@
-import {
-  cwd, dir, join, log, exist,
-  existSync, readDir, isTemplate
-} from './helpers/utils'
+import * as _ from './helpers/utils'
 import copy from './helpers/copy'
 
 export default class Template {
@@ -11,8 +8,8 @@ export default class Template {
       return false
     }
     let ret = false
-    const src = join(opts.data.templates, name)
-    const has = existSync(src)
+    const src = _.join(opts.data.templates, name)
+    const has = _.existSync(src)
 
     if (has) {
       copy(src, dst, opts.TEMPLATE_INIT_IGNORE)
@@ -22,20 +19,21 @@ export default class Template {
   }
 
   async all(opts) {
-    const _exist = await exist(opts.data.templates)
+    const _exist = await _.exist(opts.data.templates)
     let ret = []
     if (_exist) {
-      let templates = await readDir(opts.data.templates)
-      templates = templates.filter(isTemplate)
+      let templates = await _.readDir(opts.data.templates)
+      templates = templates.filter(_.isTemplate)
       templates.map(item => {
-        const config = require(join(opts.data.templates, item, opts.paths.config))
+        const config = require(_.join(opts.data.templates, item, opts.paths.config))
+        const pkg = require(_.join(opts.data.templates, item, 'package.json'))
         ret.push({
           name: item,
-          desc: config.templateDescription || ''
+          desc: config.templateDescription || '',
+          version: pkg.version
         })
       })
     }
     return ret
   }
-
 }

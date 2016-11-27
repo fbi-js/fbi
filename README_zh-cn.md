@@ -3,9 +3,7 @@
   <p style="font-size:16px;">Node.js 工作流工具</p>
 </div>
 
-**要求: node v4.0+, npm v3.0+**
-
-**推荐: node v6.0+, npm v3.10+**
+> 要求: node v6.9.1+, npm v3.10+
 
 [English Version](./README.md)
 
@@ -44,10 +42,16 @@ $ fbi cat    [task]   [-t, -g]        # 查看任务源码
 $ fbi init   [template]               # 初始化模板
 $ fbi backup                          # 备份任务与模板
 $ fbi recover                         # 从当前目录恢复任务与模板
+$ fbi update                          # 更新本地项目
+                                      # 该操作会覆盖本地"fbi"文件夹和package.json里的"devDependencies"
 
 $ fbi -h,    --help                   # 显示帮助
 $ fbi -v,    --version                # 显示版本号
 ```
+
+## 所有配置
+
+[所有配置](https://github.com/neikvon/fbi/blob/master/CONFIGURATION.md)
 
 ## 快速开始
 
@@ -162,7 +166,9 @@ $ fbi ls              # 查看可用任务和模板
 1. [tasks-demo](https://github.com/neikvon/fbi-tasks-demo)
 1. [template-vue2](https://github.com/neikvon/fbi-template-vue2)
 1. [template-webpack2](https://github.com/neikvon/fbi-template-webpack2)
-1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1) ( 与 fbi v1.x 兼容 )
+1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1) ( 兼容 fbi v1.x )
+1. [template-fullpack](https://github.com/neikvon/fbi-template-fullpack)
+1. [template-restful](https://github.com/neikvon/fbi-template-restful)
 
 ## [变更日志](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
 
@@ -231,4 +237,3 @@ $ fbi pull
   1. 本地 => `./fbi/` 目录下的js文件
   1. 是模版 ? => 全局模版任务
   1. 全局 => 全局任务
-

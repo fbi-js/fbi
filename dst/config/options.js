@@ -1,4 +1,16 @@
-export default {
+
+/*
+  fbi v2.1.2
+  Node.js workflow tool.
+
+  Author: neikvon
+  Built:  2016-11-27 23:49:20 via fbi
+
+  Copyright 2016 neikvon
+*/
+'use strict';
+
+var options = {
   task_param_prefix: '-',
   paths: {
     tasks: 'fbi/',
@@ -18,11 +30,10 @@ export default {
     alias: 'npm',
     options: ''
   },
-  TEMPLATE_ADD_IGNORE: ['.DS_Store', '.svn', '.git'],
+  TEMPLATE_ADD_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'],
   TEMPLATE_INIT_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'],
   BACKUP_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'],
   RECOVER_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist']
-}
+};
 
-
-
+module.exports = options;

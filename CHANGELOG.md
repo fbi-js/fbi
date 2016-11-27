@@ -1,3 +1,8 @@
+### v2.1.2
+2016-11-27
+- use fbi build source files
+- add `fbi update` command
+
 ### v2.1.1
 2016-08-19 19:25
 - fixed `fbi i` bugs on windows. Passing tests on win8 & win10
@@ -26,4 +31,3 @@ You can host tasks and tempaltes in one git repository, see [fbi-tasks-demo](htt
 - make fbi work with node v4.x (require npm v3.0+)
 - add 'node_modules' when add tasks or templates, after that you don't need to run `fbi i`
 - make fbi work in windows
-

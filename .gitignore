@@ -4,3 +4,7 @@ node_modules
 test
 data/templates/*/
 .git/
+coverage
+.nyc_output
+.travis.yml
+test

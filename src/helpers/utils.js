@@ -1,9 +1,16 @@
 import fs from 'fs'
 import os from 'os'
 import util from 'util'
-import path from 'path'
-import { exec, spawn } from 'child_process'
-import { createInterface } from 'readline'
+import path, {
+  extname
+} from 'path'
+import {
+  exec,
+  spawn
+} from 'child_process'
+import {
+  createInterface
+} from 'readline'
 
 const win = os.type() === 'Windows_NT'
 
@@ -16,7 +23,7 @@ export function colors() {
     const codes = util.inspect.colors[color]
     return `\x1b[${codes[0]}m${text}\x1b[${codes[1]}m`
   }
-  let returnValue = {}
+  const returnValue = {}
   Object.keys(util.inspect.colors).map(color => {
     returnValue[color] = text => colorize(color, text)
   })
@@ -44,8 +51,8 @@ export function log(msg, type) {
           break
         default:
           msg = colors().grey('FBI => ') + colors()[type]
-            ? colors()[type](msg)
-            : msg
+          ? colors()[type](msg)
+          : msg
       }
     } else {
       msg = colors().grey('FBI => ') + msg
@@ -91,7 +98,7 @@ export function clone(obj) {
 export function validJson(data) {
   try {
     var o = JSON.parse(data)
-    // JSON.parse(null) returns null, and typeof null === "object"
+      // JSON.parse(null) returns null, and typeof null === "object"
     if (o && typeof o === 'object') {
       return o
     }
@@ -168,7 +175,6 @@ ${stdout}`)
 }
 
 export function install(source, rootPath, command, opts) {
-  const prevDir = process.cwd()
   let info = ''
 
   const cmd = win ? command + '.cmd' : command
@@ -196,14 +202,12 @@ export function install(source, rootPath, command, opts) {
       stdio: [0, 1, 2] // child_process log style
     })
 
-    installer.on('error', (err) => {
-      // process.chdir(prevDir)
+    installer.on('error', err => {
       log(`Failed to '${cmd}'`, 0)
       reject(err)
     })
 
     installer.on('close', function () {
-      // process.chdir(prevDir)
       resolve()
     })
   })
@@ -242,17 +246,19 @@ export function readDir(folder, ignore) {
   })
 }
 
-export function mkdir(p) {
-  return new Promise((resolve, reject) => {
-    fs.mkdir(p, err => {
-      return err ? reject(err) : resolve()
+export async function mkdir(p) {
+  if (await exist(p)) {
+    return true
+  } else {
+    return new Promise((resolve, reject) => {
+      fs.mkdir(p, err => err ? reject(err) : resolve())
     })
-  })
+  }
 }
 
 export function rmfile(p, callback) {
   fs.lstat(p, (err, stat) => {
-    if (err) callback.call(null, err)
+    if (err) callback(err)
     else if (stat.isDirectory()) rmdir(p, callback)
     else fs.unlink(p, callback)
   })
@@ -260,29 +266,30 @@ export function rmfile(p, callback) {
 
 export function rmdir(dir, callback) {
   fs.readdir(dir, (err, files) => {
-    if (err) callback.call(null, err)
+    if (err) callback(err)
     else if (files.length) {
       var i, j
       for (i = j = files.length; i--;) {
         rmfile(join(dir, files[i]), err => {
-          if (err) callback.call(null, err)
+          if (err) callback(err)
           else if (--j === 0) fs.rmdir(dir, callback)
         })
       }
-    }
-    else fs.rmdir(dir, callback)
+    } else fs.rmdir(dir, callback)
   })
 }
 
+export { extname } from 'path'
+
 export function isTaskFile(file) {
   // log(file)
-  return basename(file).indexOf('.') !== 0
-    && path.extname(file) === '.js'
-    && file.indexOf('config') < 0
+  return basename(file).indexOf('.') !== 0 &&
+    extname(file) === '.js' &&
+    file.indexOf('config') < 0
 }
 
 export function isTemplate(name) {
-  return path.extname(name) === '' && name.indexOf('.') !== 0
+  return extname(name) === '' && name.indexOf('.') !== 0
 }
 
 export function isTaskName(item) {
@@ -291,15 +298,15 @@ export function isTaskName(item) {
 }
 
 export function isAbsolute(str) {
-  return /^(?:\/|(?:[A-Za-z]:)?[\\|\/])/.test(str);
+  return /^(?:\/|(?:[A-Za-z]:)?[\\|])/.test(str)
 }
 
 export function isRelative(str) {
-  return /^\.?\.\//.test(str);
+  return /^\.?\.\//.test(str)
 }
 
 export function normalize(str) {
-  return str.replace(/\\/g, '/');
+  return str.replace(/\\/g, '/')
 }
 
 export function basename(src, ext) {
@@ -320,7 +327,6 @@ export function basename(src, ext) {
 
  */
 export function parseArgvs(arr, prefix) {
-
   if (!arr.length || !prefix) {
     log('Usage: let ret = parseArgvs(arr, prefix)', 0)
     return arr
@@ -359,18 +365,18 @@ export function fillGap(str, max, gap) {
 export function genTaskHelpTxt(all) {
   let txt = `
     Tasks:
-    `;
-  let tasksTxt = '';
+    `
+  let tasksTxt = ''
   if (Object.keys(all).length) {
     ['global', 'template', 'local'].map(type => {
       if (all[type].length) {
         all[type].map(item => {
           if (type === 'local') {
             tasksTxt += `
-      ${colors().green(fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' '))}`;
+      ${colors().green(fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' '))}`
           } else {
             tasksTxt += `
-      ${fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' ')} ${colors().grey(type === 'template' ? '-t' : '-g')}`;
+      ${fillGap((item.alias ? item.alias + ', ' : '') + item.name, 15, ' ')} ${colors().grey(type === 'template' ? '-t' : '-g')}`
           }
         })
       }
@@ -392,12 +398,13 @@ export function genTmplHelpTxt(all, curr, desc) {
   let txt = `
 
     Templates:
-    `;
+    `
   let tmplsTxt = ''
   if (all.length) {
     all.map(item => {
+      const ext = `${item.name === curr ? colors().yellow(' <current>') : ''}`
       tmplsTxt += `
-      ${colors().yellow('★')}  ${colors().green(item.name) + (item.name === curr ? colors().yellow(' <current>') : '') + ' - ' + item.desc}`;
+      ${colors().yellow('★')}  ${colors().green(item.name)} ${colors().blue('v' + item.version)} ${ext} ${' - ' + item.desc}`
     })
   }
   if (!tmplsTxt) {
@@ -418,10 +425,10 @@ export function genNpmscriptsHelpTxt(all) {
   let txt = `
 
     npm scrips:
-    `;
+    `
   Object.keys(all).map(item => {
     txt += `
-      ${item}: '${all[item]}'`;
+      ${item}: '${all[item]}'`
   })
   return txt
 }
@@ -439,7 +446,7 @@ ${cnt}
 export function indexDir(arr) {
   let ret = []
   return new Promise((resolve, reject) => {
-    Promise.all(arr.map(async (item) => {
+    Promise.all(arr.map(async item => {
       if (win) {
         if (item === '*') {
           const all = await readDir(cwd())
@@ -470,7 +477,7 @@ export function prompt(keys) {
   get()
 
   return new Promise((resolve, reject) => {
-    rl.on('line', (line) => {
+    rl.on('line', line => {
       data[prompts[p - 1]] = line
       if (p === prompts.length) {
         return rl.close()

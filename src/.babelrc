@@ -1,9 +1,0 @@
-{
-  "presets": [
-    "es2015-rollup"
-  ],
-  "plugins": [
-    "async-to-promises",
-    "array-includes"
-  ]
-}
