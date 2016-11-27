@@ -15,5 +15,5 @@ bench/
 data/templates/*/
 .nyc_output
 coverage
-fbi
+fbi/
 node_modules
