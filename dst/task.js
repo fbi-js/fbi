@@ -4,7 +4,7 @@
   Node.js workflow tool.
 
   Author: neikvon
-  Built:  2016-11-28 00:00:44 via fbi
+  Built:  2016-11-28 11:52:22 via fbi
 
   Copyright 2016 neikvon
 */
@@ -12,8 +12,8 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var vm = _interopDefault(require('vm'));
 var _ = require('./helpers/utils.js');
+var vm = _interopDefault(require('vm'));
 
 function __async(g){return new Promise(function(s,j){function c(a,x){try{var r=g[x?"throw":"next"](a);}catch(e){j(e);return}r.done?s(r.value):Promise.resolve(r.value).then(c,d);}function d(e){c(e,1);}c();})}
 

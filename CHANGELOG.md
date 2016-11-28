@@ -1,3 +1,7 @@
+### v2.1.5
+2016-11-28
+- fixed fbi data path bug
+
 ### v2.1.2
 2016-11-27
 - use fbi build source files

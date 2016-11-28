@@ -4,7 +4,7 @@
   Node.js workflow tool.
 
   Author: neikvon
-  Built:  2016-11-28 00:00:44 via fbi
+  Built:  2016-11-28 11:52:22 via fbi
 
   Copyright 2016 neikvon
 */
@@ -14,13 +14,13 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
+var child_process = require('child_process');
+var path = require('path');
+var path__default = _interopDefault(path);
+var readline = require('readline');
 var fs = _interopDefault(require('fs'));
 var os = _interopDefault(require('os'));
 var util = _interopDefault(require('util'));
-var path = require('path');
-var path__default = _interopDefault(path);
-var child_process = require('child_process');
-var readline = require('readline');
 
 function __async(g){return new Promise(function(s,j){function c(a,x){try{var r=g[x?"throw":"next"](a);}catch(e){j(e);return}r.done?s(r.value):Promise.resolve(r.value).then(c,d);}function d(e){c(e,1);}c();})}
 
@@ -292,10 +292,7 @@ function rmdir(dir, callback) {
 }
 
 function isTaskFile(file) {
-  // log(file)
-  return basename(file).indexOf('.') !== 0 &&
-    path.extname(file) === '.js' &&
-    file.indexOf('config') < 0
+  return basename(file).indexOf('.') !== 0 && path.extname(file) === '.js' && file.indexOf('config') < 0
 }
 
 function isTemplate(name) {

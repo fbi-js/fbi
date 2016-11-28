@@ -4,7 +4,7 @@
   Node.js workflow tool.
 
   Author: neikvon
-  Built:  2016-11-28 00:00:44 via fbi
+  Built:  2016-11-28 11:52:22 via fbi
 
   Copyright 2016 neikvon
 */
@@ -22,7 +22,7 @@ var helpTxt = _interopDefault(require('./helpers/helps.js'));
 
 function __async(g){return new Promise(function(s,j){function c(a,x){try{var r=g[x?"throw":"next"](a);}catch(e){j(e);return}r.done?s(r.value):Promise.resolve(r.value).then(c,d);}function d(e){c(e,1);}c();})}
 
-var version = "2.1.4";
+var version = "2.1.5";
 
 const task = new Task();
 const template = new Template();

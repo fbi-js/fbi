@@ -4,7 +4,7 @@
   Node.js workflow tool.
 
   Author: neikvon
-  Built:  2016-11-28 00:00:44 via fbi
+  Built:  2016-11-28 11:52:22 via fbi
 
   Copyright 2016 neikvon
 */
@@ -17,9 +17,9 @@ var options = {
     config: 'fbi/config.js'
   },
   data: {
-    root: './data',
-    tasks: './data/tasks',
-    templates: './data/templates'
+    root: '../data',
+    tasks: '../data/tasks',
+    templates: '../data/templates'
   },
   server: {
     root: './',

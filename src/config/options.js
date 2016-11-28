@@ -5,9 +5,9 @@ export default {
     config: 'fbi/config.js'
   },
   data: {
-    root: './data',
-    tasks: './data/tasks',
-    templates: './data/templates'
+    root: '../data',
+    tasks: '../data/tasks',
+    templates: '../data/templates'
   },
   server: {
     root: './',

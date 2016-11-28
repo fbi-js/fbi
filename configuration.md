@@ -9,9 +9,9 @@
     config: 'fbi/config.js' // 本地配置文件
   },
   data: { // fbi全局任务、模板存放路径
-    root: './data',
-    tasks: './data/tasks',
-    templates: './data/templates'
+    root: '../data',
+    tasks: '../data/tasks',
+    templates: '../data/templates'
   },
   server: { // for `fbi serve`, 静态服务器配置（配合serve.js使用）
     root: './',

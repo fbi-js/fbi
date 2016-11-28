@@ -1,5 +1,6 @@
-import vm from 'vm'
 import * as _ from './helpers/utils'
+
+import vm from 'vm'
 
 export default class Task {
 

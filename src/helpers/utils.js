@@ -1,16 +1,17 @@
+import {
+  exec,
+  spawn,
+} from 'child_process'
+import path, {
+  extname,
+} from 'path'
+
+import {
+  createInterface,
+} from 'readline'
 import fs from 'fs'
 import os from 'os'
 import util from 'util'
-import path, {
-  extname
-} from 'path'
-import {
-  exec,
-  spawn
-} from 'child_process'
-import {
-  createInterface
-} from 'readline'
 
 const win = os.type() === 'Windows_NT'
 
@@ -282,10 +283,7 @@ export function rmdir(dir, callback) {
 export { extname } from 'path'
 
 export function isTaskFile(file) {
-  // log(file)
-  return basename(file).indexOf('.') !== 0 &&
-    extname(file) === '.js' &&
-    file.indexOf('config') < 0
+  return basename(file).indexOf('.') !== 0 && extname(file) === '.js' && file.indexOf('config') < 0
 }
 
 export function isTemplate(name) {

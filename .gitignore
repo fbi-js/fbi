@@ -7,4 +7,3 @@ data/templates/*/
 coverage
 .nyc_output
 .travis.yml
-test
