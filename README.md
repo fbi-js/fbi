@@ -1,5 +1,6 @@
 <div align="center">
   <h3 style="color:#48abd6;font-weight:600;">F B I</h3>
+  <p>Front-end & Back-end(node.js) Intelligent</p>
   <p style="font-size:16px;">Node.js workflow tool</p>
 </div>
 
@@ -163,11 +164,11 @@ $ fbi ls              # check available Tasks & Templates
 
 ### Demos
 1. [tasks-demo](https://github.com/neikvon/fbi-tasks-demo)
-1. [template-vue2](https://github.com/neikvon/fbi-template-vue2)
-1. [template-webpack2](https://github.com/neikvon/fbi-template-webpack2)
-1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1) ( Compatible with fbi v1.x )
 1. [template-fullpack](https://github.com/neikvon/fbi-template-fullpack)
-1. [template-restful](https://github.com/neikvon/fbi-template-restful)
+1. [template-vue](https://github.com/neikvon/fbi-template-vue)
+1. [template-vue-components](https://github.com/neikvon/fbi-template-vue-components)
+1. [template-mod](https://github.com/neikvon/fbi-template-mod)
+1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1) ( Compatible with fbi v1.x )
 
 ### [Change log](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
 
