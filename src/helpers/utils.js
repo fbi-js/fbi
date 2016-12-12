@@ -41,19 +41,19 @@ export function log(msg, type) {
   if (typeof msg === 'string') {
     if (type !== undefined) {
       switch (type) {
-      case -1:
-        msg = colors().grey('FBI => ') + colors().red(msg)
-        break
-      case 0:
-        msg = colors().grey('FBI Error => ') + colors().magenta(msg)
-        break
-      case 1:
-        msg = colors().grey('FBI => ') + colors().cyan(msg)
-        break
-      default:
-        msg = colors().grey('FBI => ') + colors()[type] ?
-          colors()[type](msg) :
-          msg
+        case -1:
+          msg = colors().grey('FBI => ') + colors().red(msg)
+          break
+        case 0:
+          msg = colors().grey('FBI Error => ') + colors().magenta(msg)
+          break
+        case 1:
+          msg = colors().grey('FBI => ') + colors().cyan(msg)
+          break
+        default:
+          msg = colors().grey('FBI => ') + colors()[type] ?
+            colors()[type](msg) :
+            msg
       }
     } else {
       msg = colors().grey('FBI => ') + msg

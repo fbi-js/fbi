@@ -26,34 +26,31 @@ export default class Task {
 
     let found = false
 
-    async function find(_path, _type) {
-      _path = _path + '.js'
-      let _exist = _.existSync(_path)
-      if (_exist) {
-        // ret.cnt = await _.read(_path)
+    async function find(file, type) {
+      if (await _.exist(file + '.js')) {
         found = true
-        ret.type = _type
-        ret.path = _path
+        ret.type = type
+        ret.path = file + '.js'
       }
     }
 
     // find in local
     if (type === 'local') {
-      await find(_.cwd(opts.paths.tasks, name), type)
+      await find(_.cwd(opts.PATHS.local.tasks, name), type)
     }
 
     // find in template
     if (!found && opts.template && opts.template !== '') {
       await find(_.join(
-        opts.data.templates,
+        opts.PATHS.global.templates,
         opts.template,
-        opts.paths.tasks,
+        opts.PATHS.local.tasks,
         name), 'template')
     }
 
     // find in global
     if (!found || type === 'global') {
-      await find(_.join(opts.data.tasks, opts.paths.tasks, name), 'global')
+      await find(_.join(opts.PATHS.global.tasks, opts.PATHS.local.tasks, name), 'global')
     }
 
     return ret
@@ -89,16 +86,16 @@ export default class Task {
     // template tasks
     if (opts.template && opts.template !== '') {
       await collect(_.join(
-        opts.data.templates,
+        opts.PATHS.global.templates,
         opts.template,
-        opts.paths.tasks), 'template')
+        opts.PATHS.local.tasks), 'template')
     }
 
     // global tasks
-    await collect(_.join(opts.data.tasks, opts.paths.tasks), 'global')
+    await collect(_.join(opts.PATHS.global.tasks, opts.PATHS.local.tasks), 'global')
 
     // locals
-    await collect(_.cwd(opts.paths.tasks), 'local')
+    await collect(_.cwd(opts.PATHS.local.tasks), 'local')
 
     if (justAvailable) {
       for (let item of names.template.values()) {
@@ -147,14 +144,28 @@ export default class Task {
   run(name, ctx, taskObj) {
     const taskDir = path.dirname(taskObj.path)
     const tmpl = ctx.options.template
+    if (!tmpl) {
+      // if is not a fbi template, just require the file
+      try {
+        return require(taskObj.path)
+      } catch (err) {
+        if (err.message.includes('ctx is not defined')) {
+          ctx.log('This is not a project base on FBI template, there is no global variable named "ctx"', -1)
+        }
+        console.log(err)
+      }
+    }
+
+    // if is a fbi template
+    tmpl && ctx.log(`This project is base on template '${_.colors().yellow(tmpl)}'.`)
     ctx.log(`Running ${taskObj.type} task "${taskObj.name} ${taskObj.params}"...`, 1)
 
     return vmRunner(taskObj.path, {
       modulePaths: [
         path.join(process.cwd(), 'node_modules'),
         tmpl ?
-        path.join(ctx.options.data.templates, tmpl, 'node_modules') :
-        path.join(ctx.options.data.tasks, 'node_modules')
+        path.join(ctx.options.PATHS.global.templates, tmpl, 'node_modules') :
+        path.join(ctx.options.PATHS.global.tasks, 'node_modules')
       ],
       ctx: ctx
     })

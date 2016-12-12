@@ -65,54 +65,59 @@ export default class Cli {
   async config() {
     if (!this.next) return
 
-    // user options > tempalte options > default options
     try {
-      // user options
-      const userConfigPath = _.cwd(opts.paths.config)
-      this.isfbi = await _.exist(userConfigPath)
-      const userConfig = this.isfbi ? require(userConfigPath) : null
-
-      // merge user options
-      this.options = _.merge(opts, userConfig)
-
-      let data = _.clone(this.options.data)
-        // parse data path
-      Object.keys(data).map(item => {
-        if (!_.isAbsolute(data[item])) {
-          data[item] = _.dir(data[item])
+      /**
+       * init data paths
+       */
+      Object.keys(opts.PATHS.global).map(item => {
+        if (!_.isAbsolute(opts.PATHS.global[item])) {
+          opts.PATHS.global[item] = _.dir('../', opts.PATHS.global[item])
         }
       })
 
-      // template options
-      if (userConfig && userConfig.template) {
-        const _existTmpl = await _.exist(_.join(data.templates, userConfig.template))
-        this.options['node_modules_path'] = _existTmpl ?
-          _.join(data.templates, userConfig.template, 'node_modules') :
-          _.cwd('node_modules')
-
-        const templateOptionsPath = _.join(
-          data.templates,
-          userConfig.template,
-          this.options.paths.config
-        )
-
-        if (_.existSync(templateOptionsPath)) {
-          const templateOptions = require(templateOptionsPath)
-
-          // merge template options
-          _.merge(this.options, templateOptions)
-        }
+      /**
+       * get user config
+       * 1. try package.json
+       * 2. try PATHS.local.config
+       */
+      let userConfig
+      const userPkgPath = _.cwd('package.json')
+      if (await _.exist(userPkgPath)) {
+        const pkg = require(userPkgPath)
+        this.isfbi = pkg.fbi ? true : false
+        userConfig = pkg.fbi ? pkg.fbi : {}
       }
 
-      // merge user options
-      _.merge(this.options, userConfig)
+      const userCfgPath = _.cwd(opts.PATHS.local.config)
+      if (await _.exist(userCfgPath)) {
+        this.isfbi = true
+        userConfig = _.merge(userConfig, require(userCfgPath))
+      }
 
-      // parse data path
-      Object.keys(this.options.data).map(item => {
-        if (!_.isAbsolute(this.options.data[item])) {
-          this.options.data[item] = _.dir(this.options.data[item])
+      /**
+       * merge template config with user config
+       */
+      if (userConfig && userConfig.template) {
+        const globalTmplPath = _.join(opts.PATHS.global.templates, userConfig.template)
+        const tmplExist = await _.exist(globalTmplPath)
+
+        opts['NODE_MODULE_PATH'] = tmplExist ?
+          _.join(globalTmplPath, 'node_modules/') :
+          _.cwd('node_modules/')
+
+        const tmplCfgPath = _.join(globalTmplPath, opts.PATHS.local.config)
+        if (await _.exist(tmplCfgPath)) {
+          userConfig = _.merge(require(tmplCfgPath), userConfig)
         }
-      })
+      } else {
+        opts['NODE_MODULE_PATH'] = _.cwd('node_modules/')
+      }
+
+      /**
+       * generate this.options
+       * merge userConfig & default options
+       */
+      this.options = _.merge(opts, userConfig)
     } catch (e) {
       _.log(e)
     }
@@ -136,7 +141,7 @@ export default class Cli {
       const _dir = 'fbi-data-bak-' + Date.now()
 
       _.log('Starting backup data to local folder ...', 1)
-      copy(this.options.data.root, _.cwd(_dir), this.options.BACKUP_IGNORE)
+      copy(this.options.PATHS.global.root, _.cwd(_dir), this.options.BACKUP_IGNORE)
     }
   }
 
@@ -147,7 +152,7 @@ export default class Cli {
       this.next = false
 
       _.log('Starting recover data to local folder ...', 1)
-      copy(_.cwd(), this.options.data.root, this.options.RECOVER_IGNORE)
+      copy(_.cwd(), this.options.PATHS.global.root, this.options.RECOVER_IGNORE)
     }
   }
 
@@ -156,7 +161,7 @@ export default class Cli {
 
     if (!this.argvs.length || this.argvs[0] === '-h' || this.argvs[0] === '--help') {
       this.next = false
-      console.log(helpTxt)
+      console.log(helpTxt(version))
     }
   }
 
@@ -205,7 +210,7 @@ export default class Cli {
       // template package.json => devDependencies
       if (opts.template) {
         try {
-          const _path = _.join(opts.data.templates, opts.template, 'package.json')
+          const _path = _.join(this.options.PATHS.global.templates, opts.template, 'package.json')
           const _dev = require(_path)['devDependencies']
           tmplDeps = _.merge(_dev, localDevDeps)
           if (Object.keys(tmplDeps).length) {
@@ -217,7 +222,7 @@ export default class Cli {
       } else {
         // task package.json => devDependencies
         try {
-          const taskPkg = _.join(opts.data.tasks, 'package.json')
+          const taskPkg = _.join(this.options.PATHS.global.tasks, 'package.json')
           const taskPkgDev = require(taskPkg).devDependencies
           taskDeps = _.merge(taskPkgDev, localDevDeps)
           if (Object.keys(taskDeps).length) {
@@ -242,7 +247,7 @@ export default class Cli {
       }
 
       if (Object.keys(tmplDeps).length) {
-        await _.install(tmplDeps, _.join(opts.data.templates, opts.template), npms.alias, '--save-dev ' + npms.options)
+        await _.install(tmplDeps, _.join(this.options.PATHS.global.templates, opts.template), npms.alias, '--save-dev ' + npms.options)
           .then(s => {
             _.log('Tempaltes devDependencies installed.', 1)
           })
@@ -253,7 +258,7 @@ export default class Cli {
       }
 
       if (Object.keys(taskDeps).length) {
-        await _.install(taskDeps, opts.data.tasks, npms.alias, '--save-dev ' + npms.options)
+        await _.install(taskDeps, this.options.PATHS.global.tasks, npms.alias, '--save-dev ' + npms.options)
           .then(s => {
             _.log('Tasks devDependencies installed.', 1)
           })
@@ -276,16 +281,16 @@ export default class Cli {
         _.log('Usage: fbi rm-task [name]', 0)
         process.exit(0)
       }
-      let tasksPath = _.join(this.options.data.tasks, this.options.paths.tasks)
+      let tasksPath = _.join(this.options.PATHS.global.tasks, this.options.PATHS.local.tasks)
       let tmplName
       if (mods[0].indexOf('-') === 0) {
         tmplName = mods[0].slice(1)
         mods = mods.splice(1, 1)
         if (tmplName !== '') {
           if (mods.length) {
-            const tmplExist = await _.exist(_.join(this.options.data.templates, tmplName))
+            const tmplExist = await _.exist(_.join(this.options.PATHS.global.templates, tmplName))
             if (tmplExist) {
-              tasksPath = _.join(this.options.data.templates, tmplName, this.options.paths.tasks)
+              tasksPath = _.join(this.options.PATHS.global.templates, tmplName, this.options.PATHS.local.tasks)
             } else {
               _.log(`template '${tmplName}' not found`, 0)
               process.exit(0)
@@ -327,12 +332,12 @@ export default class Cli {
         _.log('Usage: fbi rm-tmpl [name]', 0)
         process.exit(0)
       }
-      const tmpls = await _.readDir(this.options.data.templates)
+      const tmpls = await _.readDir(this.options.PATHS.global.templates)
       mods.map(async item => {
         if (tmpls.includes(item)) {
           try {
             _.log(`start to remove template '${item}'...`)
-            _.rmdir(_.join(this.options.data.templates, item), err => {
+            _.rmdir(_.join(this.options.PATHS.global.templates, item), err => {
               if (err) {
                 _.log(err, 0)
               }
@@ -409,7 +414,7 @@ export default class Cli {
       try {
         // add template
         const name = this.options.template
-        const isExist = await _.exist(_.join(this.options.data.templates, name))
+        const isExist = await _.exist(_.join(this.options.PATHS.global.templates, name))
 
         if (isExist) {
           _.log(`Tempalte '${name}' already exist, input 'y' to update, or change the field 'template' value in './fbi/config.js' to create a new one.`, 'yellow')
@@ -417,14 +422,14 @@ export default class Cli {
           const answer = await _.prompt('update')
           if (answer['update'] === 'y') {
             _.log(`Start to update template '${name}' ...`)
-            await copy(_.cwd(), _.join(this.options.data.templates, name), this.options.TEMPLATE_ADD_IGNORE)
+            await copy(_.cwd(), _.join(this.options.PATHS.global.templates, name), this.options.TEMPLATE_ADD_IGNORE)
             _.log(`Template '${name}' updated successfully`, 1)
           } else {
             process.exit(0)
           }
         } else {
           _.log(`Start to add template '${name}' ...`)
-          await copy(_.cwd(), _.join(this.options.data.templates, name), this.options.TEMPLATE_ADD_IGNORE)
+          await copy(_.cwd(), _.join(this.options.PATHS.global.templates, name), this.options.TEMPLATE_ADD_IGNORE)
           _.log(`Template '${name}' added successfully`, 1)
         }
       } catch (err) {
@@ -432,7 +437,7 @@ export default class Cli {
       }
     }
 
-    const tasksPath = this.options.paths.tasks
+    const tasksPath = this.options.PATHS.local.tasks
     async function addTaskFile(file, to) {
       const name = file.replace(_.extname(file), '')
       const taskExist = await _.exist(_.cwd(tasksPath, file))
@@ -449,11 +454,11 @@ export default class Cli {
         _.log(`Local tasks folder '${tasksPath}' not found.`, 0)
       } else {
         let name = this.argvs[1]
-        const taskdir = _.join(this.options.data.tasks)
+        const taskdir = _.join(this.options.PATHS.global.tasks)
         const taskdirExist = await _.exist(taskdir)
         if (!taskdirExist) {
           await _.mkdir(taskdir)
-          await _.mkdir(_.join(taskdir, this.options.paths.tasks))
+          await _.mkdir(_.join(taskdir, this.options.PATHS.local.tasks))
         }
         // copy node_modules
         const nodeModulesExist = await _.exist('node_modules')
@@ -469,19 +474,19 @@ export default class Cli {
         } catch (e) {
 
         }
-        let tskPkg = require(_.join(this.options.data.tasks, 'package.json'))
+        let tskPkg = require(_.join(this.options.PATHS.global.tasks, 'package.json'))
         _.merge(tskPkg.devDependencies, usrPkg)
-        await _.write(_.join(this.options.data.tasks, 'package.json'), JSON.stringify(tskPkg, null, 2))
+        await _.write(_.join(this.options.PATHS.global.tasks, 'package.json'), JSON.stringify(tskPkg, null, 2))
 
         if (name) {
           const file = _.extname(name) ? name : name + '.js'
-          await addTaskFile(file, _.join(taskdir, this.options.paths.tasks))
+          await addTaskFile(file, _.join(taskdir, this.options.PATHS.local.tasks))
         } else {
           const files = await _.readDir(_.cwd(tasksPath))
             // copy task files
           Promise.all(files.map(async item => {
             try {
-              await addTaskFile(item, _.join(taskdir, this.options.paths.tasks))
+              await addTaskFile(item, _.join(taskdir, this.options.PATHS.local.tasks))
             } catch (e) {
               _.log(e, 0)
             }
@@ -498,18 +503,17 @@ export default class Cli {
     if (this.argvs[0] === 'update') {
       this.next = false
 
-      const opts = this.options
-      if (opts.template) {
+      if (this.options.template) {
         try {
           // update fbi folder
-          await copy(_.join(opts.data.templates, opts.template, 'fbi'), _.cwd('fbi'))
+          await copy(_.join(this.options.PATHS.global.templates, this.options.template, 'fbi'), _.cwd('fbi'))
 
           // update package.json devDependencies
           if (await _.exist(_.cwd('package.json'))) {
             const localPkgPath = _.cwd('package.json')
             const localPkg = require(localPkgPath)
             const localDevDeps = localPkg['devDependencies'] || {}
-            const tmplDevDeps = require(_.join(opts.data.templates, opts.template, 'package.json'))['devDependencies'] || {}
+            const tmplDevDeps = require(_.join(this.options.PATHS.global.templates, this.options.template, 'package.json'))['devDependencies'] || {}
             const newDevDeps = _.merge(localDevDeps, tmplDevDeps)
             localPkg.devDependencies = newDevDeps
             _.write(localPkgPath, JSON.stringify(localPkg, null, 2))
@@ -530,16 +534,17 @@ export default class Cli {
 
     let cmds = this.argvs
     if (this.argvs.length > 0) {
-      this.setTerminalTitle()
 
       let ret
-      const prefix = this.options.task_param_prefix
+      const prefix = this.options.TASK_PARAM_PREFIX
       try {
         ret = _.parseArgvs(cmds, prefix)
       } catch (e) {
         _.log('task params parsed error', 0)
         _.log(e)
       }
+
+      let titleSeted = false
 
       if (Object.keys(ret).length) {
         Object.keys(ret).map(async item => {
@@ -548,18 +553,22 @@ export default class Cli {
             let itemParams = ret[item]['params']
             if (itemParams) {
               switch (itemParams[0]) {
-              case 't':
-                taskType = 'template'
-                itemParams.splice(0, 1)
-                break
-              case 'g':
-                taskType = 'global'
-                itemParams.splice(0, 1)
-                break
+                case 't':
+                  taskType = 'template'
+                  itemParams.splice(0, 1)
+                  break
+                case 'g':
+                  taskType = 'global'
+                  itemParams.splice(0, 1)
+                  break
               }
             }
             const taskObj = await task.get(item, taskType, this.options)
             if (taskObj.path) {
+              if (!titleSeted) {
+                this.setTerminalTitle()
+                titleSeted = true
+              }
               taskObj['params'] = (itemParams && itemParams.length) ?
                 ' ' + prefix + itemParams.join(' ' + prefix) :
                 ''
@@ -568,10 +577,10 @@ export default class Cli {
                 null
               task.run(item, this, taskObj)
             } else {
-              _.log(`Task not found: '${item}`, 0)
+              _.log(`Task not found: '${item}'`, -1)
             }
           } catch (e) {
-            _.log(e, 0)
+            _.log(e, -1)
           }
         })
       }

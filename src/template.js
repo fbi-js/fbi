@@ -9,7 +9,8 @@ export default class Template {
       return false
     }
     let ret = false
-    const src = _.join(opts.data.templates, name)
+
+    const src = _.join(opts.PATHS.global.templates, name)
     const has = _.existSync(src)
 
     if (has) {
@@ -20,15 +21,15 @@ export default class Template {
   }
 
   async all(opts) {
-    const _exist = await _.exist(opts.data.templates)
+    const _exist = await _.exist(opts.PATHS.global.templates)
     let ret = []
     if (_exist) {
-      let templates = await _.readDir(opts.data.templates)
+      let templates = await _.readDir(opts.PATHS.global.templates)
       templates = templates.filter(_.isTemplate)
       templates.map(item => {
         try {
-          const config = require(_.join(opts.data.templates, item, opts.paths.config))
-          const pkg = require(_.join(opts.data.templates, item, 'package.json'))
+          const config = require(_.join(opts.PATHS.global.templates, item, opts.paths.config))
+          const pkg = require(_.join(opts.PATHS.global.templates, item, 'package.json'))
           ret.push({
             name: item,
             desc: config.templateDescription || '',

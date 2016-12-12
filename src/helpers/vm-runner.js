@@ -8,7 +8,6 @@ import vm from 'vm'
 export default function vmRunner (file, sandbox = {} , parent = {
   require: require
 }) {
-
   sandbox = Object.assign({}, global, sandbox)
   sandbox.module = new Module(file, parent)
   sandbox.exports = sandbox.module.exports
@@ -23,14 +22,14 @@ export default function vmRunner (file, sandbox = {} , parent = {
     const fullpath = sandbox.require.resolve(filepath)
 
     // console.log(new Module(fullpath, parent))
-    if (fullpath.indexOf('node_modules') < 0
-      && fullpath.indexOf(sandbox.ctx.options.paths.tasks) >= 0) {
+    if (fullpath.indexOf('node_modules') < 0 && fullpath.indexOf(path.sep) >= 0) {
 
       // FBI task file
       return vmRunner(fullpath, Object.assign({}, global, sandbox), parent)
+    } else {
+      const ret = parent.require(fullpath)
+      return ret
     }
-    const ret = parent.require(fullpath)
-    return ret
   }
   sandbox.require.resolve = function (request) {
     return Module._resolveFilename(request, sandbox.module)
