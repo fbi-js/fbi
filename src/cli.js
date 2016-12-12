@@ -33,6 +33,7 @@ export default class Cli {
     (async() => {
       try {
         await this.config()
+        // console.log(this.options)
         this.version()
         this.backup()
         this.recover()
@@ -101,7 +102,7 @@ export default class Cli {
         const globalTmplPath = _.join(opts.PATHS.global.templates, userConfig.template)
         const tmplExist = await _.exist(globalTmplPath)
 
-        opts['NODE_MODULE_PATH'] = tmplExist ?
+        opts['NODE_MODULES_PATH'] = tmplExist ?
           _.join(globalTmplPath, 'node_modules/') :
           _.cwd('node_modules/')
 
@@ -110,7 +111,7 @@ export default class Cli {
           userConfig = _.merge(require(tmplCfgPath), userConfig)
         }
       } else {
-        opts['NODE_MODULE_PATH'] = _.cwd('node_modules/')
+        opts['NODE_MODULES_PATH'] = _.cwd('node_modules/')
       }
 
       /**

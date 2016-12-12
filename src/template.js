@@ -26,17 +26,23 @@ export default class Template {
     if (_exist) {
       let templates = await _.readDir(opts.PATHS.global.templates)
       templates = templates.filter(_.isTemplate)
-      templates.map(item => {
+      await Promise.all(templates.map(async item => {
         try {
-          const config = require(_.join(opts.PATHS.global.templates, item, opts.paths.config))
+          const config = {}
+          const tmplGlobalCfgPath = _.join(opts.PATHS.global.templates, item, opts.PATHS.local.config)
+          if (await _.exist(tmplGlobalCfgPath)) {
+            config.templateDescription = require(tmplGlobalCfgPath).templateDescription
+          } else {
+            config.templateDescription = 'Global template doesn\'t match local template.'
+          }
           const pkg = require(_.join(opts.PATHS.global.templates, item, 'package.json'))
           ret.push({
             name: item,
             desc: config.templateDescription || '',
             version: pkg.version
           })
-        } catch (err) {}
-      })
+        } catch (err) {console.log(err)}
+      }))
     }
     return ret
   }

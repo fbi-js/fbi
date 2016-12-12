@@ -1,3 +1,27 @@
+
+### v3.0.0-alpha.2
+2016.12.12
+
+`package.json`
+
+```
+"fbi": {
+  "template": "mod",
+  "PATHS": {
+    "local": {
+      "tasks": "build/",
+      "config": "build/config.js"
+    }
+  }
+}
+```
+
+```
+"fbi": {
+  "template": "mod"
+}
+```
+
 ### v3.0.0-alpha.1
 2016.12.12
 - Breaking change:
