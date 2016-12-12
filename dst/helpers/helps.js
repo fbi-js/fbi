@@ -1,13 +1,6 @@
 
-/*
-  fbi v2.1.2
-  Node.js workflow tool.
-
-  Author: neikvon
-  Built:  2016-11-28 11:52:22 via fbi
-
-  Copyright 2016 neikvon
-*/
+require('source-map-support').install();
+    
 'use strict';
 
 var __utils_js = require('./utils.js');
@@ -42,3 +35,6 @@ var helps = `
 `;
 
 module.exports = helps;
+// this is outro
+// this is footer
+//# sourceMappingURL=helps.js.map

@@ -1,19 +1,14 @@
 
-/*
-  fbi v2.1.2
-  Node.js workflow tool.
-
-  Author: neikvon
-  Built:  2016-11-28 11:52:22 via fbi
-
-  Copyright 2016 neikvon
-*/
+require('source-map-support').install();
+    
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var _ = require('./helpers/utils.js');
-var vm = _interopDefault(require('vm'));
+var path = _interopDefault(require('path'));
+var vm = require('vm');
+var vmRunner = _interopDefault(require('./helpers/vm-runner.js'));
 
 function __async(g){return new Promise(function(s,j){function c(a,x){try{var r=g[x?"throw":"next"](a);}catch(e){j(e);return}r.done?s(r.value):Promise.resolve(r.value).then(c,d);}function d(e){c(e,1);}c();})}
 
@@ -30,18 +25,21 @@ class Task {
     }
 
     // local task > tempalte task => global task
-    let ret = {
+    const ret = {
       name: name,
       cnt: '',
       type: '',
       path: ''
     };
 
+    let found = false;
+
     function find(_path, _type) {return __async(function*(){
       _path = _path + '.js';
       let _exist = _.existSync(_path);
       if (_exist) {
-        ret.cnt = yield _.read(_path);
+        // ret.cnt = await _.read(_path)
+        found = true;
         ret.type = _type;
         ret.path = _path;
       }
@@ -53,7 +51,7 @@ class Task {
     }
 
     // find in template
-    if (!ret.cnt && opts.template && opts.template !== '') {
+    if (!found && opts.template && opts.template !== '') {
       yield find(_.join(
         opts.data.templates,
         opts.template,
@@ -62,7 +60,7 @@ class Task {
     }
 
     // find in global
-    if (!ret.cnt || type === 'global') {
+    if (!found || type === 'global') {
       yield find(_.join(opts.data.tasks, opts.paths.tasks, name), 'global');
     }
 
@@ -154,40 +152,24 @@ class Task {
     return justNames ? names : _this.tasks
   }.call(this))}
 
-  run(name, ctx, taskObj, module) {
-    let taskCnt = taskObj.cnt || this.tasks[name];
+  run(name, ctx, taskObj) {
+    const taskDir = path.dirname(taskObj.path);
+    const tmpl = ctx.options.template;
+    ctx.log(`Running ${taskObj.type} task "${taskObj.name} ${taskObj.params}"...`, 1);
 
-    function requireResolve(mod) {
-      // find mod path
-      const modPath = module.get(mod, taskObj.type);
-      if (modPath && modPath !== 'global') {
-        return require(_.join(modPath, mod))
-      } else {
-        return mod ? require(mod) : require
-      }
-    }
-
-    let code = `
-    'use strict';
-
-    (function(require, ctx) {
-      if(!ctx.next || ctx.next === 'false') return false;
-
-      ctx.log('Running ${taskObj.type} task "${taskObj.name}${taskObj.params}"...', 1);
-      try {
-        ${taskCnt}
-      } catch (e) {
-        ctx.log('task function error', 0)
-        ctx.log(e, 0)
-      }
-    })`;
-
-    vm.runInThisContext(code, {
-      lineOffset: -3,
-      displayErrors: true
-    })(requireResolve, ctx);
+    return vmRunner(taskObj.path, {
+      modulePaths: [
+        path.join(process.cwd(), 'node_modules'),
+        tmpl ?
+        path.join(ctx.options.data.templates, tmpl, 'node_modules') :
+        path.join(ctx.options.data.tasks, 'node_modules')
+      ],
+      ctx: ctx
+    })
   }
-
 }
 
 module.exports = Task;
+// this is outro
+// this is footer
+//# sourceMappingURL=task.js.map

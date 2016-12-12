@@ -1,13 +1,6 @@
 
-/*
-  fbi v2.1.2
-  Node.js workflow tool.
-
-  Author: neikvon
-  Built:  2016-11-28 11:52:22 via fbi
-
-  Copyright 2016 neikvon
-*/
+require('source-map-support').install();
+    
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -41,13 +34,15 @@ class Template {
       let templates = yield _.readDir(opts.data.templates);
       templates = templates.filter(_.isTemplate);
       templates.map(item => {
-        const config = require(_.join(opts.data.templates, item, opts.paths.config));
-        const pkg = require(_.join(opts.data.templates, item, 'package.json'));
-        ret.push({
-          name: item,
-          desc: config.templateDescription || '',
-          version: pkg.version
-        });
+        try {
+          const config = require(_.join(opts.data.templates, item, opts.paths.config));
+          const pkg = require(_.join(opts.data.templates, item, 'package.json'));
+          ret.push({
+            name: item,
+            desc: config.templateDescription || '',
+            version: pkg.version
+          });
+        } catch (err) {}
       });
     }
     return ret
@@ -55,3 +50,6 @@ class Template {
 }
 
 module.exports = Template;
+// this is outro
+// this is footer
+//# sourceMappingURL=template.js.map

@@ -41,19 +41,19 @@ export function log(msg, type) {
   if (typeof msg === 'string') {
     if (type !== undefined) {
       switch (type) {
-        case -1:
-          msg = colors().grey('FBI => ') + colors().red(msg)
-          break
-        case 0:
-          msg = colors().grey('FBI Error => ') + colors().magenta(msg)
-          break
-        case 1:
-          msg = colors().grey('FBI => ') + colors().cyan(msg)
-          break
-        default:
-          msg = colors().grey('FBI => ') + colors()[type]
-          ? colors()[type](msg)
-          : msg
+      case -1:
+        msg = colors().grey('FBI => ') + colors().red(msg)
+        break
+      case 0:
+        msg = colors().grey('FBI Error => ') + colors().magenta(msg)
+        break
+      case 1:
+        msg = colors().grey('FBI => ') + colors().cyan(msg)
+        break
+      default:
+        msg = colors().grey('FBI => ') + colors()[type] ?
+          colors()[type](msg) :
+          msg
       }
     } else {
       msg = colors().grey('FBI => ') + msg
@@ -280,7 +280,10 @@ export function rmdir(dir, callback) {
   })
 }
 
-export { extname } from 'path'
+export {
+  extname
+}
+from 'path'
 
 export function isTaskFile(file) {
   return basename(file).indexOf('.') !== 0 && extname(file) === '.js' && file.indexOf('config') < 0
@@ -309,6 +312,15 @@ export function normalize(str) {
 
 export function basename(src, ext) {
   return path.basename(src, ext)
+}
+
+export function fixModuleName(mod) {
+  const ext = extname(mod)
+  if (!ext || (ext !== '.js' && ext !== '.json' && ext !== '.node')) {
+    return mod + '.js'
+  } else {
+    return mod
+  }
 }
 
 /**

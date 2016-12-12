@@ -1,4 +1,5 @@
 import * as _ from './helpers/utils'
+
 import copy from './helpers/copy'
 
 export default class Template {
@@ -25,13 +26,15 @@ export default class Template {
       let templates = await _.readDir(opts.data.templates)
       templates = templates.filter(_.isTemplate)
       templates.map(item => {
-        const config = require(_.join(opts.data.templates, item, opts.paths.config))
-        const pkg = require(_.join(opts.data.templates, item, 'package.json'))
-        ret.push({
-          name: item,
-          desc: config.templateDescription || '',
-          version: pkg.version
-        })
+        try {
+          const config = require(_.join(opts.data.templates, item, opts.paths.config))
+          const pkg = require(_.join(opts.data.templates, item, 'package.json'))
+          ret.push({
+            name: item,
+            desc: config.templateDescription || '',
+            version: pkg.version
+          })
+        } catch (err) {}
       })
     }
     return ret

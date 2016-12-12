@@ -1,28 +1,22 @@
 
-/*
-  fbi v2.1.2
-  Node.js workflow tool.
-
-  Author: neikvon
-  Built:  2016-11-28 11:52:22 via fbi
-
-  Copyright 2016 neikvon
-*/
+require('source-map-support').install();
+    
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var Task = _interopDefault(require('./task.js'));
-var Module = _interopDefault(require('./module.js'));
-var Template = _interopDefault(require('./template.js'));
-var opts = _interopDefault(require('./config/options.js'));
 var _ = require('./helpers/utils.js');
+var Task = _interopDefault(require('./task.js'));
+var Template = _interopDefault(require('./template.js'));
 var copy = _interopDefault(require('./helpers/copy.js'));
+var child_process = require('child_process');
 var helpTxt = _interopDefault(require('./helpers/helps.js'));
+var opts = _interopDefault(require('./config/options.js'));
+var path = _interopDefault(require('path'));
 
 function __async(g){return new Promise(function(s,j){function c(a,x){try{var r=g[x?"throw":"next"](a);}catch(e){j(e);return}r.done?s(r.value):Promise.resolve(r.value).then(c,d);}function d(e){c(e,1);}c();})}
 
-var version = "2.1.5";
+var version = "3.0.0-alpha.0";
 
 const task = new Task();
 const template = new Template();
@@ -30,6 +24,10 @@ const template = new Template();
 class Cli {
 
   constructor(argvs) {
+    if (parseInt(process.versions.node.split('.')[0]) < 6) {
+      _.log('FBI requires Node.js version 6 or newer.', 0);
+      return
+    }
     this.options = {};
     this.argvs = argvs || [];
     this.next = true;
@@ -58,6 +56,17 @@ class Cli {
     }.call(this)))();
   }
 
+  setTerminalTitle() {
+    const projectName = path.basename(process.cwd());
+
+    child_process.exec('echo "\\033];FBI-' + projectName + '\\007"', (error, stdout, stderr) => {
+      if (error) {
+        return
+      }
+      _.log(`Setting terminal tab title... ${stdout}`);
+    });
+  }
+
   config() {return __async(function*(){
     if (!this.next) { return }
 
@@ -82,9 +91,9 @@ class Cli {
       // template options
       if (userConfig && userConfig.template) {
         const _existTmpl = yield _.exist(_.join(data.templates, userConfig.template));
-        this.options['node_modules_path'] = _existTmpl
-        ? _.join(data.templates, userConfig.template, 'node_modules')
-        : _.cwd('node_modules');
+        this.options['node_modules_path'] = _existTmpl ?
+          _.join(data.templates, userConfig.template, 'node_modules') :
+          _.cwd('node_modules');
 
         const templateOptionsPath = _.join(
           data.templates,
@@ -163,7 +172,7 @@ class Cli {
       this.next = false;
 
       if (!this.argvs[1]) {
-        return _.log(`Usage: fbi init [template name]`, 0)
+        return _.log('Usage: fbi init [template name]', 0)
       }
       try {
         const name$$1 = this.argvs[1];
@@ -269,7 +278,7 @@ class Cli {
 
       let mods = this.argvs.slice(1);
       if (!mods.length) {
-        _.log(`Usage: fbi rm-task [name]`, 0);
+        _.log('Usage: fbi rm-task [name]', 0);
         process.exit(0);
       }
       let tasksPath = _.join(this.options.data.tasks, this.options.paths.tasks);
@@ -287,11 +296,11 @@ class Cli {
               process.exit(0);
             }
           } else {
-            _.log(`Usage: fbi rm-task -[template] [task]`, 0);
+            _.log('Usage: fbi rm-task -[template] [task]', 0);
             process.exit(0);
           }
         } else {
-          _.log(`Usage: fbi rm-task -[template] [task]`, 0);
+          _.log('Usage: fbi rm-task -[template] [task]', 0);
           process.exit(0);
         }
       }
@@ -320,7 +329,7 @@ class Cli {
 
       const mods = this.argvs.slice(1);
       if (!mods.length) {
-        _.log(`Usage: fbi rm-tmpl [name]`, 0);
+        _.log('Usage: fbi rm-tmpl [name]', 0);
         process.exit(0);
       }
       const tmpls = yield _.readDir(this.options.data.templates);
@@ -351,7 +360,7 @@ class Cli {
       this.next = false;
 
       if (!this.argvs[1]) {
-        return _.log(`Usage: fbi cat [task] [-t, -g]`, 0)
+        return _.log('Usage: fbi cat [task] [-t, -g]', 0)
       }
 
       const name$$1 = this.argvs[1];
@@ -526,42 +535,43 @@ class Cli {
 
     let cmds = this.argvs;
     if (this.argvs.length > 0) {
+      this.setTerminalTitle();
+
       let ret;
       const prefix = this.options.task_param_prefix;
       try {
         ret = _.parseArgvs(cmds, prefix);
       } catch (e) {
-        _.log(`task params parsed error`, 0);
+        _.log('task params parsed error', 0);
         _.log(e);
       }
 
       if (Object.keys(ret).length) {
-        const module = new Module(this.options);
         Object.keys(ret).map(item => __async(function*(){
           try {
             let taskType = 'local';
             let itemParams = ret[item]['params'];
             if (itemParams) {
               switch (itemParams[0]) {
-                case 't':
-                  taskType = 'template';
-                  itemParams.splice(0, 1);
-                  break
-                case 'g':
-                  taskType = 'global';
-                  itemParams.splice(0, 1);
-                  break
+              case 't':
+                taskType = 'template';
+                itemParams.splice(0, 1);
+                break
+              case 'g':
+                taskType = 'global';
+                itemParams.splice(0, 1);
+                break
               }
             }
             const taskObj = yield task.get(item, taskType, this.options);
-            if (taskObj.cnt) {
-              taskObj['params'] = (itemParams && itemParams.length)
-              ? ' ' + prefix + itemParams.join(' ' + prefix)
-              : '';
-              this['taskParams'] = (itemParams && itemParams.length)
-              ? itemParams
-              : null;
-              task.run(item, this, taskObj, module);
+            if (taskObj.path) {
+              taskObj['params'] = (itemParams && itemParams.length) ?
+                ' ' + prefix + itemParams.join(' ' + prefix) :
+                '';
+              this['taskParams'] = (itemParams && itemParams.length) ?
+                itemParams :
+                null;
+              task.run(item, this, taskObj);
             } else {
               _.log(`Task not found: '${item}`, 0);
             }
@@ -575,3 +585,6 @@ class Cli {
 }
 
 module.exports = Cli;
+// this is outro
+// this is footer
+//# sourceMappingURL=cli.js.map

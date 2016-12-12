@@ -1,0 +1,19 @@
+{
+  "restartable": "rs",
+  "ignore": [
+    ".git",
+    "node_modules/**/node_modules",
+    "src",
+    "fbi",
+    "dst"
+  ],
+  "verbose": true,
+  "execMap": {
+    "js": "node --harmony"
+  },
+  "watch": [],
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "ext": "js json"
+}

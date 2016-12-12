@@ -1,13 +1,6 @@
 
-/*
-  fbi v2.1.2
-  Node.js workflow tool.
-
-  Author: neikvon
-  Built:  2016-11-28 11:52:22 via fbi
-
-  Copyright 2016 neikvon
-*/
+require('source-map-support').install();
+    
 'use strict';
 
 var options = {
@@ -37,3 +30,6 @@ var options = {
 };
 
 module.exports = options;
+// this is outro
+// this is footer
+//# sourceMappingURL=options.js.map

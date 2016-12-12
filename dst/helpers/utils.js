@@ -1,13 +1,6 @@
 
-/*
-  fbi v2.1.2
-  Node.js workflow tool.
-
-  Author: neikvon
-  Built:  2016-11-28 11:52:22 via fbi
-
-  Copyright 2016 neikvon
-*/
+require('source-map-support').install();
+    
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -52,19 +45,19 @@ function log(msg, type) {
   if (typeof msg === 'string') {
     if (type !== undefined) {
       switch (type) {
-        case -1:
-          msg = colors().grey('FBI => ') + colors().red(msg);
-          break
-        case 0:
-          msg = colors().grey('FBI Error => ') + colors().magenta(msg);
-          break
-        case 1:
-          msg = colors().grey('FBI => ') + colors().cyan(msg);
-          break
-        default:
-          msg = colors().grey('FBI => ') + colors()[type]
-          ? colors()[type](msg)
-          : msg;
+      case -1:
+        msg = colors().grey('FBI => ') + colors().red(msg);
+        break
+      case 0:
+        msg = colors().grey('FBI Error => ') + colors().magenta(msg);
+        break
+      case 1:
+        msg = colors().grey('FBI => ') + colors().cyan(msg);
+        break
+      default:
+        msg = colors().grey('FBI => ') + colors()[type] ?
+          colors()[type](msg) :
+          msg;
       }
     } else {
       msg = colors().grey('FBI => ') + msg;
@@ -320,6 +313,15 @@ function basename(src, ext) {
   return path__default.basename(src, ext)
 }
 
+function fixModuleName(mod) {
+  const ext = path.extname(mod);
+  if (!ext || (ext !== '.js' && ext !== '.json' && ext !== '.node')) {
+    return mod + '.js'
+  } else {
+    return mod
+  }
+}
+
 /**
  * arr:
  * build -p -w serve -3000 deploy -10.11.11.1
@@ -522,6 +524,7 @@ exports.isAbsolute = isAbsolute;
 exports.isRelative = isRelative;
 exports.normalize = normalize;
 exports.basename = basename;
+exports.fixModuleName = fixModuleName;
 exports.parseArgvs = parseArgvs;
 exports.fillGap = fillGap;
 exports.genTaskHelpTxt = genTaskHelpTxt;
@@ -531,3 +534,6 @@ exports.flatLog = flatLog;
 exports.indexDir = indexDir;
 exports.prompt = prompt;
 exports.extname = path.extname;
+// this is outro
+// this is footer
+//# sourceMappingURL=utils.js.map

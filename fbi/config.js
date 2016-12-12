@@ -1,39 +1,47 @@
 module.exports = {
-  template: 'npm-module',
-  templateDescription: 'Npm module template, build via rollup.',
+  template: 'mod',
+  templateDescription: '兼容node v6+的 js模块、node服务',
   npm: {
-    alias: 'npm',
-    options: '', // --registry=https://registry.npm.taobao.org'
+    alias: 'tnpm',
+    options: '', // '--registry=https://registry.npm.taobao.org'
   },
   alias: {
     b: 'build',
-    w: 'watch'
+    w: 'watch',
+    s: 'serve'
   },
-  dist: './dst/',
+  dist: './dst/', // 生成目录路径
+  // watch延迟时间(单位：秒)
+  watchDelay: 0,
+  // 用做nodemon入口文件
+  mainFile: 'dst/cli.js',
   rollup: {
-    entry: [
-      'cli.js',
-      'module.js',
-      'task.js',
-      'template.js',
-      'helpers/copy.js',
-      'helpers/helps.js',
-      'helpers/utils.js',
-      'config/options.js'
-    ], // files will be bundle independently
-    format: 'cjs', // 'amd', 'cjs', 'es', 'iife', 'umd'
-    moduleName: '', // for UMD/IIFE bundles: var MyBundle = (function () {...
-    moduleId: '', // for AMD/UMD bundles: define('my-bundle',...
+    /**
+     * 指定入口文件
+     * 不指定: '' 或 false 或 null 或 0
+     * 指定单个文件: 'src/index.js'
+     * 指定多个文件: ['src/index.js', 'src/helpers/demo.js']
+     */
+    entry: '',
+    /**
+     * 模块输出方式
+     * 可选值: 'amd', 'cjs', 'es', 'iife', 'umd'
+     */
+    format: 'cjs',
+    /**
+     * 模块名称 （用于UMD/IIFE情形）
+     * 效果: var MyBundle = (function () {...
+     */
+    moduleName: 'myModule',
+    /**
+     * 模块ID（用于AMD/UMD情形）
+     * 效果: define('my-bundle',...
+     */
+    moduleId: 'myModuleId',
     banner: `
-/*
-  fbi v2.1.2
-  Node.js workflow tool.
-
-  Author: neikvon
-  Built:  ${new Date().toLocaleString()} via fbi
-
-  Copyright 2016 neikvon
-*/`,
-    footer: '',
+require('source-map-support').install();
+    `,
+    outro: '// this is outro',
+    footer: '// this is footer'
   }
 }

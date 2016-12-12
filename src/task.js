@@ -1,6 +1,8 @@
 import * as _ from './helpers/utils'
 
+import path from 'path'
 import vm from 'vm'
+import vmRunner from './helpers/vm-runner'
 
 export default class Task {
 
@@ -15,18 +17,21 @@ export default class Task {
     }
 
     // local task > tempalte task => global task
-    let ret = {
+    const ret = {
       name: name,
       cnt: '',
       type: '',
       path: ''
     }
 
+    let found = false
+
     async function find(_path, _type) {
       _path = _path + '.js'
       let _exist = _.existSync(_path)
       if (_exist) {
-        ret.cnt = await _.read(_path)
+        // ret.cnt = await _.read(_path)
+        found = true
         ret.type = _type
         ret.path = _path
       }
@@ -38,7 +43,7 @@ export default class Task {
     }
 
     // find in template
-    if (!ret.cnt && opts.template && opts.template !== '') {
+    if (!found && opts.template && opts.template !== '') {
       await find(_.join(
         opts.data.templates,
         opts.template,
@@ -47,7 +52,7 @@ export default class Task {
     }
 
     // find in global
-    if (!ret.cnt || type === 'global') {
+    if (!found || type === 'global') {
       await find(_.join(opts.data.tasks, opts.paths.tasks, name), 'global')
     }
 
@@ -139,38 +144,19 @@ export default class Task {
     return justNames ? names : _this.tasks
   }
 
-  run(name, ctx, taskObj, module) {
-    let taskCnt = taskObj.cnt || this.tasks[name]
+  run(name, ctx, taskObj) {
+    const taskDir = path.dirname(taskObj.path)
+    const tmpl = ctx.options.template
+    ctx.log(`Running ${taskObj.type} task "${taskObj.name} ${taskObj.params}"...`, 1)
 
-    function requireResolve(mod) {
-      // find mod path
-      const modPath = module.get(mod, taskObj.type)
-      if (modPath && modPath !== 'global') {
-        return require(_.join(modPath, mod))
-      } else {
-        return mod ? require(mod) : require
-      }
-    }
-
-    let code = `
-    'use strict';
-
-    (function(require, ctx) {
-      if(!ctx.next || ctx.next === 'false') return false;
-
-      ctx.log('Running ${taskObj.type} task "${taskObj.name}${taskObj.params}"...', 1);
-      try {
-        ${taskCnt}
-      } catch (e) {
-        ctx.log('task function error', 0)
-        ctx.log(e, 0)
-      }
-    })`
-
-    vm.runInThisContext(code, {
-      lineOffset: -3,
-      displayErrors: true
-    })(requireResolve, ctx)
+    return vmRunner(taskObj.path, {
+      modulePaths: [
+        path.join(process.cwd(), 'node_modules'),
+        tmpl ?
+        path.join(ctx.options.data.templates, tmpl, 'node_modules') :
+        path.join(ctx.options.data.tasks, 'node_modules')
+      ],
+      ctx: ctx
+    })
   }
-
 }

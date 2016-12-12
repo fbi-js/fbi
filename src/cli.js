@@ -1,13 +1,17 @@
-import Task from './task'
-import Module from './module'
-import Template from './template'
-import opts from './config/options'
 import * as _ from './helpers/utils'
+
+import Task from './task'
+import Template from './template'
 import copy from './helpers/copy'
 import {
-  version
-} from '../package.json'
+  exec,
+} from 'child_process'
 import helpTxt from './helpers/helps'
+import opts from './config/options'
+import path from 'path'
+import {
+  version,
+} from '../package.json'
 
 const task = new Task()
 const template = new Template()
@@ -15,6 +19,10 @@ const template = new Template()
 export default class Cli {
 
   constructor(argvs) {
+    if (parseInt(process.versions.node.split('.')[0]) < 6) {
+      _.log('FBI requires Node.js version 6 or newer.', 0)
+      return
+    }
     this.options = {}
     this.argvs = argvs || []
     this.next = true
@@ -43,6 +51,17 @@ export default class Cli {
     })()
   }
 
+  setTerminalTitle() {
+    const projectName = path.basename(process.cwd())
+
+    exec('echo "\\033];FBI-' + projectName + '\\007"', (error, stdout, stderr) => {
+      if (error) {
+        return
+      }
+      _.log(`Setting terminal tab title... ${stdout}`)
+    })
+  }
+
   async config() {
     if (!this.next) return
 
@@ -67,9 +86,9 @@ export default class Cli {
       // template options
       if (userConfig && userConfig.template) {
         const _existTmpl = await _.exist(_.join(data.templates, userConfig.template))
-        this.options['node_modules_path'] = _existTmpl
-        ? _.join(data.templates, userConfig.template, 'node_modules')
-        : _.cwd('node_modules')
+        this.options['node_modules_path'] = _existTmpl ?
+          _.join(data.templates, userConfig.template, 'node_modules') :
+          _.cwd('node_modules')
 
         const templateOptionsPath = _.join(
           data.templates,
@@ -148,7 +167,7 @@ export default class Cli {
       this.next = false
 
       if (!this.argvs[1]) {
-        return _.log(`Usage: fbi init [template name]`, 0)
+        return _.log('Usage: fbi init [template name]', 0)
       }
       try {
         const name = this.argvs[1]
@@ -254,7 +273,7 @@ export default class Cli {
 
       let mods = this.argvs.slice(1)
       if (!mods.length) {
-        _.log(`Usage: fbi rm-task [name]`, 0)
+        _.log('Usage: fbi rm-task [name]', 0)
         process.exit(0)
       }
       let tasksPath = _.join(this.options.data.tasks, this.options.paths.tasks)
@@ -272,11 +291,11 @@ export default class Cli {
               process.exit(0)
             }
           } else {
-            _.log(`Usage: fbi rm-task -[template] [task]`, 0)
+            _.log('Usage: fbi rm-task -[template] [task]', 0)
             process.exit(0)
           }
         } else {
-          _.log(`Usage: fbi rm-task -[template] [task]`, 0)
+          _.log('Usage: fbi rm-task -[template] [task]', 0)
           process.exit(0)
         }
       }
@@ -305,7 +324,7 @@ export default class Cli {
 
       const mods = this.argvs.slice(1)
       if (!mods.length) {
-        _.log(`Usage: fbi rm-tmpl [name]`, 0)
+        _.log('Usage: fbi rm-tmpl [name]', 0)
         process.exit(0)
       }
       const tmpls = await _.readDir(this.options.data.templates)
@@ -336,7 +355,7 @@ export default class Cli {
       this.next = false
 
       if (!this.argvs[1]) {
-        return _.log(`Usage: fbi cat [task] [-t, -g]`, 0)
+        return _.log('Usage: fbi cat [task] [-t, -g]', 0)
       }
 
       const name = this.argvs[1]
@@ -511,42 +530,43 @@ export default class Cli {
 
     let cmds = this.argvs
     if (this.argvs.length > 0) {
+      this.setTerminalTitle()
+
       let ret
       const prefix = this.options.task_param_prefix
       try {
         ret = _.parseArgvs(cmds, prefix)
       } catch (e) {
-        _.log(`task params parsed error`, 0)
+        _.log('task params parsed error', 0)
         _.log(e)
       }
 
       if (Object.keys(ret).length) {
-        const module = new Module(this.options)
         Object.keys(ret).map(async item => {
           try {
             let taskType = 'local'
             let itemParams = ret[item]['params']
             if (itemParams) {
               switch (itemParams[0]) {
-                case 't':
-                  taskType = 'template'
-                  itemParams.splice(0, 1)
-                  break
-                case 'g':
-                  taskType = 'global'
-                  itemParams.splice(0, 1)
-                  break
+              case 't':
+                taskType = 'template'
+                itemParams.splice(0, 1)
+                break
+              case 'g':
+                taskType = 'global'
+                itemParams.splice(0, 1)
+                break
               }
             }
             const taskObj = await task.get(item, taskType, this.options)
-            if (taskObj.cnt) {
-              taskObj['params'] = (itemParams && itemParams.length)
-              ? ' ' + prefix + itemParams.join(' ' + prefix)
-              : ''
-              this['taskParams'] = (itemParams && itemParams.length)
-              ? itemParams
-              : null
-              task.run(item, this, taskObj, module)
+            if (taskObj.path) {
+              taskObj['params'] = (itemParams && itemParams.length) ?
+                ' ' + prefix + itemParams.join(' ' + prefix) :
+                ''
+              this['taskParams'] = (itemParams && itemParams.length) ?
+                itemParams :
+                null
+              task.run(item, this, taskObj)
             } else {
               _.log(`Task not found: '${item}`, 0)
             }
