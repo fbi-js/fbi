@@ -144,17 +144,18 @@ export default class Task {
   run(name, ctx, taskObj) {
     const taskDir = path.dirname(taskObj.path)
     const tmpl = ctx.options.template
-    if (!tmpl) {
-      // if is not a fbi template, just require the file
-      try {
-        return require(taskObj.path)
-      } catch (err) {
-        if (err.message.includes('ctx is not defined')) {
-          ctx.log('This is not a project base on FBI template, there is no global variable named "ctx"', -1)
-        }
-        console.log(err)
-      }
-    }
+
+    // if (!tmpl) {
+    //   // if is not a fbi template, just require the file
+    //   try {
+    //     return require(taskObj.path)
+    //   } catch (err) {
+    //     if (err.message.includes('ctx is not defined')) {
+    //       ctx.log('This is not a project base on FBI template, there is no global variable named "ctx"', -1)
+    //     }
+    //     console.log(err)
+    //   }
+    // }
 
     // if is a fbi template
     tmpl && ctx.log(`This project is base on template '${_.colors().yellow(tmpl)}'.`)
@@ -167,7 +168,19 @@ export default class Task {
         path.join(ctx.options.PATHS.global.templates, tmpl, 'node_modules') :
         path.join(ctx.options.PATHS.global.tasks, 'node_modules')
       ],
-      ctx: ctx
+      ctx: ctx,
+      RegExp: RegExp,
+      Array: Array,
+      Object: Object,
+      Function: Function
+        // The new context gets its own RegExp and set of built-ins.
+        //  RegExp , [] and Array, {} and Object, and function(){} and Function
     })
   }
 }
+
+// about vm instanceof
+// > vm.runInNewContext('new Array', { Array: Array }) instanceof Array
+// true
+// > vm.runInNewContext('[]', { Array: Array }) instanceof Array
+// false

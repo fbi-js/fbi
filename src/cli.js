@@ -33,7 +33,7 @@ export default class Cli {
     (async() => {
       try {
         await this.config()
-        // console.log(this.options)
+          // console.log(this.options)
         this.version()
         this.backup()
         this.recover()
@@ -173,7 +173,7 @@ export default class Cli {
       this.next = false
 
       if (!this.argvs[1]) {
-        return _.log('Usage: fbi init [template name]', 0)
+        return _.log('Usage: fbi init [template name]', -1)
       }
       try {
         const name = this.argvs[1]
@@ -415,6 +415,9 @@ export default class Cli {
       try {
         // add template
         const name = this.options.template
+        if (!name) {
+          throw 'There is no template name found.'
+        }
         const isExist = await _.exist(_.join(this.options.PATHS.global.templates, name))
 
         if (isExist) {
@@ -434,7 +437,7 @@ export default class Cli {
           _.log(`Template '${name}' added successfully`, 1)
         }
       } catch (err) {
-        _.log('add template fail.', 0)
+        _.log(err || 'add template fail.', -1)
       }
     }
 
@@ -452,7 +455,7 @@ export default class Cli {
 
       const localTasksFolderExist = await _.exist(_.cwd(tasksPath))
       if (!localTasksFolderExist) {
-        _.log(`Local tasks folder '${tasksPath}' not found.`, 0)
+        _.log(`Local tasks folder '${tasksPath}' not found.`, -1)
       } else {
         let name = this.argvs[1]
         const taskdir = _.join(this.options.PATHS.global.tasks)

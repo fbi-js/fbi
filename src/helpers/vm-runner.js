@@ -22,7 +22,7 @@ export default function vmRunner (file, sandbox = {} , parent = {
     const fullpath = sandbox.require.resolve(filepath)
 
     // console.log(new Module(fullpath, parent))
-    if (fullpath.indexOf('node_modules') < 0 && fullpath.indexOf(path.sep) >= 0) {
+    if (!fullpath.includes('node_modules') && fullpath.includes(path.sep)) {
 
       // FBI task file
       return vmRunner(fullpath, Object.assign({}, global, sandbox), parent)
@@ -38,15 +38,19 @@ export default function vmRunner (file, sandbox = {} , parent = {
   sandbox.require.extensions = Module._extensions
   sandbox.require.cache = Module._cache
 
-  // get code
-  const code = fs.readFileSync(file, 'utf8')
+  if (path.extname(file) === '.js') {
+    // get code
+    const code = fs.readFileSync(file, 'utf8')
 
-  // run code
-  vm.runInNewContext(code, sandbox, {
-    filename: file,
-    lineOffset: 0,
-    displayErrors: true
-  })
+    // run code
+    vm.runInNewContext(code, sandbox, {
+      filename: file,
+      lineOffset: 0,
+      displayErrors: true
+    })
 
-  return sandbox.module.exports
+    return sandbox.module.exports
+  } else {
+    return require(file)
+  }
 }
