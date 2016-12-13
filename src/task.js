@@ -158,10 +158,11 @@ export default class Task {
     // }
 
     // if is a fbi template
-    tmpl && ctx.log(`This project is base on template '${_.colors().yellow(tmpl)}'.`)
+    tmpl && ctx.log(`This project is base on template '${_.colors().yellow(tmpl)}'`)
     ctx.log(`Running ${taskObj.type} task "${taskObj.name} ${taskObj.params}"...`, 1)
 
-    return vmRunner(taskObj.path, {
+    const start = Date.now()
+    vmRunner(taskObj.path, {
       modulePaths: [
         path.join(process.cwd(), 'node_modules'),
         tmpl ?
@@ -176,6 +177,8 @@ export default class Task {
         // The new context gets its own RegExp and set of built-ins.
         //  RegExp , [] and Array, {} and Object, and function(){} and Function
     })
+    const end = Date.now()
+    ctx.log(`Task files parsing time: ${end - start}ms`)
   }
 }
 

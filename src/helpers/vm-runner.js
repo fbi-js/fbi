@@ -5,9 +5,10 @@ import fs from 'fs'
 import path from 'path'
 import vm from 'vm'
 
-export default function vmRunner (file, sandbox = {} , parent = {
+export default function vmRunner(file, sandbox = {}, parent = {
   require: require
 }) {
+  // console.log('run in vm__' + file)
   sandbox = Object.assign({}, global, sandbox)
   sandbox.module = new Module(file, parent)
   sandbox.exports = sandbox.module.exports
@@ -19,16 +20,19 @@ export default function vmRunner (file, sandbox = {} , parent = {
   )
   sandbox.global = sandbox
   sandbox.require = function (filepath) {
-    const fullpath = sandbox.require.resolve(filepath)
+    try {
+      // console.log('requiring:  ' + filepath)
+      const fullpath = sandbox.require.resolve(filepath)
 
-    // console.log(new Module(fullpath, parent))
-    if (!fullpath.includes('node_modules') && fullpath.includes(path.sep)) {
-
-      // FBI task file
-      return vmRunner(fullpath, Object.assign({}, global, sandbox), parent)
-    } else {
-      const ret = parent.require(fullpath)
-      return ret
+      if (!fullpath.includes('node_modules') && fullpath.includes(path.sep)) {
+        // FBI task file
+        return vmRunner(fullpath, sandbox)
+      } else {
+        const ret = parent.require(fullpath)
+        return ret
+      }
+    } catch (err) {
+      console.log(err)
     }
   }
   sandbox.require.resolve = function (request) {
@@ -43,7 +47,8 @@ export default function vmRunner (file, sandbox = {} , parent = {
     const code = fs.readFileSync(file, 'utf8')
 
     // run code
-    vm.runInNewContext(code, sandbox, {
+    const ctx = vm.createContext(sandbox)
+    vm.runInContext(code, ctx, {
       filename: file,
       lineOffset: 0,
       displayErrors: true
