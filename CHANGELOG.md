@@ -1,3 +1,7 @@
+### v3.0.0-alpha.3
+2016.12.14
+
+- change runInNewContext to runInContext
 
 ### v3.0.0-alpha.2
 2016.12.12
