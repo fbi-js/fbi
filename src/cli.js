@@ -28,6 +28,7 @@ export default class Cli {
     this.next = true
     this.log = _.log
     this._ = _
+    this._.copy = copy
 
     ;
     (async() => {
@@ -44,7 +45,6 @@ export default class Cli {
         await this.cat()
         await this.list()
         await this.add()
-        await this.update()
         await this.run()
       } catch (e) {
         _.log(e, 0)
@@ -496,39 +496,6 @@ export default class Cli {
             }
           }))
         }
-      }
-    }
-  }
-
-  async update() {
-    if (!this.next) return
-
-    // update local project from template
-    if (this.argvs[0] === 'update') {
-      this.next = false
-
-      if (this.options.template) {
-        try {
-          // update fbi folder
-          await copy(_.join(this.options.PATHS.global.templates, this.options.template, 'fbi'), _.cwd('fbi'))
-
-          // update package.json devDependencies
-          if (await _.exist(_.cwd('package.json'))) {
-            const localPkgPath = _.cwd('package.json')
-            const localPkg = require(localPkgPath)
-            const localDevDeps = localPkg['devDependencies'] || {}
-            const tmplDevDeps = require(_.join(this.options.PATHS.global.templates, this.options.template, 'package.json'))['devDependencies'] || {}
-            const newDevDeps = _.merge(localDevDeps, tmplDevDeps)
-            localPkg.devDependencies = newDevDeps
-            _.write(localPkgPath, JSON.stringify(localPkg, null, 2))
-          }
-
-          _.log('local folder "./fbi/" and file "package.json" updated successfully.', 1)
-        } catch (err) {
-          _.log(err, 0)
-        }
-      } else {
-        _.log('this is not a fbi template.', 0)
       }
     }
   }

@@ -28,8 +28,6 @@ export default version => {
       cat    [task]   [-t, -g]        cat task content
       backup                          backup tasks & templates to current folder
       recover                         recover tasks & templates from current folder
-      update                          update current local project with fbi template
-                                      ${colors().magenta('(this will overwrite local "fbi" folder and "devDependencies" in package.json)')}
 
       -h,    --help                   output usage information
       -v,    --version                output the version number

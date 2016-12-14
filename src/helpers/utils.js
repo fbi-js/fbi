@@ -215,6 +215,10 @@ export function install(source, rootPath, command, opts) {
 }
 
 export function copyFile(source, target, quiet) {
+  const dir = path.dirname(target)
+  if (!existSync(dir)) {
+    fs.mkdirSync(dir)
+  }
   return new Promise((resolve, reject) => {
     var rd = fs.createReadStream(source)
     rd.on('error', reject)
@@ -497,4 +501,36 @@ export function prompt(keys) {
       resolve(data)
     })
   })
+}
+
+// Depth first
+export function walk(dir, ignore) {
+  const list = []
+  ignore = ignore || []
+  ignore = Array.isArray(ignore) ? ignore : [ignore]
+  dir = dir.endsWith(path.sep) ? dir.substring(0, dir.length - 1) : dir
+
+  function valid(item) {
+    return !ignore.includes(item)
+  }
+
+  function walker(dir) {
+    try {
+      fs.readdirSync(dir).map(item => {
+        if (!valid(item)) {
+          return
+        }
+        const curr = `${dir}/${item}`
+        if (fs.statSync(curr).isDirectory()) {
+          walker(curr)
+        } else {
+          list.push(curr)
+        }
+      })
+    } catch (err) {
+      throw err
+    }
+  }
+  walker(dir)
+  return list
 }

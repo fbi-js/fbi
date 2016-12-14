@@ -1,11 +1,16 @@
 import fs from 'fs'
-import { exist, mkdir, readDir, copyFile,
-  join, basename
+import {
+  exist,
+  mkdir,
+  readDir,
+  copyFile,
+  join,
+  basename
 } from './utils'
 
 let ignore = []
 
-export default async (src, dst, ign) => {
+export default async(src, dst, ign) => {
   try {
     ignore = ign || ignore
 
@@ -19,7 +24,6 @@ async function copy(src, dst, cb) {
   try {
     const _exist = await exist(dst)
     if (!_exist) {
-      // fs.mkdirSync(dst)
       await mkdir(dst)
     }
     await walk(src, dst)
