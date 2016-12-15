@@ -1,4 +1,15 @@
-export default {
+// fbi/config.js
+module.exports = {
+  template: 'Template name',
+  description: 'Description of template',
+  npm: {
+    alias: 'npm',
+    options: ''
+  },
+  alias: {
+    b: 'build',
+    s: 'serve'
+  },
   paths: {
     tasks: 'fbi',
     config: 'fbi/config.js'
@@ -17,3 +28,25 @@ export default {
   BACKUP_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist'],
   RECOVER_IGNORE: ['node_modules', '.DS_Store', '.svn', '.git', 'dst', 'dist']
 }
+
+// package.json
+// 1. simple
+/*
+  "fbi": {
+    "template": "mod"
+  }
+*/
+
+// 2.
+/*
+  "fbi": {
+    "template": "mod",
+    "description": "Description of template",
+    "paths": {
+      "tasks": "build",
+      "config": "build/config.js"
+    }
+  }
+
+  Put task files in 'build/'
+*/

@@ -1,7 +1,3 @@
-import {
-  exec,
-  spawn,
-} from 'child_process'
 import path, {
   extname,
 } from 'path'
@@ -11,6 +7,9 @@ import {
 } from 'readline'
 import fs from 'fs'
 import os from 'os'
+import {
+  spawn,
+} from 'child_process'
 import util from 'util'
 
 const win = os.type() === 'Windows_NT'
@@ -141,41 +140,7 @@ export function existSync(src) {
   }
 }
 
-export function install2(source, rootPath, command, opts) {
-  const prevDir = process.cwd()
-  let pkgs = ''
-  let info = ''
-
-  Object.keys(source).map(item => {
-    pkgs += `${item}@${source[item]} `
-    info += `
-       ${item}@${source[item]} `
-  })
-  info += `
-       ${opts || ''}
-    to:${rootPath}
-  `
-
-  process.chdir(rootPath)
-  const cmd = `${command} install ${pkgs} ${opts || ''}`
-  log(`${command} install ${info}`)
-  return new Promise((resolve, reject) => {
-    exec(cmd, (error, stdout, stderr) => {
-      process.chdir(prevDir)
-      if (error) {
-        const msg = stderr.toString()
-        log(msg, 0)
-        return reject(msg)
-      }
-
-      log(`
-${stdout}`)
-      resolve(stdout)
-    })
-  })
-}
-
-export function install(source, rootPath, command, opts) {
+export function install(source, rootPath, command, opts, msg) {
   let info = ''
 
   const cmd = win ? command + '.cmd' : command
@@ -191,7 +156,7 @@ export function install(source, rootPath, command, opts) {
   }
   info += `
        ${opts || ''}
-    to:${rootPath}
+   to: ${rootPath}
   `
 
   // process.chdir(rootPath)
@@ -208,7 +173,8 @@ export function install(source, rootPath, command, opts) {
       reject(err)
     })
 
-    installer.on('close', function () {
+    installer.on('close', () => {
+      msg && log(msg, 1)
       resolve()
     })
   })
@@ -533,4 +499,15 @@ export function walk(dir, ignore) {
   }
   walker(dir)
   return list
+}
+
+export function sequenceTasks(tasks) {
+  function recordValue(results, value) {
+    results.push(value)
+    return results
+  }
+  const pushValue = recordValue.bind(null, [])
+  return tasks.reduce((promise, task) => {
+    return promise.then(task).then(pushValue)
+  }, Promise.resolve())
 }

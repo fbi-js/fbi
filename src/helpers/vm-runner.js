@@ -5,10 +5,9 @@ import fs from 'fs'
 import path from 'path'
 import vm from 'vm'
 
-export default function vmRunner(file, sandbox = {}, parent = {
+export default function vmRunner (file, sandbox = {} , parent = {
   require: require
 }) {
-  // console.log('run in vm__' + file)
   sandbox = Object.assign({}, global, sandbox)
   sandbox.module = new Module(file, parent)
   sandbox.exports = sandbox.module.exports
@@ -21,9 +20,7 @@ export default function vmRunner(file, sandbox = {}, parent = {
   sandbox.global = sandbox
   sandbox.require = function (filepath) {
     try {
-      // console.log('requiring:  ' + filepath)
       const fullpath = sandbox.require.resolve(filepath)
-
       if (!fullpath.includes('node_modules') && fullpath.includes(path.sep)) {
         // FBI task file
         return vmRunner(fullpath, sandbox)

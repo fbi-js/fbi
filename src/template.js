@@ -10,7 +10,7 @@ export default class Template {
     }
     let ret = false
 
-    const src = _.join(opts.PATHS.global.templates, name)
+    const src = _.join(opts.DATA_TEMPLATES, name)
     const has = _.existSync(src)
 
     if (has) {
@@ -21,29 +21,30 @@ export default class Template {
   }
 
   async all(opts) {
-    const _exist = await _.exist(opts.PATHS.global.templates)
+    const _exist = await _.exist(opts.DATA_TEMPLATES)
     let ret = []
     if (_exist) {
-      let templates = await _.readDir(opts.PATHS.global.templates)
+      let templates = await _.readDir(opts.DATA_TEMPLATES)
       templates = templates.filter(_.isTemplate)
       await Promise.all(templates.map(async item => {
         try {
           const config = {}
-          const tmplGlobalCfgPath = _.join(opts.PATHS.global.templates, item, opts.PATHS.local.config)
+          const tmplGlobalCfgPath = _.join(opts.DATA_TEMPLATES, item, opts.paths.config)
           if (await _.exist(tmplGlobalCfgPath)) {
-            config.templateDescription = require(tmplGlobalCfgPath).templateDescription
+            config.description = require(tmplGlobalCfgPath).description
           } else {
-            config.templateDescription = 'Global template doesn\'t match local template.'
+            config.description = 'Global template doesn\'t match local template.'
           }
-          const pkg = require(_.join(opts.PATHS.global.templates, item, 'package.json'))
+          const pkg = require(_.join(opts.DATA_TEMPLATES, item, 'package.json'))
           ret.push({
             name: item,
-            desc: config.templateDescription || '',
+            desc: config.description || '',
             version: pkg.version
           })
         } catch (err) {console.log(err)}
       }))
     }
+
     return ret
   }
 }

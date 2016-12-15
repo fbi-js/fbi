@@ -36,21 +36,21 @@ export default class Task {
 
     // find in local
     if (type === 'local') {
-      await find(_.cwd(opts.PATHS.local.tasks, name), type)
+      await find(_.cwd(opts.paths.tasks, name), type)
     }
 
     // find in template
     if (!found && opts.template && opts.template !== '') {
       await find(_.join(
-        opts.PATHS.global.templates,
+        opts.DATA_TEMPLATES,
         opts.template,
-        opts.PATHS.local.tasks,
+        opts.paths.tasks,
         name), 'template')
     }
 
     // find in global
     if (!found || type === 'global') {
-      await find(_.join(opts.PATHS.global.tasks, opts.PATHS.local.tasks, name), 'global')
+      await find(_.join(opts.DATA_TASKS, opts.paths.tasks, name), 'global')
     }
 
     return ret
@@ -86,16 +86,16 @@ export default class Task {
     // template tasks
     if (opts.template && opts.template !== '') {
       await collect(_.join(
-        opts.PATHS.global.templates,
+        opts.DATA_TEMPLATES,
         opts.template,
-        opts.PATHS.local.tasks), 'template')
+        opts.paths.tasks), 'template')
     }
 
     // global tasks
-    await collect(_.join(opts.PATHS.global.tasks, opts.PATHS.local.tasks), 'global')
+    await collect(_.join(opts.DATA_TASKS, opts.paths.tasks), 'global')
 
     // locals
-    await collect(_.cwd(opts.PATHS.local.tasks), 'local')
+    await collect(_.cwd(opts.paths.tasks), 'local')
 
     if (justAvailable) {
       for (let item of names.template.values()) {
@@ -166,8 +166,8 @@ export default class Task {
       modulePaths: [
         path.join(process.cwd(), 'node_modules'),
         tmpl ?
-        path.join(ctx.options.PATHS.global.templates, tmpl, 'node_modules') :
-        path.join(ctx.options.PATHS.global.tasks, 'node_modules')
+        path.join(ctx.options.DATA_TEMPLATES, tmpl, 'node_modules') :
+        path.join(ctx.options.DATA_TASKS, 'node_modules')
       ],
       ctx: ctx,
       RegExp: RegExp,
