@@ -32,30 +32,46 @@ export function colors() {
 
 /**
  * type:
- * -1 waring, 0 error, 1 succ
+ * -1 error, 0 fbi error, 1 succ, 2 warning
  * bold, italic, underline, inverse, white, grey,
  * black, blue, cyan, green, magenta, red, yellow
  */
+/**
+ *
+ *
+ * @export
+ * @param {string} msg message to log
+ * @param {number} type -2:error, -1:warning, 0:info, 1:success, 2:bold
+ */
 export function log(msg, type) {
   if (typeof msg === 'string') {
+    const prefix = colors().grey('FBI => ')
     if (type !== undefined) {
       switch (type) {
+        case -2:
+          msg = prefix + colors().magenta(msg)
+          break
         case -1:
-          msg = colors().grey('FBI => ') + colors().red(msg)
+          msg = prefix + colors().yellow(msg)
           break
         case 0:
-          msg = colors().grey('FBI Error => ') + colors().magenta(msg)
+          msg = prefix + colors().cyan(msg)
           break
         case 1:
-          msg = colors().grey('FBI => ') + colors().cyan(msg)
+          msg = prefix + colors().green(msg)
+          break
+        case 2:
+          msg = prefix + colors().bold(msg)
           break
         default:
-          msg = colors().grey('FBI => ') + colors()[type] ?
-            colors()[type](msg) :
-            msg
+          try {
+            msg = prefix + colors()[type] ? colors()[type](msg) : msg
+          } catch (err) {
+            msg = prefix + msg
+          }
       }
     } else {
-      msg = colors().grey('FBI => ') + msg
+      msg = prefix + msg
     }
   }
   console.log(msg)
@@ -307,7 +323,7 @@ export function fixModuleName(mod) {
 
  */
 export function parseArgvs(arr, prefix) {
-  if (!arr.length || !prefix) {
+  if (!arr || !arr.length || !prefix) {
     log('Usage: let ret = parseArgvs(arr, prefix)', 0)
     return arr
   }
@@ -321,6 +337,16 @@ export function parseArgvs(arr, prefix) {
           ret[prev]['params'].push(curr.slice(prefix.length))
         } else {
           ret[prev]['params'] = [curr.slice(prefix.length)]
+        }
+      }
+      return prev
+    } else if (curr.indexOf('/') >= 0 || ['.js', '.json'].includes(path.extname(curr))) {
+      // not a task name
+      if (ret[prev]) {
+        if (Array.isArray(ret[prev]['params'])) {
+          ret[prev]['params'].push(curr)
+        } else {
+          ret[prev]['params'] = [curr]
         }
       }
       return prev
@@ -367,7 +393,7 @@ export function genTaskHelpTxt(all) {
       No tasks, use 'fbi ata, fbi ata [name]' to add tasks.`)
   } else {
     tasksTxt = colors().grey(`
-      usage: fbi [task] [-t, -g]
+      usage: fbi [task] [ , -t, -g]
     `) + tasksTxt
   }
 

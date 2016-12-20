@@ -1,4 +1,6 @@
-### v3.0.0-alpha.4
+### v3.0.0-alpha.6
+2016.12.20
+- add `compile` task
 
 ### v3.0.0-alpha.3
 2016.12.14

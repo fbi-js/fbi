@@ -8,7 +8,9 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 8,
     sourceType: 'module',
-    ecmaFeatures: {}
+    ecmaFeatures: {
+      experimentalObjectRestSpread: true
+    }
   },
   rules: {
     semi: [2, 'never'], // 行尾不要使用分号

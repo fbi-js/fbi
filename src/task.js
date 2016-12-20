@@ -141,7 +141,7 @@ export default class Task {
     return justNames ? names : _this.tasks
   }
 
-  run(name, ctx, taskObj) {
+  async run(name, ctx, taskObj) {
     const taskDir = path.dirname(taskObj.path)
     const tmpl = ctx.options.template
 
@@ -151,34 +151,45 @@ export default class Task {
     //     return require(taskObj.path)
     //   } catch (err) {
     //     if (err.message.includes('ctx is not defined')) {
-    //       ctx.log('This is not a project base on FBI template, there is no global variable named "ctx"', -1)
+    //       _.log('This is not a project base on FBI template, there is no global variable named "ctx"', -1)
     //     }
     //     console.log(err)
     //   }
     // }
 
     // if is a fbi template
-    tmpl && ctx.log(`This project is base on template '${_.colors().yellow(tmpl)}'`)
-    ctx.log(`Running ${taskObj.type} task "${taskObj.name} ${taskObj.params}"...`, 1)
+    tmpl && _.log(`Using template '${tmpl}'...`, 0)
+    _.log(`Running ${taskObj.type} task '${taskObj.name}${taskObj.params}'...`, 0)
 
-    const start = Date.now()
+    let taskType = ' -t'
+    const modulePaths = []
+    const nm = 'node_modules'
+
+    if (tmpl) {
+      modulePaths.push(_.join(ctx.options.DATA_TEMPLATES, tmpl, nm))
+    }
+
+    if (taskObj.type === 'local') {
+      modulePaths.push(_.cwd(nm))
+      taskType = ''
+    }
+
+    if (taskObj.type === 'global') {
+      modulePaths.push(_.join(ctx.options.DATA_TASKS, nm))
+      taskType = ' -g'
+    }
+
     vmRunner(taskObj.path, {
-      modulePaths: [
-        path.join(process.cwd(), 'node_modules'),
-        tmpl ?
-        path.join(ctx.options.DATA_TEMPLATES, tmpl, 'node_modules') :
-        path.join(ctx.options.DATA_TASKS, 'node_modules')
-      ],
       ctx: ctx,
-      RegExp: RegExp,
-      Array: Array,
-      Object: Object,
-      Function: Function
-        // The new context gets its own RegExp and set of built-ins.
-        //  RegExp , [] and Array, {} and Object, and function(){} and Function
+      modulePaths,
+      taskType,
+      RegExp,
+      Array,
+      Object,
+      Function
+      // The new context gets its own RegExp and set of built-ins.
+      //  RegExp , [] and Array, {} and Object, and function(){} and Function
     })
-    const end = Date.now()
-    ctx.log(`Task files parsing time: ${end - start}ms`)
   }
 }
 

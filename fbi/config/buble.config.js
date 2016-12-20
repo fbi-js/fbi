@@ -8,9 +8,10 @@ module.exports = {
     generator: false,
     letConst: false,
     parameterDestructuring: false,
-    spreadRest: false,
-    templateString: false
-  }
+    spreadRest: true,
+    templateString: false,
+  },
+  objectAssign: 'Object.assign'
 }
 
 /*

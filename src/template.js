@@ -22,7 +22,7 @@ export default class Template {
 
   async all(opts) {
     const _exist = await _.exist(opts.DATA_TEMPLATES)
-    let ret = []
+    const ret = []
     if (_exist) {
       let templates = await _.readDir(opts.DATA_TEMPLATES)
       templates = templates.filter(_.isTemplate)

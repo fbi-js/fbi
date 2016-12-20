@@ -8,6 +8,30 @@ export default {
     port: 9000,
     root: '.'
   },
+  // compile ES7 to ES6
+  // compiler: {
+  //   name: 'compile',
+  //   // for buble
+  //   compile: {
+  //     transforms: {
+  //       arrow: false,
+  //       classes: false,
+  //       defaultParameter: false,
+  //       destructuring: false,
+  //       forOf: false,
+  //       generator: false,
+  //       letConst: false,
+  //       parameterDestructuring: false,
+  //       spreadRest: false,
+  //       templateString: false,
+  //     },
+  //     objectAssign: 'Object.assign'
+  //   },
+  //   // for rollup
+  //   generate: {
+  //     format: 'cjs'
+  //   }
+  // },
   DATA_ROOT: 'data',
   DATA_TASKS: 'data/tasks',
   DATA_TEMPLATES: 'data/templates',

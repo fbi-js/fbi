@@ -4,7 +4,7 @@ reset()
 
 function reset() {
   const cmd = spawn('git', ['reset', '--hard'], {
-    cwd: ctx.options.data.root,
+    cwd: ctx.options.DATA_ROOT,
     stdio: [0, 1, 2]
   })
 
@@ -12,14 +12,14 @@ function reset() {
     if (status === 0) {
       pull()
     } else {
-      ctx.log(`Error with status ${status}.`)
+      ctx.log(`Error with status ${status}.`, -1)
     }
   })
 }
 
 function pull() {
   const cmd = spawn('git', ['pull'], {
-    cwd: ctx.options.data.root,
+    cwd: ctx.options.DATA_ROOT,
     stdio: [0, 1, 2]
   })
 
@@ -27,7 +27,7 @@ function pull() {
     if (status === 0) {
       ctx.log('fbi data updated.', 1)
     } else {
-      ctx.log(`Error with status ${status}.`)
+      ctx.log(`Error with status ${status}.`, -1)
     }
   })
 }

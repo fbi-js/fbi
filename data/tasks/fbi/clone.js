@@ -4,7 +4,7 @@ const repo = ctx.argvs[1]
 
 if (!repo || path.extname(repo) !== '.git') {
   ctx.log('Usage: fbi clone path/to/git/repo.git', 0)
-  return
+  process.exit(0)
 }
 
 const target = ctx.options.data.root

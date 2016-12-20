@@ -1,17 +1,17 @@
-const http = require('http');
+const http = require('http')
 const Koa = require('koa')
 const serve = require('koa-static')
 const app = new Koa()
 
 let start = ctx.taskParams
   ? ctx.taskParams[0] * 1
-  : ctx.options.server.port
+  : (ctx.options.server.port || 9000)
 
 // serve static
 app.use(serve(ctx.options.server.root))
 
 // auto selected a valid port & start server
-function autoPortServer(cb) {
+function autoPortServer (cb) {
   let port = start
   start += 1
   const server = http.createServer(app.callback())
@@ -37,5 +37,5 @@ function autoPortServer(cb) {
 // listen
 autoPortServer(port => {
   ctx.log(`Server runing at http://${ctx.options.server.host}:${port}`, 1)
-  ctx.log(`Server root: ${ctx.options.server.root}`)
+  ctx.log(`Server root: ${ctx.options.server.root || '.'}`)
 })
