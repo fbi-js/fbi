@@ -17,3 +17,4 @@ data/templates/*/
 coverage
 fbi/
 node_modules
+examples/

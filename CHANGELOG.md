@@ -1,3 +1,7 @@
+### v2.1.6
+2017-05-16
+- Update readme
+
 ### v2.1.5
 2016-11-28
 - fixed fbi data path bug

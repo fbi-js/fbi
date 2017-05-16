@@ -1,98 +1,113 @@
 <div align="center">
-  <h3 style="color:#48abd6;font-weight:600;">F B I</h3>
-  <p>Front-end & Back-end(node.js) Intelligent</p>
-  <p style="font-size:16px;">Node.js workflow tool</p>
+  <h2 style="color:#48abd6;font-weight:600;">F B I</h2>
+  <p>Front-end & Back-end(node.js) development Intelligent</p>
 </div>
 
-> Requirement: node v6.9.1+, npm v3.10+
+FBI is an open source command line tool. Use it to create developer-friendly workflow, making it easier to build, deploy and manage projects.
 
 [中文版说明](./README_zh-cn.md)
 
+
+
+
 ## Features
 
-* Tasks Management -  manage your js files as global tasks
-* Templates Management - reuse projects as global templates
-* node_modules Management - host devDependencies away from project's folder, and, it's faster
-* Lightweight, No dependencies
+1. **Task Management** -  Manage normal js files as global tasks.
+2. **Template Management** - Reuse projects as global templates.
+3. **Development dependent Management** - Host devDependencies away from project's folder.
+4. **Workflow** - Design your own workflow via FBI.
+4. **Lightweight** - No dependencies.
 
-## Installation
+
+
+## Install
 
 ```bash
 $ npm i -g fbi
 ```
+> Requirement: node v6.9.1+, npm v3.10+
+
+
 
 
 ## Usage
 
 ```bash
-$ fbi [task]              # run a local preference task
-$ fbi [task] -g           # run a global task
-$ fbi [task] -t           # run a template task
-
-use 'fbi ls' to check available tasks & templates
+$ fbi -h 			# show usage
 ```
 
-```bash
-$ fbi ata,   add-task [name]          # add task file of files in 'fbi' folder
-$ fbi atm,   add-tmpl                 # add current folder as a template
-$ fbi rta,   rm-task  [-t] [name]     # remove task
-$ fbi rtm,   rm-tmpl  [name]          # remove template
-$ fbi i,     install                  # install dependencies
-$ fbi ls,    list                     # list all tasks & templates
-$ fbi cat    [task]   [-t, -g]        # cat task content
-$ fbi init   [template]               # init a new project via template
-$ fbi backup                          # backup tasks & templates to current folder
-$ fbi recover                         # recover tasks & templates from current folder
-$ fbi update                          # update current local project with fbi template
-                                      # this will overwrite local "fbi" folder and "devDependencies" in package.json
 
 
-$ fbi -h,    --help                   # output usage information
-$ fbi -v,    --version                # output the version number
-```
+
 
 ## Quick Start
 
-### Add task
 
-[see full demo](https://github.com/neikvon/fbi-tasks-demo)
 
+### Task
+
+Get started with FBI task in three easy steps.
+
+1. Create a task
+2. Add task to FBI
+3. Run task everywhere
+
+#### Step 1. Create a task
 
 ```js
-// ./project/fbi/showtime.js
-
+// File: ./task-demo/fbi/showtime.js
 console.log(new Date())
 ```
-```bash
-$ cd path/to/project/
 
-$ fbi ata   # short for 'fbi add-task'
+#### Step 2. Add task to FBI
+
 ```
+$ cd path/to/task-demo/
+$ fbi ata   	# short for 'fbi add-task'
+```
+
+#### Step 3. Run task everywhere
+
 ```bash
 $ fbi showtime
 
 # output:
-# FBI => Running global task "showtime"...
-# 2016-08-03T09:06:28.349Z
+# FBI => Running local task "showtime"...
+# 2017-05-16T05:04:18.151Z
 ```
+
+[see full example](https://github.com/neikvon/fbi-tasks-demo)
+
 `fbi` will add the `.js` files in `./fbi` folder to fbi's global tasks folder.
 
-### Add template
 
-[see full demo](https://github.com/neikvon/fbi-template-webpack2)
+
+
+### Template
+
+Get started with FBI template in five easy steps.
+
+1. Create a template
+2. Install dependencies
+3. Test
+2. Add template to FBI
+3. Use template everywhere
+
+#### Step 1. Create a template
+
+Template structure:
 
 ```bash
-|-- proj-name
-|--   src
-|--     index.html
-|--     css/
-|--     js/
-|--     img/
-|--   fbi
-|--     config.js
-|--     build.js
-|--   package.json
-
+|-- fullpack
+|--|-- src
+|--|--|-- index.html
+|--|--|-- css/
+|--|--|-- js/
+|--|--|-- img/
+|--|-- fbi
+|--|--|-- config.js
+|--|--|-- build.js
+|--|-- package.json
 ```
 ```js
 // config.js
@@ -142,27 +157,114 @@ ${stats.toString({
 })
 ```
 
-**install**
+#### Step 2. Install dependencies
+
 ```bash
-$ npm i               # install dependencies
+$ npm i
 ```
 
-**test**
+#### Step 3. Test
+
 ```bash
 $ fbi b
 ```
 
-**add**
-```bash
-$ fbi atm             # fbi will use the name in 'config.js=>template' as template name
+
+#### Step 4. Add template to FBI
+
+```
+$ fbi atm             	# The 'template' field in 'config.js' will be the template name
 ```
 
-**check**
+#### Step 5. Use template everywhere
+
 ```bash
-$ fbi ls              # check available Tasks & Templates
+$ fbi ls 				# List all tasks and templates
+$ fbi init fullpack 	# Init template 'fullpack' in current folder
+$ fbi b 				# Run 'build' task in current template
 ```
 
-### Demos
+[see full example](https://github.com/neikvon/fbi-template-webpack2)
+
+
+
+
+### Teamwork
+
+
+Get started with FBI teamwork in three easy steps.
+
+1. Create a git repository of tasks and templates
+2. Clone to local
+3. Use common tasks and templates
+
+
+#### Step 1. Create a git repository of tasks and templates
+
+Repository structure：
+
+```bash
+|--fbi-data
+|--|-- tasks
+|--|--|-- fbi
+|--|--|--|-- task1.js
+|--|--|--|-- task2.js
+|--|--|--|-- ...
+|--|--|-- package.json
+|--|--|-- node_modules
+|--|-- templates
+|--|--|-- template1
+|--|--|--|-- fbi
+|--|--|--|--|-- config.js
+|--|--|--|--|-- task1.js
+|--|--|--|--|-- task2.js
+|--|--|--|-- src
+|--|--|--|-- package.json
+|--|--|--|-- node_modules
+|--|--|--|--|--README.md
+|--|--|-- template2
+|--|--|--|-- ...
+|--|--|-- ...
+```
+
+#### Step 2. Clone to local
+
+```bash
+$ fbi clone git@path/to/remote/fbi-data.git
+```
+
+Tips: `fbi clone` only works on termial with `git`、 `rm -rf`、 `mkdir` commands, if using `windows`，you should use `git bash`.
+
+
+#### Step 3. Use common tasks and templates
+
+* See available tasks & templates
+
+```bash
+$ fbi ls
+```
+
+* Create project and run
+
+```bash
+$ cd path/to/empty/folder
+$ fbi init template1     # Init a new project via template1
+$ fbi i                  # Install dependencies
+
+$ fbi task1              # Run a local preference task
+$ fbi task1 -g           # Run a global task
+$ fbi task1 -t           # Run a template task
+```
+
+* Update fbi-data
+
+```bash
+$ fbi pull
+```
+
+
+
+### Examples
 1. [tasks-demo](https://github.com/neikvon/fbi-tasks-demo)
 1. [template-fullpack](https://github.com/neikvon/fbi-template-fullpack)
 1. [template-vue](https://github.com/neikvon/fbi-template-vue)
@@ -170,70 +272,6 @@ $ fbi ls              # check available Tasks & Templates
 1. [template-mod](https://github.com/neikvon/fbi-template-mod)
 1. [template-webpack1](https://github.com/neikvon/fbi-template-webpack1) ( Compatible with fbi v1.x )
 
+
+
 ### [Change log](https://github.com/neikvon/fbi/blob/master/CHANGELOG.md)
-
-### Teamwork
-
-* Create a remote git repository ` fbi-data `，repository structure：
-
-
-  ```
-|-- fbi-data
-|--   tasks
-|--     fbi
-|--       task1.js
-|--       task2.js
-|--       ...
-|--     package.json
-|--     node_modules
-|--
-|--   templates
-|--     template1
-|--       fbi
-|--         task1.js
-|--         task2.js
-|--       src
-|--       package.json
-|--       node_modules
-|--       README.md
-|--     template2
-|--     ...
-  ```
-
-* clone
-```bash
-$ fbi clone git@path/to/remote/fbi-data.git
-```
-Tips: `fbi clone` only works on termial with `git`、 `rm -rf`、 `mkdir` commands，if using `windows`，you should use `git bash`.
-
-* See available tasks & templates
-```bash
-$ fbi ls
-```
-
-* Create project and run
-```bash
-$ cd path/to/empty/folder
-$ fbi init template1
-$ fbi i
-$ fbi [task]
-```
-
-* update fbi-data
-```bash
-$ fbi pull
-```
-
-### Q&A
-* How does FBI to identify task?
-  1. in `fbi/config.js` => `paths.tasks` folder (default `./fbi`)
-  1. `.js` file
-  1. Does not contain `config` characters
-
-* How does FBI to identify template?
-  1. `fbi/config.js` => `template`
-
-* What's the order does FBI find a task?
-  1. local => `./fbi/`
-  1. is template ? => global template tasks
-  1. global => global tasks
