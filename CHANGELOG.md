@@ -1,3 +1,8 @@
+### v3.0.0-alpha.7
+2017.05.18
+- remove build
+
+
 ### v3.0.0-alpha.6
 2016.12.20
 - add `compile` task
