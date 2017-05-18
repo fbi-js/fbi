@@ -7,5 +7,6 @@ data/templates/*/
 coverage
 .nyc_output
 .travis.yml
-dst
-dst.bak
+tmp
+*.bak.js
+examples/tmp*/

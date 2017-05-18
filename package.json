@@ -3,7 +3,7 @@
   "version": "3.0.0-alpha.6",
   "description": "Node.js workflow tool.",
   "engines": {
-    "node": ">=6.9.1",
+    "node": ">= 7.6.0",
     "npm": ">= 3.10.0"
   },
   "main": "dst/index.js",
@@ -14,18 +14,7 @@
     "test": "mocha"
   },
   "dependencies": {},
-  "devDependencies": {
-    "istanbul": "^0.4.5",
-    "mocha": "^3.2.0",
-    "rollup": "0.36.4",
-    "rollup-plugin-async": "^1.2.0",
-    "rollup-plugin-buble": "^0.14.0",
-    "rollup-plugin-eslint": "^3.0.0",
-    "rollup-plugin-filesize": "^1.0.1",
-    "rollup-plugin-json": "^2.0.2",
-    "should": "^11.1.1",
-    "watch": "^1.0.1"
-  },
+  "devDependencies": {},
   "license": "MIT",
   "repository": {
     "type": "git",
