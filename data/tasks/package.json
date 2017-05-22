@@ -7,7 +7,15 @@
   "author": "fbi",
   "license": "MIT",
   "repository": {},
-  "dependencies": {},
+  "dependencies": {
+    "vue": "*",
+    "global-npm": "*",
+    "rollup": "*",
+    "rollup-plugin-buble": "*",
+    "rollup-plugin-async": "*",
+    "koa": "*",
+    "koa-static": "*"
+  },
   "fbi": {
     "npm": {
       "alias": "tnpm"
