@@ -1,5 +1,5 @@
 {
-  "name": "tasks",
+  "name": "fbi-global-tasks",
   "version": "1.0.1",
   "description": "Tasks for FBI",
   "main": "index.js",
@@ -7,16 +7,7 @@
   "author": "fbi",
   "license": "MIT",
   "repository": {},
-  "devDependencies": {
-    "global-npm": "^0.3.0",
-    "koa": "^2.0.0-alpha.7",
-    "koa-static": "^3.0.0",
-    "rollup": "0.36.4",
-    "rollup-plugin-async": "^1.2.0",
-    "rollup-plugin-buble": "^0.14.0",
-    "rollup-plugin-eslint": "^3.0.0",
-    "rollup-plugin-json": "^2.0.2"
-  },
+  "dependencies": {},
   "fbi": {
     "npm": {
       "alias": "tnpm"
