@@ -8,7 +8,8 @@
   },
   "main": "dst/index.js",
   "bin": {
-    "fbi": "./bin/fbi"
+    "fbi": "./bin/fbi",
+    "f": "./bin/fbi"
   },
   "scripts": {
     "test": "mocha"

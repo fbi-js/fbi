@@ -3,8 +3,10 @@ const spawn = require('child_process').spawn
 const repo = ctx.argvs[1]
 
 if (!repo || path.extname(repo) !== '.git') {
-  ctx.log('Usage: fbi clone path/to/git/repo.git', 0)
-  process.exit(0)
+  // ctx.log('Usage: fbi clone (https/git)://path/to/git/repo.git', -2)
+  // process.exit(0)
+
+  throw new Error('Usage: fbi clone (https/git)://path/to/git/repo.git')
 }
 
 const target = ctx.options.data.root
@@ -22,7 +24,8 @@ function clear() {
     if (status === 0) {
       mkdir()
     } else {
-      ctx.log(`Error with status ${status}.`)
+      // ctx.log(`Error with status ${status}.`)
+      throw new Error(`Error with status ${status}.`)
     }
   })
 }
@@ -36,7 +39,8 @@ function mkdir() {
     if (status === 0) {
       clone()
     } else {
-      ctx.log(`Error with status ${status}.`)
+      // ctx.log(`Error with status ${status}.`)
+      throw new Error(`Error with status ${status}.`)
     }
   })
 }
@@ -51,7 +55,8 @@ function clone() {
     if (status === 0) {
       ctx.log(`fbi data cloned successfully.`, 1)
     } else {
-      ctx.log(`Error with status ${status}.`)
+      // ctx.log(`Error with status ${status}.`)
+      throw new Error(`Error with status ${status}.`)
     }
   })
 }
