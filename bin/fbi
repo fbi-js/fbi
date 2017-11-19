@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 'use strict'
 
-var Cli = require('../lib/cli')
-new Cli(process.argv.slice(2))
+process.on('unhandledRejection', (error) => {
+  console.log(error)
+})
+
+const Cli = require('../lib/cli')
+const cli = new Cli()
+cli.init(process.argv.slice(2))

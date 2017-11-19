@@ -1,12 +1,10 @@
 *.log
 node_modules
 .DS_Store
-test
-.git/
-coverage
+tmp/
+backup/
+
 .nyc_output
 .travis.yml
-tmp
+
 *.bak.js
-examples/tmp*/
-backup/
