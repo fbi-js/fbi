@@ -12,9 +12,12 @@
   },
   "scripts": {
     "lint": "xo",
-    "test": "npm run test-core",
+    "test": "npm run test-utils && npm run test-core",
     "test-utils": "ava test/utils.js",
-    "test-core": "ava test/core/**/*.js"
+    "test-core": "ava test/core/**/*.js",
+    "preversion": "npm test",
+    "version": "git add -A .",
+    "postversion": "git push && git push --tags"
   },
   "dependencies": {},
   "devDependencies": {
@@ -26,13 +29,7 @@
     "type": "git",
     "url": "git+https://github.com/neikvon/fbi.git"
   },
-  "keywords": [
-    "fbi",
-    "workflow",
-    "development",
-    "template",
-    "task"
-  ],
+  "keywords": ["fbi", "workflow", "development", "template", "task"],
   "bugs": {
     "url": "https://github.com/neikvon/fbi/issues"
   },
