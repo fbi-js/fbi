@@ -10,7 +10,7 @@
   "TEMPLATE_PREFIX": "fbi-project-",
   "TASK_TIMEOUT": 300000,
   "TEMPLATE_TASKS": "fbi",
-  "TEMPLATE_CONFIG": "fbi/config.js",
+  "TEMPLATE_CONFIG": "fbi/options.js",
   "TEMPLATE_INIT_IGNORE": [
     "node_modules",
     ".DS_Store",
