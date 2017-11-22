@@ -16,11 +16,12 @@
     "test-utils": "ava test/utils.js",
     "test-core": "ava test/core/**/*.js",
     "commit": "git cz",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "publish-beta": "npm test && npm version prerelease && git push && git push --tags && npm publish --tag next",
     "publish-patch": "npm test && npm version patch && git push && git push --tags && npm publish",
     "publish-minor": "npm test && npm version minor && git push && git push --tags && npm publish",
-    "publish-major": "npm test && npm version major && git push && git push --tags && npm publish"
+    "publish-major": "npm test && npm version major && git push && git push --tags && npm publish",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
+    "publish-changelog": "git add CHANGELOG.md && git push"
   },
   "dependencies": {},
   "devDependencies": {
@@ -33,13 +34,7 @@
     "type": "git",
     "url": "git+https://github.com/neikvon/fbi.git"
   },
-  "keywords": [
-    "fbi",
-    "workflow",
-    "development",
-    "template",
-    "task"
-  ],
+  "keywords": ["fbi", "workflow", "development", "template", "task"],
   "bugs": {
     "url": "https://github.com/neikvon/fbi/issues"
   },
