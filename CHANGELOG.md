@@ -5,7 +5,7 @@
 ### Bug Fixes
 
 * support home directory of windows ([716a0d4](https://github.com/neikvon/fbi/commit/716a0d4))
-
+* don't reset if current version mastch([716a0d4](https://github.com/neikvon/fbi/commit/716a0d4))
 
 
 <a name="3.0.0-beta.11"></a>
