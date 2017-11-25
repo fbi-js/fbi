@@ -1,3 +1,18 @@
+<a name="3.0.0-beta.13"></a>
+# [3.0.0-beta.13](https://github.com/neikvon/fbi/compare/v3.0.0-beta.12...v3.0.0-beta.13) (2017-11-25)
+
+
+### Features
+
+* get task params ([4470635](https://github.com/neikvon/fbi/commit/4470635))
+
+
+### Performance Improvements
+
+* **task:** the way of running a task ([4e5b8e2](https://github.com/neikvon/fbi/commit/4e5b8e2))
+
+
+
 <a name="3.0.0-beta.12"></a>
 # [3.0.0-beta.12](https://github.com/neikvon/fbi/compare/v3.0.0-beta.11...v3.0.0-beta.12) (2017-11-22)
 
@@ -5,7 +20,7 @@
 ### Bug Fixes
 
 * support home directory of windows ([716a0d4](https://github.com/neikvon/fbi/commit/716a0d4))
-* don't reset if current version mastch([716a0d4](https://github.com/neikvon/fbi/commit/716a0d4))
+
 
 
 <a name="3.0.0-beta.11"></a>
