@@ -1,3 +1,23 @@
+<a name="3.0.0-beta.15"></a>
+# [3.0.0-beta.15](https://github.com/neikvon/fbi/compare/v3.0.0-beta.14...v3.0.0-beta.15) (2017-11-25)
+
+
+### Bug Fixes
+
+* windows compatible ([0e47c03](https://github.com/neikvon/fbi/commit/0e47c03))
+
+
+
+<a name="3.0.0-beta.14"></a>
+# [3.0.0-beta.14](https://github.com/neikvon/fbi/compare/v3.0.0-beta.13...v3.0.0-beta.14) (2017-11-25)
+
+
+### Bug Fixes
+
+* **update:** `fbi update` ([5fb0726](https://github.com/neikvon/fbi/commit/5fb0726))
+
+
+
 <a name="3.0.0-beta.13"></a>
 # [3.0.0-beta.13](https://github.com/neikvon/fbi/compare/v3.0.0-beta.12...v3.0.0-beta.13) (2017-11-25)
 
