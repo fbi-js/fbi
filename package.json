@@ -1,6 +1,6 @@
 {
   "name": "fbi",
-  "version": "3.0.0-beta.12",
+  "version": "3.0.0-beta.13",
   "description": "Node.js workflow tool.",
   "engines": {
     "node": ">= 7.6.0",
@@ -34,7 +34,13 @@
     "type": "git",
     "url": "git+https://github.com/neikvon/fbi.git"
   },
-  "keywords": ["fbi", "workflow", "development", "template", "task"],
+  "keywords": [
+    "fbi",
+    "workflow",
+    "development",
+    "template",
+    "task"
+  ],
   "bugs": {
     "url": "https://github.com/neikvon/fbi/issues"
   },
