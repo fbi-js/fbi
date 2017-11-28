@@ -5,6 +5,8 @@ tmp/
 backup/
 
 .nyc_output
+coverage/
 .travis.yml
+yarn-error.log
 
 *.bak.js

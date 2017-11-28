@@ -12,9 +12,11 @@
   },
   "scripts": {
     "lint": "xo",
-    "test": "npm run test-utils && npm run test-core",
+    "test": "nyc --reporter=lcov ava --verbose",
     "test-utils": "ava test/utils.js",
-    "test-core": "ava test/core/**/*.js",
+    "test-core": "ava test/core/**/*.js --verbose",
+    "test-cli": "ava test/cli/**/*.js --verbose",
+    "test-coverage": "npm test && nyc report",
     "commit": "git cz",
     "publish-beta": "npm test && npm version prerelease && git push && git push --tags && npm publish --tag next",
     "publish-patch": "npm test && npm version patch && git push && git push --tags && npm publish",
@@ -27,6 +29,8 @@
   "devDependencies": {
     "ava": "^0.23.0",
     "cz-conventional-changelog": "^2.1.0",
+    "execa": "^0.8.0",
+    "nyc": "^11.3.0",
     "xo": "^0.18.2"
   },
   "license": "MIT",
@@ -34,13 +38,7 @@
     "type": "git",
     "url": "git+https://github.com/neikvon/fbi.git"
   },
-  "keywords": [
-    "fbi",
-    "workflow",
-    "development",
-    "template",
-    "task"
-  ],
+  "keywords": ["fbi", "workflow", "development", "template", "task"],
   "bugs": {
     "url": "https://github.com/neikvon/fbi/issues"
   },
