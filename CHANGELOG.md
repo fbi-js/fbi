@@ -1,3 +1,28 @@
+<a name="3.0.0-beta.18"></a>
+# [3.0.0-beta.18](https://github.com/neikvon/fbi/compare/v3.0.0-beta.17...v3.0.0-beta.18) (2017-11-30)
+
+
+### Features
+
+* **template:** update project with `options` `tasks` `all` ([5cf3467](https://github.com/neikvon/fbi/commit/5cf3467))
+
+
+
+<a name="3.0.0-beta.17"></a>
+# [3.0.0-beta.17](https://github.com/neikvon/fbi/compare/v3.0.0-beta.16...v3.0.0-beta.17) (2017-11-29)
+
+
+### Features
+
+* **template:** add `-o` with options when init a project ([2ddfe39](https://github.com/neikvon/fbi/commit/2ddfe39))
+
+
+
+<a name="3.0.0-beta.16"></a>
+# [3.0.0-beta.16](https://github.com/neikvon/fbi/compare/v3.0.0-beta.15...v3.0.0-beta.16) (2017-11-28)
+
+
+
 <a name="3.0.0-beta.15"></a>
 # [3.0.0-beta.15](https://github.com/neikvon/fbi/compare/v3.0.0-beta.14...v3.0.0-beta.15) (2017-11-25)
 
