@@ -1,35 +1,39 @@
 import path from 'path'
 import test from 'ava'
-import utils from '../../lib/utils'
 import Version from '../../lib/core/version'
 
 const version = new Version()
 
-const dir2 = process.cwd()
+const cwd = process.cwd()
 
-test('version.isSupport: shoud support', async t => {
+test('version.isSupport', async t => {
+  t.plan(2)
+
   const dir = path.join(process.cwd())
   const ret = await version.isSupport(dir)
-  t.true(Boolean(ret))
-})
+  t.true(Boolean(ret), 'shoud support')
 
-test('version.isSupport: shoud not support', async t => {
-  const dir = path.join(process.cwd(), '../')
-  const ret = await version.isSupport(dir)
-  t.false(Boolean(ret))
+  const dir2 = path.join(process.cwd(), '../')
+  const ret2 = await version.isSupport(dir2)
+  t.false(Boolean(ret2), 'shoud not support')
 })
 
 test('version.getVersions', async t => {
-  const ret = await version.getVersions(dir2)
-  t.true(Array.isArray(ret))
+  const ret = await version.getVersions(cwd)
+  t.true(Array.isArray(ret), 'versions should be array')
 })
 
-test('version.isVersionExist: should exist', async t => {
-  const ret = await version.isVersionExist(dir2, 'v3.0.0-beta.15')
-  t.true(ret)
+test('version.isVersionExist', async t => {
+  t.plan(2)
+
+  const ret = await version.isVersionExist(cwd, 'v3.0.0-beta.15')
+  t.true(ret, 'should exist')
+
+  const ret2 = await version.isVersionExist(cwd, 'v3.0.0-beta.151')
+  t.false(ret2, 'should not exist')
 })
 
-test('version.isVersionExist: should not exist', async t => {
-  const ret = await version.isVersionExist(dir2, 'v3.0.0-beta.151')
-  t.false(ret)
+test('version.getCurrentVersion', async t => {
+  const ret = await version.getCurrentVersion(cwd)
+  t.is(Array.isArray(ret), 'versions should be array')
 })

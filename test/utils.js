@@ -32,6 +32,25 @@ test('utils.assign', t => {
 //   }
 // })
 
+// Datetime format
+test('utils.dateFormat: -', t => {
+  const dt = 'Fri Dec 01 2017 13:44:42 GMT+0800 (CST)'
+  const formated = utils.dateFormat(dt, 'YYYY-MM-DD hh:mm:ss')
+  t.is(formated, '2017-12-01 13:44:42')
+})
+
+test('utils.dateFormat: /', t => {
+  const dt = 'Fri Dec 01 2017 13:44:42 GMT+0800 (CST)'
+  const formated = utils.dateFormat(dt, 'YYYY/MM/DD hh:mm:ss')
+  t.is(formated, '2017/12/01 13:44:42')
+})
+
+test('utils.dateFormat: 年月日 时分秒', t => {
+  const dt = 'Fri Dec 01 2017 13:44:42 GMT+0800 (CST)'
+  const formated = utils.dateFormat(dt, 'YYYY年MM月DD日 hh时mm分ss秒')
+  t.is(formated, '2017年12月01日 13时44分42秒')
+})
+
 // Utils.fs
 const tmpDir = path.join(__dirname, 'fixtures/mdirp/mdirp1/mdirp2')
 

@@ -1,20 +1,15 @@
-# FBI Docs
+
 
 # 安装和配置
-----------
     $ tnpm i -g fbi@next
-
 
     $ fbi set npm=yarn
 
 
 # 入门使用
-----------
     $ fbi init https://github.com/fbi-templates/fbi-project-mod.git my-project
 
-
     $ fbi ls
-
 
     $ fbi s
 
@@ -51,7 +46,7 @@
 | 空                   | 只有项目源码，和指定模板名称              |
 | `-o`  ,   `-option` | 带上项目配置                      |
 | `-t`  ,   `-task`   | 带上项目配置和任务                   |
-| `-a`  ,   `-all`    | 所有文件(除.git目录外)，基于已有模版生成新的模版 |
+| `-a`  ,   `-all`    | 所有文件(除.git目录外)，可用于基于已有模版生成新的模版 |
 
 在已有项目上执行`fbi init [option]`, 只更新指定的options, 不更新src。
 
@@ -61,7 +56,6 @@
     $ fbi <task>        # 自动切换
     $ fbi use <version> # 手动切换　　　　　　　　
   
-----------
 
 
 ## 查看信息
@@ -82,12 +76,11 @@
 
 
 # 模板开发
-----------
 ## 步骤
 1. 创建目录结构
 2. 任务开发
-  1. 项目模板：将任务文件置于fbi目录内
-  2. 任务模版：按照普通的npm模块开发方式进行即可
+    1. 项目模板：将任务文件置于fbi目录内
+    2. 任务模版：按照普通的npm模块开发方式进行即可
 3. 测试
 4. 提交到git仓库
 

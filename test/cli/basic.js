@@ -1,5 +1,3 @@
-import fs from 'fs'
-import path from 'path'
 import test from 'ava'
 import execa from 'execa'
 import {version as pkgVersion} from '../../package'
