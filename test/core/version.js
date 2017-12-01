@@ -1,6 +1,7 @@
 import path from 'path'
 import test from 'ava'
 import Version from '../../lib/core/version'
+import utils from '../../lib/utils'
 
 const version = new Version()
 
@@ -23,17 +24,35 @@ test('version.getVersions', async t => {
   t.true(Array.isArray(ret), 'versions should be array')
 })
 
-test('version.isVersionExist', async t => {
-  t.plan(2)
-
-  const ret = await version.isVersionExist(cwd, 'v3.0.0-beta.15')
-  t.true(ret, 'should exist')
-
-  const ret2 = await version.isVersionExist(cwd, 'v3.0.0-beta.151')
-  t.false(ret2, 'should not exist')
+test('version.getCurrentVersion', async t => {
+  t.regex(
+    await version.getCurrentVersion(cwd),
+    /v3\.0\.0/,
+    'current version should match `v3.0.0`'
+  )
 })
 
-test('version.getCurrentVersion', async t => {
-  const ret = await version.getCurrentVersion(cwd)
-  t.is(Array.isArray(ret), 'versions should be array')
+test('version.add & change & update', async t => {
+  const targetDir = path.join(__dirname, '../fixtures/templates')
+  const projectName = 'fbi-project-mod'
+
+  const gitRepo = 'https://github.com/fbi-templates/fbi-project-mod.git'
+  const ret = await version.add(gitRepo, targetDir, projectName)
+
+  t.plan(4)
+
+  // Add
+  t.true(Array.isArray(ret.versions), 'versions should be array')
+  t.true(Boolean(ret.current), 'current version should not be null')
+
+  // Change
+  const projectDir = path.join(targetDir, projectName)
+  const retChange = await version.change(projectDir, 'v3.0.0')
+  t.true(retChange, 'change version should be successful')
+
+  // Update
+  const retUpdate = await version.update(projectDir)
+  t.true(retUpdate, 'update should be successful')
+
+  await utils.fs.remove(projectDir)
 })

@@ -16,14 +16,14 @@ test('fbi -v', async t => {
 test('fbi --help', async t => {
   t.regex(
     await execa.stdout(fbi, ['--help']),
-    /fbi <command>|<task> [mode] [options]/
+    /fbi <command>\|<task> \[mode\] \[options\]/
   )
 })
 
 test('fbi -h', async t => {
   t.regex(
     await execa.stdout(fbi, ['-h']),
-    /fbi <command>|<task> [mode] [options]/
+    /fbi <command>\|<task> \[mode\] \[options\]/
   )
 })
 
@@ -39,3 +39,6 @@ test('fbi ls store', async t => {
   t.regex(await execa.stdout(fbi, ['ls', 'store']), /repository:/)
 })
 
+test('fbi ls util', async t => {
+  t.regex(await execa.stdout(fbi, ['ls', 'util']), /\[Function\:/)
+})
