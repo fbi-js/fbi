@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "xo",
     "test": "xo && nyc --reporter=lcov ava --verbose",
-    "test-utils": "xo && ava test/utils.js --verbose",
+    "test-utils": "xo && ava test/utils/**/*.js --verbose",
     "test-core": "xo && ava test/core/**/*.js --verbose",
     "test-cli": "xo && ava test/cli/**/*.js --verbose",
     "test-coverage": "npm test && nyc report",

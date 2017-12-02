@@ -8,8 +8,6 @@ const version = new Version()
 const cwd = process.cwd()
 
 test('version.isSupport', async t => {
-  t.plan(2)
-
   const dir = path.join(process.cwd())
   const ret = await version.isSupport(dir)
   t.true(Boolean(ret), 'shoud support')
@@ -38,8 +36,6 @@ test('version.add & change & update', async t => {
 
   const gitRepo = 'https://github.com/fbi-templates/fbi-project-mod.git'
   const ret = await version.add(gitRepo, targetDir, projectName)
-
-  t.plan(4)
 
   // Add
   t.true(Array.isArray(ret.versions), 'versions should be array')

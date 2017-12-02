@@ -1,8 +1,9 @@
+import path from 'path'
 import test from 'ava'
 import execa from 'execa'
 import {version as pkgVersion} from '../../package'
 
-const fbi = '../../bin/fbi'
+const fbi = path.join(__dirname, '../../bin/fbi')
 process.chdir(__dirname)
 
 test('fbi --version', async t => {
@@ -40,5 +41,5 @@ test('fbi ls store', async t => {
 })
 
 test('fbi ls util', async t => {
-  t.regex(await execa.stdout(fbi, ['ls', 'util']), /\[Function\:/)
+  t.regex(await execa.stdout(fbi, ['ls', 'util']), /\[Function:/)
 })
