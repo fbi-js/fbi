@@ -13,10 +13,10 @@
   "scripts": {
     "test": "xo && nyc ava",
     "commit": "git cz",
-    "publish-beta": "npm test && npm version prerelease && git push && git push --tags && npm publish --tag next",
-    "publish-patch": "npm test && npm version patch && git push && git push --tags && npm publish",
-    "publish-minor": "npm test && npm version minor && git push && git push --tags && npm publish",
-    "publish-major": "npm test && npm version major && git push && git push --tags && npm publish",
+    "publish-beta": "npm version prerelease && git push && git push --tags && npm publish --tag next",
+    "publish-patch": "npm version patch && git push && git push --tags && npm publish",
+    "publish-minor": "npm version minor && git push && git push --tags && npm publish",
+    "publish-major": "npm version major && git push && git push --tags && npm publish",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "release-changelog": "git add CHANGELOG.md && git commit -m 'release CHANGELOG.md' && git push"
   },
