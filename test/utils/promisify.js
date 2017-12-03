@@ -20,7 +20,7 @@ const twiceError = (data, callback) => {
   })
 }
 
-test('promisify', async t => {
+async function tests(t) {
   try {
     const pfn = promisify(twice)
     await pfn(5)
@@ -28,24 +28,27 @@ test('promisify', async t => {
   } catch (err) {
     t.fail(err)
   }
-})
 
-test('promisify with error', async t => {
   try {
     const pfn = promisify(twiceError)
     await pfn(5)
-    t.fail()
+    t.fail('should fail')
   } catch (err) {
     t.is(err.message, 'Invalid')
   }
-})
 
-test('not a function', async t => {
   try {
     const pfn = promisify({})
     await pfn(5)
-    t.fail()
+    t.fail('should fail')
   } catch (err) {
-    t.regex(err.toString(), /promisify must receive a function|must be of type function|must be of type Function/)
+    t.regex(
+      err.toString(),
+      /promisify must receive a function|must be of type function|must be of type Function/
+    )
   }
+}
+
+test('promisify on different node version', async t => {
+  await tests(t)
 })

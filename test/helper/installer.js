@@ -19,10 +19,6 @@ test('check: dependencies not exist', async t => {
 })
 
 test('npm install dependencies', async t => {
-  // Check
-  const retCheck = await installer.check(dir)
-  t.true(retCheck, 'prod deps should not exist')
-
   // Install
   const ret = await installer.start({
     dir,
@@ -66,10 +62,4 @@ test('yarn add devDependencies', async t => {
   } catch (err) {
     t.fail(err)
   }
-})
-
-// This will always run, regardless of earlier failures
-test.after.always('guaranteed cleanup', async () => {
-  // Clear
-  await utils.fs.remove(path.join(dir, 'node_modules'))
 })

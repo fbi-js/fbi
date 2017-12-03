@@ -29,4 +29,23 @@ test('store methods', async t => {
 
   // Clear
   await store.del('test')
+
+  // Get items
+  const ret1 = await store.get('x', 'fbi-task-')
+  t.is(ret1.name, 'x', 'get item with prefix string')
+
+  // Get items
+  const ret2 = await store.get('x', ['fbi-task-', 'fbi-project-'])
+  t.true(Array.isArray(ret2), 'get item with prefix array')
+  t.is(ret2[0].name, 'x', 'get item with prefix array')
+  t.is(ret2[1].name, 'x', 'get item with prefix array')
+
+  const ret3 = await store.get('x', {a: 1})
+  t.is(ret3, null, 'get item with prefix object')
+
+  const ret4 = await store.get('x', 'not-exist')
+  t.is(ret4, undefined, 'get item with prefix not exist string')
+
+  const ret5 = await store.get('x', ['not-exist'])
+  t.is(ret5, null, 'get item with prefix not exist array')
 })

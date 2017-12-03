@@ -43,3 +43,40 @@ test('fbi ls store', async t => {
 test('fbi ls util', async t => {
   t.regex(await execa.stdout(fbi, ['ls', 'util']), /\[Function:/)
 })
+
+test('fbi ls: invalid', async t => {
+  t.regex(await execa.stdout(fbi, ['ls', 'aaa']), /`aaa` is invalid/)
+})
+
+test('fbi: command not found', async t => {
+  t.regex(await execa.stdout(fbi, ['-aaa']), /Command not found/)
+})
+
+test('fbi init: command not found', async t => {
+  t.regex(await execa.stdout(fbi, ['-aaa']), /Command not found/)
+})
+
+test('fbi set: item should success', async t => {
+  t.regex(await execa.stdout(fbi, ['set', 'LOG_LEVEL=info']), /successfully/)
+  t.regex(await execa.stdout(fbi, ['set', 'log_level=info']), /successfully/)
+})
+
+test('fbi set: shouw usage', async t => {
+  t.regex(await execa.stdout(fbi, ['set', 'a']), /Usage: `fbi set key=value`/)
+})
+
+test('fbi set: item readonly', async t => {
+  await Promise.all(
+    [
+      '_DATA_ROOT',
+      '_STORE_FILE',
+      '_CUSTOM_CONFIG_FILE',
+      '_data_root',
+      '_store_file',
+      '_custom_config_file',
+      'xxxx'
+    ].map(async item => {
+      t.regex(await execa.stdout(fbi, ['set', `${item}='xxx'`]), /is readonly/)
+    })
+  )
+})

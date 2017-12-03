@@ -1,3 +1,9 @@
 {
-  "init": true
+  "init": true,
+  "fbi-project-x": {
+    "name": "x"
+  },
+  "fbi-task-x": {
+    "name": "x"
+  }
 }

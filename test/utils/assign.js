@@ -30,7 +30,6 @@ test('target null & source item null', t => {
   const a = null
   const b = {d: null}
   const ret = assign(a, b)
-
   t.deepEqual(ret, {d: null}, 'null item error')
   t.deepEqual(a, null, 'null item error')
 })
