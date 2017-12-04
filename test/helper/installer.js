@@ -41,7 +41,7 @@ test('npm install devDependencies', async t => {
 
 test('yarn install dependencies', async t => {
   try {
-    const retInstall = await installer.start({
+    await installer.start({
       dir,
       logger,
       command: 'yarn'
@@ -55,7 +55,7 @@ test('yarn install dependencies', async t => {
 
 test('yarn add devDependencies', async t => {
   try {
-    const ret = await installer.start({
+    await installer.start({
       dir,
       logger,
       command: 'yarn',
