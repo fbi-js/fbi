@@ -1,12 +1,11 @@
+# Files
 *.log
-node_modules
+*.bak.js
 .DS_Store
+
+# Folders
 tmp/
 backup/
-
-.nyc_output
 coverage/
-.travis.yml
-yarn-error.log
-
-*.bak.js
+.nyc_output/
+node_modules/
