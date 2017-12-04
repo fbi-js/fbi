@@ -22,5 +22,5 @@ test('年月日 时分秒', t => {
 test('string', t => {
   const dt = new Date('2017-12-01 13:44:42')
   const formated = dateFormat(dt, 'YYYY年MM月DD日 hh时mm分ss秒')
-  t.is(formated, '2017年12月01日 05时44分42秒')
+  t.is(formated, '2017年12月01日 13时44分42秒')
 })
