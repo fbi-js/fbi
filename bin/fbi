@@ -1,5 +1,0 @@
-#!/usr/bin/env node
-'use strict'
-
-var Cli = require('../dst/cli')
-new Cli(process.argv.slice(2))
