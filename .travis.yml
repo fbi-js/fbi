@@ -4,6 +4,8 @@ node_js:
 branches:
   only:
   - "v3.x"
+before_install:
+  - export TZ='Asia/Beijing'
 install:
 - npm install
 script:

@@ -22,6 +22,6 @@
     "yarn.lock",
     "package-lock.json"
   ],
-  "TEMPLATE_ADD_IGNORE": [".DS_Store", ".svn", ".git", "dst", "dist"],
+  "TEMPLATE_ADD_IGNORE": [".DS_Store", ".svn", ".git", "dst"],
   "VERSION_SEPARATOR": "@"
 }

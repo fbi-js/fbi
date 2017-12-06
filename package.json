@@ -74,6 +74,7 @@
       ],
       "no-use-extend-native/no-use-extend-native": 0,
       "no-extend-native": 0,
+      "max-depth": ["error", 6],
       "complexity": [
         "error",
         {
