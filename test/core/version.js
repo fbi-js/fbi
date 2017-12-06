@@ -25,8 +25,8 @@ test('version.getVersions', async t => {
 test('version.getCurrentVersion', async t => {
   t.regex(
     await version.getCurrentVersion(cwd),
-    /v3\.0\.0/,
-    'current version should match `v3.0.0`'
+    /v3/,
+    'current version should match `v3`'
   )
 })
 
