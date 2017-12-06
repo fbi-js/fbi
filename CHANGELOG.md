@@ -1,3 +1,8 @@
+<a name="3.0.1"></a>
+## [3.0.1](https://github.com/neikvon/fbi/compare/v3.0.0-beta.20...v3.0.1) (2017-12-06)
+
+
+
 <a name="3.0.0-beta.20"></a>
 # [3.0.0-beta.20](https://github.com/neikvon/fbi/compare/v3.0.0-beta.19...v3.0.0-beta.20) (2017-12-03)
 
