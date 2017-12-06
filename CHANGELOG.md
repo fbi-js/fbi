@@ -1,3 +1,8 @@
+<a name="3.0.2"></a>
+## [3.0.2](https://github.com/neikvon/fbi/compare/v3.0.1...v3.0.2) (2017-12-06)
+
+
+
 <a name="3.0.1"></a>
 ## [3.0.1](https://github.com/neikvon/fbi/compare/v3.0.0-beta.20...v3.0.1) (2017-12-06)
 
@@ -104,7 +109,17 @@
 
 
 <a name="3.0.0-beta.9"></a>
-# [3.0.0-beta.9](https://github.com/neikvon/fbi/compare/2.1.1...v3.0.0-beta.9) (2017-11-21)
+# [3.0.0-beta.9](https://github.com/neikvon/fbi/compare/2.1.8...v3.0.0-beta.9) (2017-11-21)
+
+
+
+<a name="2.1.8"></a>
+## [2.1.8](https://github.com/neikvon/fbi/compare/2.1.7...2.1.8) (2017-11-21)
+
+
+
+<a name="2.1.7"></a>
+## [2.1.7](https://github.com/neikvon/fbi/compare/2.1.1...2.1.7) (2017-05-16)
 
 
 
