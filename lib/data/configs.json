@@ -1,0 +1,27 @@
+{
+  "_DATA_ROOT": ".fbi",
+  "_STORE_FILE": "store.json",
+  "_CUSTOM_CONFIG_FILE": "configs.custom.json",
+  "LOG_LEVEL": "info",
+  "LOG_PREFIX": "FBI··>",
+  "NPM": "npm",
+  "NPM_OPTIONS": "",
+  "TASK_PREFIX": "fbi-task-",
+  "TEMPLATE_PREFIX": "fbi-project-",
+  "TEMPLATE_TASKS": "fbi",
+  "TEMPLATE_CONFIG": "fbi/options.js",
+  "TEMPLATE_INIT_IGNORE": [
+    "node_modules",
+    ".DS_Store",
+    ".svn",
+    ".git",
+    "dst",
+    "dist",
+    "package.json",
+    "fbi",
+    "yarn.lock",
+    "package-lock.json"
+  ],
+  "TEMPLATE_ADD_IGNORE": [".DS_Store", ".svn", ".git", "dst"],
+  "VERSION_SEPARATOR": "@"
+}

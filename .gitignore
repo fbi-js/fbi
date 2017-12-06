@@ -1,0 +1,11 @@
+# Files
+*.log
+*.bak.js
+.DS_Store
+
+# Folders
+tmp/
+backup/
+coverage/
+.nyc_output/
+node_modules/
