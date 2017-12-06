@@ -14,7 +14,7 @@
   <a href="https://github.com/sindresorhus/xo"><img src="https://img.shields.io/badge/code_style-XO-5ed9c7.svg" alt="License"></a>
 </p>
 
-fbi是一个开源的的工作流工具。它旨在帮助开发人员提高生产力，统一和标准化团队工作流程。
+fbi是一个开源的工作流工具。它旨在帮助开发人员提高生产力，统一和标准化团队工作流程。
 
 [README in English](./README.md)
 
