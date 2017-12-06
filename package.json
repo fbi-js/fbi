@@ -1,6 +1,6 @@
 {
   "name": "fbi",
-  "version": "3.0.0-beta.20",
+  "version": "3.0.0",
   "description": "Node.js workflow tool.",
   "engines": {
     "node": ">= 7.6.0",
@@ -74,7 +74,10 @@
       ],
       "no-use-extend-native/no-use-extend-native": 0,
       "no-extend-native": 0,
-      "max-depth": ["error", 6],
+      "max-depth": [
+        "error",
+        6
+      ],
       "complexity": [
         "error",
         {
