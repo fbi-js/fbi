@@ -5,9 +5,9 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/fbi"><img src="https://img.shields.io/npm/v/fbi.svg" alt="NPM version"></a>
-  <a href="https://travis-ci.org/AlloyTeam/fbi/"><img src="https://img.shields.io/travis/AlloyTeam/fbi/v3.x.svg" alt="Build Status"></a>
-  <a href='https://coveralls.io/github/AlloyTeam/fbi?branch=v3.x'><img src='https://coveralls.io/repos/github/AlloyTeam/fbi/badge.svg?branch=v3.x' alt='Coverage Status'></a>
-  <a href='https://david-dm.org/AlloyTeam/fbi/v3.x'><img src='https://img.shields.io/david/AlloyTeam/fbi/v3.x.svg' alt='David deps'></a>
+  <a href="https://travis-ci.org/AlloyTeam/fbi/"><img src="https://img.shields.io/travis/AlloyTeam/fbi.svg" alt="Build Status"></a>
+  <a href='https://coveralls.io/github/AlloyTeam/fbi?branch=master'><img src='https://coveralls.io/repos/github/AlloyTeam/fbi/badge.svg?branch=master' alt='Coverage Status'></a>
+  <a href='https://david-dm.org/AlloyTeam/fbi'><img src='https://img.shields.io/david/AlloyTeam/fbi.svg' alt='David deps'></a>
   <a href='http://nodejs.org/download/'><img src='https://img.shields.io/badge/node.js-%3E=_7.6.0-green.svg' alt='node version'></a>
   <a href="https://www.npmjs.com/package/fbi"><img src="https://img.shields.io/npm/dm/fbi.svg" alt="Downloads"></a>
   <a href="https://www.npmjs.com/package/fbi"><img src="https://img.shields.io/npm/l/fbi.svg" alt="License"></a>
@@ -47,6 +47,7 @@ $ fbi s
 ## Resources
 - [Full documentation](https://neikvon.gitbooks.io/fbi/content/)
 - [Official templates](https://github.com/fbi-templates)
+- [Migrate a fbi 2.x project to 3.0](https://github.com/fbi-templates/fbi-task-migrate)
 
 
 ## Changelog
