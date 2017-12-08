@@ -100,8 +100,7 @@ test('list', async t => {
       'mdirp1',
       '5.txt'
     ])
-    console.log(list)
-    t.pass()
+    t.true(list.length > 0)
   } catch (err) {
     t.fail(err)
   }

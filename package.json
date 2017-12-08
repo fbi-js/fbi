@@ -11,7 +11,8 @@
     "fbi": "./bin/fbi"
   },
   "scripts": {
-    "test": "xo && nyc ava",
+    "lint": "xo",
+    "test": "xo && nyc ava --verbose",
     "commit": "git cz",
     "publish-beta": "npm version prerelease && git push && git push --tags && npm publish --tag next",
     "publish-patch": "npm version patch && git push && git push --tags && npm publish",
@@ -56,7 +57,7 @@
   "xo": {
     "esnext": true,
     "globals": [],
-    "ignores": [],
+    "ignores": ["test/**"],
     "plugins": [],
     "semicolon": false,
     "space": 2,
@@ -74,16 +75,14 @@
       ],
       "no-use-extend-native/no-use-extend-native": 0,
       "no-extend-native": 0,
-      "max-depth": [
-        "error",
-        6
-      ],
+      "max-depth": ["error", 6],
       "complexity": [
         "error",
         {
           "max": 25
         }
-      ]
+      ],
+      "operator-linebreak": [0]
     }
   },
   "config": {

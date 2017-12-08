@@ -13,8 +13,18 @@ test('normal', t => {
     d: 2,
     f: [1, 2, 3]
   }
+  t.deepEqual(assign(a, b, c), ret, 'assign error')
+})
+
+test('same fields should merge', t => {
+  const a = {a: {x: 1}}
+  const b = {a: {y: 2}}
+  const c = {a: {z: 3}}
+  const ret = {
+    a: {x: 1, y: 2, z: 3}
+  }
   assign(a, b, c)
-  t.deepEqual(a, ret, 'assign error')
+  t.deepEqual(a, ret, 'same fields should merge')
 })
 
 test('target null', t => {
@@ -30,7 +40,7 @@ test('target null & source item null', t => {
   const a = null
   const b = {d: null}
   const ret = assign(a, b)
-  t.deepEqual(ret, {d: null}, 'null item error')
+  t.deepEqual(ret, {}, 'null item error')
   t.deepEqual(a, null, 'null item error')
 })
 
@@ -179,6 +189,18 @@ test('item array', t => {
     d: 2
   }
   assign(a, b)
-
   t.deepEqual(a, ret, 'item array error')
+})
+
+test('deep', t => {
+  const a = {
+    x: {x1: {x2: {x3: {x4: {x5: {x6: 1}}}}}}
+  }
+  const b = {
+    x: {x1: {x2: {x3: {x4: {x5: {x6: 1, x61: 'yeah'}, x51: 'yes'}}}}}
+  }
+  const ret = {
+    x: {x1: {x2: {x3: {x4: {x5: {x6: 1, x61: 'yeah'}, x51: 'yes'}}}}}
+  }
+  t.deepEqual(assign(a, b), ret, 'deep error')
 })
