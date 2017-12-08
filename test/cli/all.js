@@ -373,10 +373,6 @@ test('local: fbi update with-*/update version', async t => {
     cwd: localProjectDir
   })
   t.regex(msgUp5, /Updated/, 'update with-all fail')
-  t.true(
-    await utils.fs.exist(path.join(localProjectDir, 'node_modules')),
-    'update with-all fail, `node_modules` folder is not exist'
-  )
 
   // Use
   const msgUse = await execa.stdout(fbi, ['use', 'v3.1.0'], {
