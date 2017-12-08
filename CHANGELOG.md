@@ -1,3 +1,23 @@
+<a name="3.0.4"></a>
+## [3.0.4](https://github.com/neikvon/fbi/compare/v3.0.3...v3.0.4) (2017-12-07)
+
+
+### Bug Fixes
+
+* fix template init bugs ([449a776](https://github.com/neikvon/fbi/commit/449a776))
+
+
+
+<a name="3.0.3"></a>
+## [3.0.3](https://github.com/neikvon/fbi/compare/v3.0.2...v3.0.3) (2017-12-07)
+
+
+### Bug Fixes
+
+* **template:** revise items in `package.json` when init ([8f17d74](https://github.com/neikvon/fbi/commit/8f17d74))
+
+
+
 <a name="3.0.2"></a>
 ## [3.0.2](https://github.com/neikvon/fbi/compare/v3.0.1...v3.0.2) (2017-12-06)
 
