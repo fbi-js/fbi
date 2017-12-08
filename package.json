@@ -1,6 +1,6 @@
 {
   "name": "fbi",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "Node.js workflow tool.",
   "engines": {
     "node": ">= 7.6.0",
@@ -57,7 +57,9 @@
   "xo": {
     "esnext": true,
     "globals": [],
-    "ignores": ["test/**"],
+    "ignores": [
+      "test/**"
+    ],
     "plugins": [],
     "semicolon": false,
     "space": 2,
@@ -75,14 +77,19 @@
       ],
       "no-use-extend-native/no-use-extend-native": 0,
       "no-extend-native": 0,
-      "max-depth": ["error", 6],
+      "max-depth": [
+        "error",
+        6
+      ],
       "complexity": [
         "error",
         {
           "max": 25
         }
       ],
-      "operator-linebreak": [0]
+      "operator-linebreak": [
+        0
+      ]
     }
   },
   "config": {
