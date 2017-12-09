@@ -24,6 +24,20 @@ test('version.isSupport', async t => {
   const dir2 = path.join(process.cwd(), '../')
   const ret2 = await version.isSupport(dir2)
   t.false(Boolean(ret2), 'shoud not support')
+
+  t.false(
+    Boolean(await version.isSupport(undefined)),
+    'shoud not support undefined'
+  )
+  t.false(Boolean(await version.isSupport()), 'shoud not support null')
+  t.false(
+    Boolean(
+      await version.isSupport(
+        'https://github.com/fbi-templates/fbi-project-mod.git'
+      )
+    ),
+    'shoud not support url'
+  )
 })
 
 test('version.getVersions', async t => {

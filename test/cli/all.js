@@ -133,6 +133,16 @@ test('fbi update with-*/update version', async t => {
     cwd: projectDir
   })
   t.regex(msgUse, /Version changed to|Template already in version/, 'use fail')
+
+  const msgUse2 = await execa.stdout(fbi, ['use', 'v1.0.0'], {
+    cwd: projectDir
+  })
+  t.regex(msgUse2, /Version changed to|Template already in version/, 'use fail')
+
+  const msgUse3 = await execa.stdout(fbi, ['use', '0.0.0'], {
+    cwd: projectDir
+  })
+  t.regex(msgUse3, /not found/, 'use fail')
 })
 
 test('fbi init with-options', async t => {
@@ -438,13 +448,13 @@ test('local: fbi init with specified version/Update version', async t => {
   const msgUse = await execa.stdout(fbi, ['use', 'v3.1.0'], {
     cwd: localProjectDir
   })
-  t.regex(msgUse, /not support/, 'update version fail')
+  t.regex(msgUse, /not support/, 'update version fail noexist')
 
   // Update version
   const msgUse2 = await execa.stdout(fbi, ['use'], {
     cwd: localProjectDir
   })
-  t.regex(msgUse2, /Please specify version/, 'update version fail')
+  t.regex(msgUse2, /Please specify version/, 'update version fail null')
 })
 
 test('local: fbi use: not a fbi project', async t => {

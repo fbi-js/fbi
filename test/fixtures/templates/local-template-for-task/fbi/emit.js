@@ -1,1 +1,1 @@
-ctx.emit('exit')
+ctx.emit('exit', 'nevermind', 'just test')
