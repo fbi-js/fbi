@@ -1,7 +1,9 @@
 ### 1. Information
 
 OS version: xxx
+
 Node version: xxx
+
 fbi version: xxx
 
 
