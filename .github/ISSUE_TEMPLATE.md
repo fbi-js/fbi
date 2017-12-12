@@ -1,15 +1,15 @@
 ### 1. Information
 
-OS version | Node version | Dawn version
------------- | -------------| ---------------
-your-version | your-version | your-version 
+OS version: xxx
+Node version: xxx
+fbi version: xxx
 
 
 ### 2. Problem
 
-Describe your problems in as much detail as possible
+Describe your problems here, more details is better.
 
 
 ### 3. Recurrence
 
-The steps of problem recurrence
+The steps of problem recurrence.
