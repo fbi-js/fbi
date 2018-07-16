@@ -1,3 +1,18 @@
+# Change Log
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+<a name="3.1.0"></a>
+# [3.1.0](https://github.com/neikvon/fbi/compare/v3.0.8...v3.1.0) (2018-07-16)
+
+
+### Features
+
+* **remove:** supports force deletion of templates ([8bd4cad](https://github.com/neikvon/fbi/commit/8bd4cad))
+* **store:** support batch deletion of templates ([a46f03c](https://github.com/neikvon/fbi/commit/a46f03c))
+
+
+
 <a name="3.0.6"></a>
 ## [3.0.6](https://github.com/neikvon/fbi/compare/v3.0.5...v3.0.6) (2017-12-09)
 
@@ -205,6 +220,3 @@
 
 <a name="2.0.0-alpha.2"></a>
 # [2.0.0-alpha.2](https://github.com/neikvon/fbi/compare/2.0.0-alpha.1...2.0.0-alpha.2) (2016-07-30)
-
-
-
