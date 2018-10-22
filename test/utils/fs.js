@@ -96,9 +96,8 @@ test('copy', async t => {
 
 test('list', async t => {
   try {
-    const list = await utils.fs.list(path.join(__dirname, '../fixtures/'), [
-      'mdirp1',
-      '5.txt'
+    const list = await utils.fs.list(path.join(__dirname, '../core/'), [
+      'store.js'
     ])
     t.true(list.length > 0)
   } catch (err) {
