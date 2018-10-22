@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.2.0"></a>
+# [3.2.0](https://github.com/neikvon/fbi/compare/v3.1.0...v3.2.0) (2018-10-22)
+
+
+### Bug Fixes
+
+* node version check ([c782565](https://github.com/neikvon/fbi/commit/c782565))
+
+
+### Features
+
+* **template:** template version control supports git branch(eg. fbi init mod@ts) ([e99790b](https://github.com/neikvon/fbi/commit/e99790b))
+
+
+
 <a name="3.1.0"></a>
 # [3.1.0](https://github.com/neikvon/fbi/compare/v3.0.8...v3.1.0) (2018-07-16)
 
