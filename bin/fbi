@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 'use strict'
 
 process.on('unhandledRejection', (error) => {
@@ -7,14 +8,13 @@ process.on('unhandledRejection', (error) => {
 })
 
 const version = parseFloat(process.versions.node.match(/(.*)\./)[1])
-const versionTarget = 7.6
+const versionTarget = 8.2
 if (version < versionTarget) {
   console.error(
-    `Error: fbi v3+ requires Node.js v${versionTarget} or higher (you have v${version}).`
+    `Error: fbi v3.2+ requires Node.js v${versionTarget} or higher (you have v${version}).`
   )
   process.exit(1)
 }
-
 
 const Cli = require('../lib/cli')
 const cli = new Cli()

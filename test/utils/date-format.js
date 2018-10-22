@@ -1,5 +1,5 @@
 import test from 'ava'
-import {dateFormat} from '../../lib/utils'
+import { dateFormat } from '../../lib/utils'
 
 const sp = '05'
 

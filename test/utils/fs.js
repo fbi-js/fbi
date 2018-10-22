@@ -87,7 +87,7 @@ test('copy', async t => {
       __dirname,
       '../fixtures/mdirp-copy/mdirp1/mdirp2/5-copy.txt'
     )
-    await utils.fs.copy({from: tmp, to: target})
+    await utils.fs.copy({ from: tmp, to: target })
     t.pass()
   } catch (err) {
     t.fail(err)

@@ -1,5 +1,5 @@
 import test from 'ava'
-import {type} from '../../lib/utils'
+import { type } from '../../lib/utils'
 
 test('isJson', t => {
   t.true(type.isJson({}))

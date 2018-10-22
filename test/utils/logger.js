@@ -9,7 +9,7 @@ test('levels string', t => {
     logger.debug('this should show')
     logger.info({
       x: 1,
-      fn() {
+      fn () {
         console.log(1)
       }
     })
@@ -58,7 +58,7 @@ test('errors: no stack', t => {
 })
 
 test('logger.getPrefix', t => {
-  const logger = new utils.Logger({prefix: 'xxx'})
+  const logger = new utils.Logger({ prefix: 'xxx' })
   const prefix = logger.getPrefix()
   t.regex(prefix, /xxx/)
 })

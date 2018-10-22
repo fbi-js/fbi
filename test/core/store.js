@@ -40,7 +40,7 @@ test('store methods', async t => {
   t.is(ret2[0].name, 'x', 'get item with prefix array')
   t.is(ret2[1].name, 'x', 'get item with prefix array')
 
-  const ret3 = await store.get('x', {a: 1})
+  const ret3 = await store.get('x', { a: 1 })
   t.is(ret3, null, 'get item with prefix object')
 
   const ret4 = await store.get('x', 'not-exist')

@@ -1,15 +1,15 @@
 import test from 'ava'
-import {assign} from '../../lib/utils'
+import { assign } from '../../lib/utils'
 
 test('normal', t => {
-  const a = {a: {b: {c: 1}}}
-  const b = {d: 2}
+  const a = { a: { b: { c: 1 } } }
+  const b = { d: 2 }
   const c = {
-    a: {b: 22},
+    a: { b: 22 },
     f: [1, 2, 3]
   }
   const ret = {
-    a: {b: 22},
+    a: { b: 22 },
     d: 2,
     f: [1, 2, 3]
   }
@@ -17,11 +17,11 @@ test('normal', t => {
 })
 
 test('same fields should merge', t => {
-  const a = {a: {x: 1}}
-  const b = {a: {y: 2}}
-  const c = {a: {z: 3}}
+  const a = { a: { x: 1 } }
+  const b = { a: { y: 2 } }
+  const c = { a: { z: 3 } }
   const ret = {
-    a: {x: 1, y: 2, z: 3}
+    a: { x: 1, y: 2, z: 3 }
   }
   assign(a, b, c)
   t.deepEqual(a, ret, 'same fields should merge')
@@ -29,16 +29,16 @@ test('same fields should merge', t => {
 
 test('target null', t => {
   const a = null
-  const b = {d: 2}
+  const b = { d: 2 }
   const ret = assign(a, b)
 
-  t.deepEqual(ret, {d: 2}, 'null item error')
+  t.deepEqual(ret, { d: 2 }, 'null item error')
   t.deepEqual(a, null, 'null item error')
 })
 
 test('target null & source item null', t => {
   const a = null
-  const b = {d: null}
+  const b = { d: null }
   const ret = assign(a, b)
   t.deepEqual(ret, {}, 'null item error')
   t.deepEqual(a, null, 'null item error')
@@ -46,10 +46,10 @@ test('target null & source item null', t => {
 
 test('target null & source item undefined', t => {
   const a = null
-  const b = {d: undefined}
+  const b = { d: undefined }
   const ret = assign(a, b)
 
-  t.deepEqual(ret, {d: undefined}, 'null item error')
+  t.deepEqual(ret, { d: undefined }, 'null item error')
   t.deepEqual(a, null, 'null item error')
 })
 
@@ -57,7 +57,7 @@ test('target item null & source item undefined', t => {
   const a = {
     x: null
   }
-  const b = {d: 2, x: undefined}
+  const b = { d: 2, x: undefined }
   const ret = {
     x: undefined,
     d: 2
@@ -70,7 +70,7 @@ test('target item undefined & source item null', t => {
   const a = {
     x: undefined
   }
-  const b = {d: 2, x: null}
+  const b = { d: 2, x: null }
   const ret = {
     x: null,
     d: 2
@@ -83,7 +83,7 @@ test('target item undefined', t => {
   const a = {
     x: undefined
   }
-  const b = {d: 2, x: 1}
+  const b = { d: 2, x: 1 }
   const ret = {
     x: 1,
     d: 2
@@ -96,9 +96,9 @@ test('target item null', t => {
   const a = {
     x: null
   }
-  const b = {d: 2, x: {y: 1}}
+  const b = { d: 2, x: { y: 1 } }
   const ret = {
-    x: {y: 1},
+    x: { y: 1 },
     d: 2
   }
   assign(a, b)
@@ -109,7 +109,7 @@ test('target item undefined & source item undefined', t => {
   const a = {
     x: undefined
   }
-  const b = {d: 2, x: undefined}
+  const b = { d: 2, x: undefined }
   const ret = {
     x: undefined,
     d: 2
@@ -122,7 +122,7 @@ test('item boolean both true', t => {
   const a = {
     x: true
   }
-  const b = {d: 2, x: true}
+  const b = { d: 2, x: true }
   const ret = {
     x: true,
     d: 2
@@ -135,7 +135,7 @@ test('item boolean diff', t => {
   const a = {
     x: true
   }
-  const b = {d: 2, x: false}
+  const b = { d: 2, x: false }
   const ret = {
     x: false,
     d: 2
@@ -150,12 +150,12 @@ test('item function', t => {
   }
   const b = {
     d: 2,
-    x() {
+    x () {
       console.log('y')
     }
   }
   const ret = {
-    x() {
+    x () {
       console.log('y')
     },
     d: 2
@@ -170,7 +170,7 @@ test('item object', t => {
   const a = {
     x: {}
   }
-  const b = {d: 2}
+  const b = { d: 2 }
   const ret = {
     x: {},
     d: 2
@@ -183,7 +183,7 @@ test('item array', t => {
   const a = {
     x: false
   }
-  const b = {d: 2, x: [3, 4]}
+  const b = { d: 2, x: [3, 4] }
   const ret = {
     x: [3, 4],
     d: 2
@@ -194,13 +194,13 @@ test('item array', t => {
 
 test('deep', t => {
   const a = {
-    x: {x1: {x2: {x3: {x4: {x5: {x6: 1}}}}}}
+    x: { x1: { x2: { x3: { x4: { x5: { x6: 1 } } } } } }
   }
   const b = {
-    x: {x1: {x2: {x3: {x4: {x5: {x6: 1, x61: 'yeah'}, x51: 'yes'}}}}}
+    x: { x1: { x2: { x3: { x4: { x5: { x6: 1, x61: 'yeah' }, x51: 'yes' } } } } }
   }
   const ret = {
-    x: {x1: {x2: {x3: {x4: {x5: {x6: 1, x61: 'yeah'}, x51: 'yes'}}}}}
+    x: { x1: { x2: { x3: { x4: { x5: { x6: 1, x61: 'yeah' }, x51: 'yes' } } } } }
   }
   t.deepEqual(assign(a, b), ret, 'deep error')
 })

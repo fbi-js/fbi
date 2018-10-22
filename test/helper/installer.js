@@ -44,22 +44,20 @@ test('npm install devDependencies', async t => {
 
 test('yarn install dependencies', async t => {
   try {
-    const ret = await installer.start({
+    await installer.start({
       dir: dir3,
       logger,
       command: 'yarn'
     })
-    // t.true(ret, 'install fail')
     t.pass()
   } catch (err) {
-    // t.fail(err)
     t.pass()
   }
 })
 
 test('yarn add devDependencies', async t => {
   try {
-    const ret = await installer.start({
+    await installer.start({
       dir: dir4,
       logger,
       command: 'yarn',
@@ -67,10 +65,8 @@ test('yarn add devDependencies', async t => {
       packages: ['debug'],
       type: 'prod'
     })
-    // t.true(ret, 'install fail')
     t.pass()
   } catch (err) {
-    // t.fail(err)
     t.pass()
   }
 })

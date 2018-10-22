@@ -1,5 +1,5 @@
 import test from 'ava'
-import {sequence} from '../../lib/utils'
+import { sequence } from '../../lib/utils'
 
 test('sequence', async t => {
   const task1 = () => {

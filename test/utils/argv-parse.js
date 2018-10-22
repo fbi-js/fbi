@@ -1,6 +1,6 @@
 import test from 'ava'
 import Cli from '../../lib/cli'
-import {argvParse} from '../../lib/utils'
+import { argvParse } from '../../lib/utils'
 
 const cli = new Cli()
 
@@ -40,8 +40,8 @@ test('native `init`', t => {
     retNative.tasks[1] === 'project'
 
   t.true(retTasks, 'tasks parse error')
-  t.deepEqual(retNative.mode, {debug: true}, 'mode parse error')
-  t.deepEqual(retNative.params, {a: true}, 'params parse error')
+  t.deepEqual(retNative.mode, { debug: true }, 'mode parse error')
+  t.deepEqual(retNative.params, { a: true }, 'params parse error')
 })
 
 test('custom command', t => {

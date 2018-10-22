@@ -15,9 +15,7 @@ const tmplName = 'fbi-project-fortest'
 const tmplShortName = 'fortest'
 const tmplVersions = ['v1.0.0', 'v2.0.0']
 const taskName = 'fbi-task-fortest'
-const taskShortName = 'fortest'
 
-const home = path.join(utils.fs.homeDir, '.fbi')
 const tmpdir = tempfile()
 const projectDir = path.join(tmpdir, 'demo')
 
@@ -31,7 +29,7 @@ const localTmplPath = path.join(
 const tmpdirLocal = tempfile()
 const localProjectDir = path.join(tmpdirLocal, 'demo')
 
-function ensureTmpdir(dir) {
+function ensureTmpdir (dir) {
   const _dir = path.join(dir, 'x.txt')
   return utils.fs.mkdirp(_dir)
 }
@@ -160,7 +158,6 @@ test('fbi init with-options', async t => {
 
 test('fbi init with-tasks', async t => {
   await ensureTmpdir(t.context.tmpdir)
-  const dir = path.join(t.context.tmpdir, 'demo')
   const msg = await execa.stdout(fbi, ['init', tmplShortName, 'demo', '-t'], {
     cwd: t.context.tmpdir
   })
@@ -169,7 +166,6 @@ test('fbi init with-tasks', async t => {
 
 test('fbi init with-all', async t => {
   await ensureTmpdir(t.context.tmpdir)
-  const dir = path.join(t.context.tmpdir, 'demo')
   const msg = await execa.stdout(fbi, ['init', tmplShortName, 'demo', '-a'], {
     cwd: t.context.tmpdir
   })
@@ -242,7 +238,7 @@ test('run global task with param t', async t => {
 
 test('run template task: check options valid', async t => {
   try {
-    const msg = await execa.stdout(fbi, ['task-basic'], {cwd: projectDir})
+    const msg = await execa.stdout(fbi, ['task-basic'], { cwd: projectDir })
     t.regex(msg, /options demo is demo/)
   } catch (err) {
     console.log(err)
@@ -252,36 +248,36 @@ test('run template task: check options valid', async t => {
 
 test('run template task: promise', async t => {
   t.regex(
-    await execa.stdout(fbi, ['task-promise-1'], {cwd: projectDir}),
+    await execa.stdout(fbi, ['task-promise-1'], { cwd: projectDir }),
     /Task `task-promise-1` done/
   )
 })
 
 test('run template task: promises', async t => {
   t.regex(
-    await execa.stdout(fbi, ['tp1', 'tp2', 'tp3'], {cwd: projectDir}),
+    await execa.stdout(fbi, ['tp1', 'tp2', 'tp3'], { cwd: projectDir }),
     /Task `task-promise-3` done/
   )
 })
 
 test('run template task: in template', async t => {
   t.regex(
-    await execa.stdout(fbi, ['tp1', '-T'], {cwd: projectDir}),
+    await execa.stdout(fbi, ['tp1', '-T'], { cwd: projectDir }),
     /Running template task/
   )
 })
 
 test('run template task: with params', async t => {
   t.regex(
-    await execa.stdout(fbi, ['task-promise-1', '-t'], {cwd: projectDir}),
+    await execa.stdout(fbi, ['task-promise-1', '-t'], { cwd: projectDir }),
     /task param t is true/
   )
   t.regex(
-    await execa.stdout(fbi, ['task-promise-1', '-p=9000'], {cwd: projectDir}),
+    await execa.stdout(fbi, ['task-promise-1', '-p=9000'], { cwd: projectDir }),
     /task param p is 9000/
   )
   t.regex(
-    await execa.stdout(fbi, ['task-promise-1', '--t=aa'], {cwd: projectDir}),
+    await execa.stdout(fbi, ['task-promise-1', '--t=aa'], { cwd: projectDir }),
     /task param t is aa/
   )
 })
@@ -393,7 +389,6 @@ test('local: fbi update with-*/update version', async t => {
 
 test('local: fbi init with-options', async t => {
   await ensureTmpdir(t.context.tmpdir)
-  const localProjectDir = path.join(t.context.tmpdir, 'demo')
   const msg = await execa.stdout(
     fbi,
     ['init', localTmplShortName, 'demo', '-o'],
@@ -406,7 +401,6 @@ test('local: fbi init with-options', async t => {
 
 test('local: fbi init with-tasks', async t => {
   await ensureTmpdir(t.context.tmpdir)
-  const localProjectDir = path.join(t.context.tmpdir, 'demo')
   const msg = await execa.stdout(
     fbi,
     ['init', localTmplShortName, 'demo', '-t'],
@@ -419,7 +413,6 @@ test('local: fbi init with-tasks', async t => {
 
 test('local: fbi init with-all', async t => {
   await ensureTmpdir(t.context.tmpdir)
-  const localProjectDir = path.join(t.context.tmpdir, 'demo')
   const msg = await execa.stdout(
     fbi,
     ['init', localTmplShortName, 'demo', '-a'],
@@ -561,7 +554,7 @@ test('local: run task: with mode -T', async t => {
 })
 
 test('local: task emit', async t => {
-  const msg = await execa.stdout(fbi, ['emit'], {
+  await execa.stdout(fbi, ['emit'], {
     cwd: localTmplPath
   })
   t.pass()

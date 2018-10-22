@@ -1,5 +1,5 @@
 import test from 'ava'
-import {promisify} from '../../lib/utils'
+import { promisify } from '../../lib/utils'
 
 // Promisify
 const twice = (data, callback) => {
@@ -20,7 +20,7 @@ const twiceError = (data, callback) => {
   })
 }
 
-async function tests(t) {
+async function tests (t) {
   try {
     const pfn = promisify(twice)
     await pfn(5)
