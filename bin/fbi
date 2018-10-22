@@ -3,7 +3,18 @@
 
 process.on('unhandledRejection', (error) => {
   console.log(error)
+  process.exit(1)
 })
+
+const version = parseFloat(process.versions.node.match(/(.*)\./)[1])
+const versionTarget = 7.6
+if (version < versionTarget) {
+  console.error(
+    `Error: fbi v3+ requires Node.js v${versionTarget} or higher (you have v${version}).`
+  )
+  process.exit(1)
+}
+
 
 const Cli = require('../lib/cli')
 const cli = new Cli()
