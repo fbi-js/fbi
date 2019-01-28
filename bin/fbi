@@ -7,11 +7,13 @@ process.on('unhandledRejection', (error) => {
   process.exit(1)
 })
 
-const version = parseFloat(process.versions.node.match(/(.*)\./)[1])
-const versionTarget = 8.2
-if (version < versionTarget) {
+const targets = [8, 2]
+const version = process.versions.node.match(/(.*)\./)[1]
+const versions = version.split('.').map(str => str * 1)
+
+if (versions[0] < targets[0] || (versions[0] === targets[0] && versions[1] < targets[1])) {
   console.error(
-    `Error: fbi v3.2+ requires Node.js v${versionTarget} or higher (you have v${version}).`
+    `Error: fbi v3.2+ requires Node.js v${targets.join('.')} or higher (you have v${version}).`
   )
   process.exit(1)
 }
