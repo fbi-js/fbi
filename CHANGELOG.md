@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.2.4"></a>
+## [3.2.4](https://github.com/neikvon/fbi/compare/v3.2.3...v3.2.4) (2019-01-29)
+
+
+### Bug Fixes
+
+* **version:** don't throw error when version control is not supported ([7ad1855](https://github.com/neikvon/fbi/commit/7ad1855))
+
+
+
 <a name="3.2.3"></a>
 ## [3.2.3](https://github.com/neikvon/fbi/compare/v3.2.2...v3.2.3) (2019-01-28)
 
