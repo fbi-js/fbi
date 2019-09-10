@@ -22,10 +22,7 @@ const projectDir = path.join(tmpdir, 'demo')
 // local
 const localTmplName = 'fbi-project-local-template-for-task'
 const localTmplShortName = 'local-template-for-task'
-const localTmplPath = path.join(
-  __dirname,
-  '../fixtures/templates/' + localTmplShortName
-)
+const localTmplPath = path.join(__dirname, '../fixtures/templates/' + localTmplShortName)
 const tmpdirLocal = tempfile()
 const localProjectDir = path.join(tmpdirLocal, 'demo')
 
@@ -67,16 +64,8 @@ test.serial('add task', async t => {
 // template
 
 test.serial('fbi update/up', async t => {
-  t.regex(
-    await execa.stdout(fbi, ['up', tmplShortName]),
-    /updated/,
-    'update fail'
-  )
-  t.regex(
-    await execa.stdout(fbi, ['update', tmplName]),
-    /updated/,
-    'update fail'
-  )
+  t.regex(await execa.stdout(fbi, ['up', tmplShortName]), /updated/, 'update fail')
+  t.regex(await execa.stdout(fbi, ['update', tmplName]), /updated/, 'update fail')
 })
 
 test('fbi update with-*/update version', async t => {
@@ -177,37 +166,21 @@ test('fbi init with specified version/Update version', async t => {
   const dir = path.join(t.context.tmpdir, 'demo')
 
   // Init with version
-  const msg = await execa.stdout(
-    fbi,
-    ['init', `${tmplShortName}@${tmplVersions[0]}`, 'demo'],
-    {
-      cwd: t.context.tmpdir
-    }
-  )
+  const msg = await execa.stdout(fbi, ['init', `${tmplShortName}@${tmplVersions[0]}`, 'demo'], {
+    cwd: t.context.tmpdir
+  })
   t.regex(msg, /created successfully/, 'init with version fail')
 
   // Update version
   const msgUse = await execa.stdout(fbi, ['use', tmplVersions[1]], {
     cwd: dir
   })
-  t.regex(
-    msgUse,
-    /Version changed to|Template already in version/,
-    'update version fail'
-  )
+  t.regex(msgUse, /Version changed to|Template already in version/, 'update version fail')
 
-  const msgUse2 = await execa.stdout(
-    fbi,
-    ['use', tmplVersions[0].replace('v', '')],
-    {
-      cwd: dir
-    }
-  )
-  t.regex(
-    msgUse2,
-    /Version changed to|Template already in version/,
-    'update version fail'
-  )
+  const msgUse2 = await execa.stdout(fbi, ['use', tmplVersions[0].replace('v', '')], {
+    cwd: dir
+  })
+  t.regex(msgUse2, /Version changed to|Template already in version/, 'update version fail')
 
   const msgUse3 = await execa.stdout(fbi, ['use', 'v0.0.1'], {
     cwd: dir
@@ -230,10 +203,7 @@ test('run global task', async t => {
 test('run global task with param t', async t => {
   t.regex(await execa.stdout(fbi, ['fortest', '-t']), /task param t is true/)
   t.regex(await execa.stdout(fbi, ['fortest', '--t']), /task param t is true/)
-  t.regex(
-    await execa.stdout(fbi, ['fortest', '--t=false']),
-    /task param t is false/
-  )
+  t.regex(await execa.stdout(fbi, ['fortest', '--t=false']), /task param t is false/)
 })
 
 test('run template task: check options valid', async t => {
@@ -261,10 +231,7 @@ test('run template task: promises', async t => {
 })
 
 test('run template task: in template', async t => {
-  t.regex(
-    await execa.stdout(fbi, ['tp1', '-T'], { cwd: projectDir }),
-    /Running template task/
-  )
+  t.regex(await execa.stdout(fbi, ['tp1', '-T'], { cwd: projectDir }), /Running template task/)
 })
 
 test('run template task: with params', async t => {
@@ -287,7 +254,7 @@ test('run template task: shoud not found', async t => {
     await execa.stdout(fbi, ['task-noexist'], {
       cwd: projectDir
     }),
-    /Error: Task `task-noexist` not found/
+    /Command not found/
   )
 })
 
@@ -315,14 +282,8 @@ test.serial('local: add template & init project', async t => {
 // template
 
 test.serial('local: fbi update/up', async t => {
-  t.regex(
-    await execa.stdout(fbi, ['up', localTmplShortName]),
-    /not support version control/
-  )
-  t.regex(
-    await execa.stdout(fbi, ['update', localTmplName]),
-    /not support version control/
-  )
+  t.regex(await execa.stdout(fbi, ['up', localTmplShortName]), /not support version control/)
+  t.regex(await execa.stdout(fbi, ['update', localTmplName]), /not support version control/)
 })
 
 test('local: fbi update with-*/update version', async t => {
@@ -389,37 +350,25 @@ test('local: fbi update with-*/update version', async t => {
 
 test('local: fbi init with-options', async t => {
   await ensureTmpdir(t.context.tmpdir)
-  const msg = await execa.stdout(
-    fbi,
-    ['init', localTmplShortName, 'demo', '-o'],
-    {
-      cwd: t.context.tmpdir
-    }
-  )
+  const msg = await execa.stdout(fbi, ['init', localTmplShortName, 'demo', '-o'], {
+    cwd: t.context.tmpdir
+  })
   t.regex(msg, /created successfully/, 'init with-options fail')
 })
 
 test('local: fbi init with-tasks', async t => {
   await ensureTmpdir(t.context.tmpdir)
-  const msg = await execa.stdout(
-    fbi,
-    ['init', localTmplShortName, 'demo', '-t'],
-    {
-      cwd: t.context.tmpdir
-    }
-  )
+  const msg = await execa.stdout(fbi, ['init', localTmplShortName, 'demo', '-t'], {
+    cwd: t.context.tmpdir
+  })
   t.regex(msg, /created successfully/, 'local init with-tasks fail')
 })
 
 test('local: fbi init with-all', async t => {
   await ensureTmpdir(t.context.tmpdir)
-  const msg = await execa.stdout(
-    fbi,
-    ['init', localTmplShortName, 'demo', '-a'],
-    {
-      cwd: t.context.tmpdir
-    }
-  )
+  const msg = await execa.stdout(fbi, ['init', localTmplShortName, 'demo', '-a'], {
+    cwd: t.context.tmpdir
+  })
   t.regex(msg, /created successfully/, 'init with-all fail')
 })
 
@@ -428,13 +377,9 @@ test('local: fbi init with specified version/Update version', async t => {
   const localProjectDir = path.join(t.context.tmpdir, 'demo')
 
   // Init with version
-  const msg = await execa.stdout(
-    fbi,
-    ['init', `${localTmplShortName}@v3.0.0`, 'demo'],
-    {
-      cwd: t.context.tmpdir
-    }
-  )
+  const msg = await execa.stdout(fbi, ['init', `${localTmplShortName}@v3.0.0`, 'demo'], {
+    cwd: t.context.tmpdir
+  })
   t.regex(msg, /not support/, 'init with version fail')
 
   // Update version
@@ -471,11 +416,7 @@ test('local: fbi init: template not exist', async t => {
   const ret = await execa.stdout(fbi, ['init', 'not-exist', 'demo'], {
     cwd: t.context.tmpdir
   })
-  t.regex(
-    ret,
-    /Template `not-exist` not found/,
-    'init template should not exist'
-  )
+  t.regex(ret, /Template `not-exist` not found/, 'init template should not exist')
 })
 
 test('local: fbi add: invalid', async t => {
@@ -531,7 +472,7 @@ test('local: run task: not found', async t => {
     await execa.stdout(fbi, ['task-noexist'], {
       cwd: localProjectDir
     }),
-    /Error: Task `task-noexist` not found/
+    /Command not found/
   )
 })
 
