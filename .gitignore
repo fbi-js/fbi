@@ -1,11 +1,10 @@
-# Files
-*.log
-*.bak.js
 .DS_Store
-
-# Folders
-tmp/
-backup/
-coverage/
-.nyc_output/
-node_modules/
+*-debug.log
+*-error.log
+/.nyc_output
+/lib
+/package-lock.json
+/tmp
+/data
+node_modules
+yarn.lock
