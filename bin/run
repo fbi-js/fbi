@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+process.on('unhandledRejection', error => {
+  console.error(error)
+  process.exit(1)
+})
+
+const { Cli } = require('../lib/cli')
+const cli = new Cli()
+cli.run()

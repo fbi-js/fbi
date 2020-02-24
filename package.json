@@ -1,0 +1,71 @@
+{
+  "name": "fbi",
+  "description": "A workflow tool in command-line",
+  "version": "4.0.0-alpha.1",
+  "author": "shaw @neikvon",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "bin": {
+    "fbi": "./bin/run"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/lib"
+  ],
+  "scripts": {
+    "help": "tsc --help",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "posttest": "tslint -p test -t stylish",
+    "build": "rm -rf lib && tsc",
+    "watch": "npm run build && tsc --watch",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "keywords": [
+    "fbi",
+    "tool",
+    "workflow",
+    "development",
+    "command line",
+    "node.js"
+  ],
+  "license": "MIT",
+  "repository": "fbi-js/fbi-next",
+  "homepage": "https://github.com/fbi-js/fbi-next",
+  "bugs": "https://github.com/fbi-js/fbi-next/issues",
+  "dependencies": {
+    "@fbi-js/commander": "workspace:*",
+    "@fbi-js/utils": "workspace:*",
+    "chalk": "^3.0.0",
+    "clean-stack": "^2.2.0",
+    "commander": "5.0.0-3",
+    "ejs": "^3.0.1",
+    "enquirer": "^2.3.4",
+    "execa": "^4.0.0",
+    "fs-extra": "^8.1.0",
+    "ora": "^4.0.3",
+    "semver": "^7.1.3",
+    "tiny-glob": "^0.2.6"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.9",
+    "@types/ejs": "^3.0.0",
+    "@types/fs-extra": "^8.0.1",
+    "@types/glob": "^7.1.1",
+    "@types/inquirer": "^6.5.0",
+    "@types/mocha": "^7.0.1",
+    "@types/node": "^13.7.1",
+    "@types/semver": "^7.1.0",
+    "@typescript-eslint/eslint-plugin": "^2.19.2",
+    "@typescript-eslint/parser": "^2.19.2",
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "mocha": "^7.0.1",
+    "nyc": "^15.0.0",
+    "ts-node": "^8.6.2",
+    "tslib": "^1.10.0",
+    "typescript": "^3.7.5"
+  }
+}

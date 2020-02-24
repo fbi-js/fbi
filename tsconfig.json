@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "importHelpers": true,
+    "module": "commonjs",
+    "outDir": "./lib",
+    "strict": true,
+    "pretty": true,
+    "target": "es2019",
+    "noImplicitThis": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["templates/**/*"]
+}
