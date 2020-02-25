@@ -1,20 +1,36 @@
 import { join } from 'path'
 import { BaseClass } from './base'
-import { isValidArray, isFunction, isString, ensureArray } from '@fbi-js/utils'
+import { isValidArray, isFunction, isString, ensureArray, isArray } from '@fbi-js/utils'
+
+type FileMap = {
+  from: string
+  to: string
+  options?: {}
+  data?: {}
+}
+
+type StringOrFileMap = string | FileMap
+
+type Files = {
+  copy?: StringOrFileMap[]
+  render?: StringOrFileMap[]
+  renderOptions?: [] | {}
+}
 
 export abstract class Template extends BaseClass {
   [key: string]: any
   public abstract id = ''
   public description = ''
   public path = ''
+  public templates: Template[] = []
   protected renderer?: Function
-
   protected data: Record<string | number, any> = {}
-  protected files: Record<'copy' | 'render', any[]> = {
-    copy: [],
-    render: []
-  }
+  protected files: Files = {}
   protected targetDir = process.cwd()
+
+  constructor() {
+    super()
+  }
 
   public async run(data?: any): Promise<any> {
     if (data) {
@@ -39,16 +55,14 @@ export abstract class Template extends BaseClass {
     this.targetDir = join(process.cwd(), (project && project.name) || '')
     this.debug(`${debugPrefix} targetDir: ${this.targetDir}`)
 
-    if (isValidArray(this.files.copy)) {
+    if (this.files.copy && isValidArray(this.files.copy)) {
       this.debug(`${debugPrefix} start copy`)
       await this.copy(this.files.copy)
     }
 
-    if (isFunction(this.renderer)) {
-      if (isValidArray(this.files.render)) {
-        this.debug(`${debugPrefix} start render`)
-        await this.render(this.files.render, this.data)
-      }
+    if (isFunction(this.renderer) && this.files.render && isValidArray(this.files.render)) {
+      this.debug(`${debugPrefix} start render`)
+      await this.render(this.files.render, this.data, this.renderOptions)
     }
 
     this.debug(`${debugPrefix} run install`)
@@ -61,6 +75,23 @@ export abstract class Template extends BaseClass {
     return this.data
   }
 
+  public resolveTemplate(templateId: string) {
+    const template = this.templates.find(x => x.id === templateId)
+    if (!template) {
+      this.debug(
+        `Template (${this.id}${this.factory ? `:${this.factory.id}` : ''}):`,
+        `template "${templateId}" not found`
+      )
+    } else {
+      this.debug(
+        `Template (${this.id}${this.factory ? `:${this.factory.id}` : ''}):`,
+        `found template "${templateId}"`
+      )
+    }
+
+    return template
+  }
+
   protected async prompting(): Promise<any> {}
   protected async start(): Promise<any> {}
   protected async configuring(): Promise<any> {}
@@ -68,8 +99,8 @@ export abstract class Template extends BaseClass {
   protected async install(): Promise<any> {}
   protected async end(): Promise<any> {}
 
-  private async copy(fileMaps: any[]) {
-    const maps = this.foramtFileMaps(fileMaps)
+  private async copy(fileMaps: StringOrFileMap[]) {
+    const maps: FileMap[] = this.foramtFileMaps(fileMaps)
     for (const map of maps) {
       const paths = await this.globFile({ from: map.from })
       // console.log('copy', { map, paths })
@@ -96,7 +127,11 @@ export abstract class Template extends BaseClass {
     }
   }
 
-  private async render(fileMaps: any[], data: Record<string | number, any>, ...options: any[]) {
+  private async render(
+    fileMaps: StringOrFileMap[],
+    data: Record<string | number, any>,
+    options: [] | {}
+  ) {
     if (!this.renderer || !isFunction(this.renderer)) {
       return
     }
@@ -113,10 +148,11 @@ export abstract class Template extends BaseClass {
         const stats = await this.fs.stat(src)
         if (stats.isFile()) {
           const content = await this.fs.readFile(src, 'utf8')
+          const opts = Array.isArray(options) ? options : [options]
           const rendered = await this.renderer(
             content.trim() + `\n`,
             { ...data, ...(map.data || {}) },
-            ...options
+            ...opts
           ) // ejs.render(content.trim() + `\n`, data, { async: true })
           const dest = join(this.targetDir, replace.join('/'), rest.join('/'))
           this.debug('render:', p, '=>', dest.replace(this.targetDir + '/', ''))
@@ -126,13 +162,13 @@ export abstract class Template extends BaseClass {
     }
   }
 
-  private foramtFileMaps(fileMaps: any[]) {
+  private foramtFileMaps(fileMaps: any[]): FileMap[] {
     return ensureArray(fileMaps)
       .map((m: any) => (isString(m) ? { from: m, to: m } : isFunction(m) ? m() : m))
       .filter((m: any) => Boolean(m) && m.from && m.to)
   }
 
-  private async globFile({ from, options }: Record<string | number, any>) {
+  private async globFile({ from, options }: Record<string, any>): Promise<string[]> {
     const patterns = ensureArray(from)
     let ret: string[] = []
     for (const p of patterns) {

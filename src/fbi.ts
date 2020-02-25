@@ -5,6 +5,7 @@ import { Template } from './core/template'
 import { Plugin } from './core/plugin'
 import CommandList from './commands/list'
 import CommandLink from './commands/link'
+import CommandUnLink from './commands/unlink'
 import CommandInfo from './commands/info'
 import CommandCreate from './commands/create'
 import PluginLogger from './plugins/logger'
@@ -15,6 +16,7 @@ export class Fbi extends Factory {
   commands: Command[] = [
     new CommandList(this),
     new CommandLink(this),
+    new CommandUnLink(this),
     new CommandInfo(this),
     new CommandCreate(this)
   ]
@@ -70,7 +72,7 @@ export class Fbi extends Factory {
     if (!factory) {
       this.debug('Fbi:', `Factory "${factoryId}" not found`)
     } else {
-      this.debug(`Fbi: found factory`, this.style.bold(factory.id))
+      this.debug(`Fbi: found factory "${factoryId}"`)
     }
 
     return factory

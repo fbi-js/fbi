@@ -14,6 +14,17 @@ export abstract class Factory extends BaseClass {
   public plugins: Plugin[] = []
   public description: string = ''
 
+  public resolveTemplate(templateId: string) {
+    const template = this.templates.find(x => x.id === templateId)
+    if (!template) {
+      this.debug(`Factory (${this.id}):`, `template "${templateId}" not found`)
+    } else {
+      this.debug(`Factory (${this.id}):`, `found template "${templateId}"`)
+    }
+
+    return template
+  }
+
   // public createCommand(option: any): ICommand {
   //   this.log(`Factory: (${this.id})`, `createCommand ${option.id}`)
   //   const command: ICommand = new Command(option.id)

@@ -40,33 +40,14 @@ export class Store {
     }
   }
 
-  get(key?: string, where?: any) {
-    // if (prefix) {
-    //   if (typeof prefix === 'string') {
-    //     return this.data[prefix + key]
-    //   }
-
-    //   if (Array.isArray(prefix)) {
-    //     const ret: any[] = []
-    //     prefix.forEach((p: string) => {
-    //       if (this.data[p + key]) {
-    //         ret.push(this.data[p + key])
-    //       }
-    //     })
-    //     return ret.length < 1 ? null : ret
-    //   }
-
-    //   return null
-    // }
-
-    // return key ? this.data[key] : this.data
+  get(key?: string, where?: Record<string | number, any>) {
     if (!key) {
       return this.data
     }
 
     const data = getValueByProperty(this.data, key)
     if (isArray(data) && isValidObject(where)) {
-      return data.filter(item =>
+      return data.filter((item: Record<string | number, any>) =>
         Object.entries(where as any).some(([k, v]: any) => item[k] && item[k] === v)
       )
     }
@@ -99,11 +80,11 @@ export class Store {
   // this.data: {a:{ arr: [{x:1, y:2}, {x:2, y:3}, {x:3, y:1}]}}
   // del('a.arr', {x:1})
   // del('a.arr', {x:1, y:2})
-  del(key: string, where?: any) {
+  del(key: string, where?: Record<string | number, any>) {
     if (isValidObject(where)) {
       const arr = getValueByProperty(this.data, key)
       if (isArray(arr)) {
-        const newArr = arr.filter(item =>
+        const newArr = arr.filter((item: Record<string | number, any>) =>
           Object.entries(where as any).some(([k, v]: any) => item[k] === undefined || item[k] !== v)
         )
         setValueByProperty(this.data, key, newArr)
@@ -111,10 +92,7 @@ export class Store {
     } else {
       setValueByProperty(this.data, key, null)
     }
-    // const keys = ensureArray(key)
-    // for (const k of keys) {
-    //   delete this.data[k]
-    // }
+
     return this.sync()
   }
 

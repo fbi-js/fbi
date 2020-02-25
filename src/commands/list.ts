@@ -26,6 +26,11 @@ export default class CommandList extends Command {
     this.debug(`Factory: (${this.factory.id})`, 'from command', this.id, { factories, flags })
     this.factory.createAllFactories()
 
+    // const ff = this.factory.resolveFactory('factory')
+    // const t1 = (ff && ff.resolveTemplate('factory')) || null
+
+    // console.log(t1 && t1.resolveTemplate('command'))
+
     const hasTarget = isValidArray(factories)
     if (hasTarget) {
       this.listTarget = factories

@@ -15,16 +15,46 @@ export default class CommandCreate extends Command {
     super()
   }
 
-  async run(template: any, project: any, flags: any) {
-    // get all templates
+  async run(inputTemplate: any, project: any, flags: any) {
     const factories = this.factory.createAllFactories()
-    const templates = flatten(factories.map((f: Factory) => f.templates))
+
+    // if is fbi project
+    const usingFactory = this.context.get('config.factory')
+    let subTemplates
+
+    if (usingFactory?.id) {
+      this.debug(`current project using factory "${usingFactory.id}"`)
+      const factory = this.factory.resolveFactory(usingFactory.id)
+      // console.log({ factory })
+      if (usingFactory.template) {
+        const template = factory?.resolveTemplate(usingFactory.template)
+        // console.log({ template })
+        subTemplates = template?.templates
+      }
+    }
+    // console.log({ subTemplates })
+
+    if (usingFactory) {
+      this.log()
+      this.log(
+        `current project is using template "${usingFactory.template}" from factory "${usingFactory.id}"`
+      )
+      this.log(`you can only use sub-templates`)
+      if (!isValidArray(subTemplates)) {
+        this.warn(`but there are no sub-templates`).exit()
+      }
+      this.log()
+    }
+
+    // get all templates
+    // const factories = this.factory.createAllFactories()
+    const templates = subTemplates || flatten(factories.map((f: Factory) => f.templates))
 
     let templateInstances
-    if (template) {
-      templateInstances = templates.filter((t: Template) => t.id === template)
+    if (inputTemplate) {
+      templateInstances = templates.filter((t: Template) => t.id === inputTemplate)
       if (!isValidArray(templateInstances)) {
-        return this.error(`template "${template}" not found`).exit()
+        return this.error(`template "${inputTemplate}" not found`).exit()
       }
     }
 
@@ -36,7 +66,7 @@ export default class CommandCreate extends Command {
     const { selected } = await this.prompt({
       type: 'select',
       name: 'selected',
-      message: template ? 'Confirm which template to use' : 'Choose a template',
+      message: inputTemplate ? 'Confirm which template to use' : 'Choose a template',
       hint: 'Use arrow-keys, <return> to submit',
       choices: flatten(
         Object.entries(templateInstances).map(([key, val]: any) => {

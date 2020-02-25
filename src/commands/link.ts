@@ -4,10 +4,10 @@ import { Command } from '../core/command'
 
 export default class CommandLink extends Command {
   id = 'link'
-  alias = 'ln'
+  alias = ''
   args = '[factories...]'
   flags = []
-  description = `link local factories`
+  description = `link local factories to the store`
 
   constructor(public factory: Fbi) {
     super()
