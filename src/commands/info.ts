@@ -1,9 +1,8 @@
-import { join, basename } from 'path'
 import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 import { nonEditableKeys } from '../helpers'
 
-export default class LinkCommand extends Command {
+export default class CommandInfo extends Command {
   id = 'info'
   alias = 'if'
   args = ''

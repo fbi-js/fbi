@@ -16,12 +16,12 @@ export class Cli extends BaseClass {
 
   public async run() {
     const isBuiltInCmd = this.isBuiltInCommand()
+    const config = this.loadConfig()
     this.debug('isBuiltInCmd:', isBuiltInCmd)
     if (isBuiltInCmd) {
       this.registerCommands(this.program, this.fbi.commands)
       this.program.allowUnknownOption()
     } else {
-      const config = this.loadConfig()
       const factoryId = (config.factory && config.factory.id) || ''
       if (factoryId) {
         const found = this.store.get(factoryId)
@@ -37,9 +37,7 @@ export class Cli extends BaseClass {
       this.context.set('debug', true)
     })
 
-    await this.program
-      .parseAsync(process.argv)
-      .catch(err => (err ? this.error(err, 'BuiltInCommandError') : ''))
+    await this.program.parseAsync(process.argv).catch(err => (err ? this.error(err).exit() : ''))
   }
 
   private createProgram(id: string): commander.Command {
@@ -68,11 +66,7 @@ export class Cli extends BaseClass {
         cmd.description(command.description)
       }
       cmd.action(async function(...args: any[]) {
-        // try {
         return command.run(...args, this.opts())
-        // } catch (err) {
-        //   _this.error(err, 'CommandError')
-        // }
       })
 
       if (isValidArray(command.flags)) {

@@ -6,12 +6,18 @@ import { Plugin } from './core/plugin'
 import CommandList from './commands/list'
 import CommandLink from './commands/link'
 import CommandInfo from './commands/info'
+import CommandCreate from './commands/create'
 import PluginLogger from './plugins/logger'
 
 export class Fbi extends Factory {
   id = 'fbi'
   factories: Factory[] = []
-  commands: Command[] = [new CommandList(this), new CommandLink(this), new CommandInfo(this)]
+  commands: Command[] = [
+    new CommandList(this),
+    new CommandLink(this),
+    new CommandInfo(this),
+    new CommandCreate(this)
+  ]
   templates: Template[] = []
   plugins: Plugin[] = [new PluginLogger(this)]
 

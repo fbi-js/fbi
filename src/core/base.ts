@@ -5,7 +5,7 @@ import * as chalk from 'chalk'
 import { prompt } from 'enquirer'
 import glob = require('tiny-glob')
 import cleanStack = require('clean-stack')
-import { isWindows } from '@fbi-js/utils'
+import { isWindows, isString } from '@fbi-js/utils'
 
 import { Store } from './store'
 import { getEnv, resolveConfig, hasOwnProperty, defaultConfigs } from '../helpers'
@@ -90,38 +90,12 @@ export abstract class BaseClass {
   }
 
   error(...messages: any[]): this {
-    console.log(chalk.red(`[error]`), ...messages.map(m => safeStylized(m, chalk.red)))
+    const errors = messages.map((err: any) =>
+      isString(err) ? err : (err.stack && cleanError(err.stack)) || err
+    )
+    console.log(chalk.red(`[error]`), ...errors.map(m => safeStylized(m, chalk.red)))
     return this
   }
-
-  // error(err: any, type?: string): this {
-  //   const pad = '\n'
-  //   const prefix = type ? chalk.red(`[${type}]`) : ''
-  //   if (typeof err === 'string') {
-  //     console.error(`${prefix}${chalk.red(err)}`)
-  //   } else if (typeof err === 'object') {
-  //     const stack = (err.stack && cleanError(err.stack)) || ''
-  //     const info =
-  //       (stack &&
-  //         stack
-  //           .split('\n')
-  //           .map((m: string) => m.trimLeft())
-  //           .filter(Boolean)
-  //           .map((m: string, idx: number) => (idx === 0 ? chalk.red(m) : m))
-  //           .join(pad)) ||
-  //       ''
-  //     // const code = err.code ? `${chalk.red(`[${err.code}]`)}` : ''
-  //     console.error(`${prefix}${info}`)
-  //     // const command = err.command ? `${pad}${chalk.dim('command: ') + chalk.red(err.command)}` : ''
-  //     // console.error(
-  //     //   `${chalk.grey('name:')} ${chalk.red(errName)}${code}${command}${
-  //     //     info ? `${pad}${chalk.dim('info:')} ${info}` : ''
-  //     //   }`
-  //     // )
-  //   }
-
-  //   return this
-  // }
 
   clearConsole(): this {
     process.stdout.write(isWindows ? '\x1B[2J\x1B[0f' : '\x1B[2J\x1B[3J\x1B[H')

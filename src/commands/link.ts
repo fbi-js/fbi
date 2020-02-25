@@ -2,7 +2,7 @@ import { join, basename } from 'path'
 import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 
-export default class LinkCommand extends Command {
+export default class CommandLink extends Command {
   id = 'link'
   alias = 'ln'
   args = '[factories...]'
@@ -41,15 +41,6 @@ export default class LinkCommand extends Command {
       })
 
       this.debug('Save to store, done')
-
-      // try loading plugin
-      // this.log(`Try loading plugin ${baseInfo.id}...`)
-      // const pluginInstance = await fbi.load(baseInfo.id)
-      // if (!pluginInstance) {
-      //   this.log('Please fix the error and try again')
-      //   continue
-      // }
-      // this.log(`Plugin ${baseInfo.id} loaded successfully`)
 
       linkSpinner.succeed(`${this.style.yellow(baseInfo.id)} successfully linked`)
     }

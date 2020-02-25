@@ -1,6 +1,6 @@
-import { join, dirname } from 'path'
+import { join } from 'path'
 import { BaseClass } from './base'
-import { isValidArray, isFunction, isString, isValidObject, ensureArray } from '@fbi-js/utils'
+import { isValidArray, isFunction, isString, ensureArray } from '@fbi-js/utils'
 
 export abstract class Template extends BaseClass {
   [key: string]: any
@@ -8,22 +8,34 @@ export abstract class Template extends BaseClass {
   public description = ''
   public path = ''
   protected renderer?: Function
-  protected answers: Record<string | number, any> = {}
+
+  protected data: Record<string | number, any> = {}
   protected files: Record<'copy' | 'render', any[]> = {
     copy: [],
     render: []
   }
   protected targetDir = process.cwd()
 
-  public async run(...args: any[]): Promise<void> {
+  public async run(data?: any): Promise<any> {
+    if (data) {
+      this.data = data
+    }
+
+    if (!this.data.factory || !this.data.factory.path) {
+      this.error(`need path of factory`)
+      return this.exit()
+    }
+
+    this.rootPath = join(this.data.factory.path, this.path)
+
     const debugPrefix = `Template "${this.id}"`
     this.debug(`${debugPrefix} run prompting`)
     await this.prompting()
     this.debug(`${debugPrefix} run start`)
     await this.start()
-    this.debug(`${debugPrefix} run writing`)
+    this.debug(`\n${debugPrefix} run writing`)
     await this.writing()
-    const project = this.answers.project
+    const project = this.data.project
     this.targetDir = join(process.cwd(), (project && project.name) || '')
     this.debug(`${debugPrefix} targetDir: ${this.targetDir}`)
 
@@ -32,9 +44,11 @@ export abstract class Template extends BaseClass {
       await this.copy(this.files.copy)
     }
 
-    if (isFunction(this.renderer) && isValidArray(this.files.render)) {
-      this.debug(`${debugPrefix} start render`)
-      await this.render(this.files.render, this.answers)
+    if (isFunction(this.renderer)) {
+      if (isValidArray(this.files.render)) {
+        this.debug(`${debugPrefix} start render`)
+        await this.render(this.files.render, this.data)
+      }
     }
 
     this.debug(`${debugPrefix} run install`)
@@ -43,30 +57,29 @@ export abstract class Template extends BaseClass {
     await this.end()
 
     await this.configuring()
+
+    return this.data
   }
 
-  public async prompting(): Promise<any> {}
-  public async start(): Promise<any> {}
-  public async configuring(): Promise<any> {}
-  public async writing(): Promise<any> {}
-  public async install(): Promise<any> {}
-  public async end(): Promise<any> {}
+  protected async prompting(): Promise<any> {}
+  protected async start(): Promise<any> {}
+  protected async configuring(): Promise<any> {}
+  protected async writing(): Promise<any> {}
+  protected async install(): Promise<any> {}
+  protected async end(): Promise<any> {}
 
-  private async copy(files: any[]) {
-    const maps = ensureArray(files)
+  private async copy(fileMaps: any[]) {
+    const maps = this.foramtFileMaps(fileMaps)
     for (const map of maps) {
-      const opts = isString(map) ? { from: map, to: map } : map
-      if (!isValidObject(opts)) {
-        continue
-      }
-      const paths = await this.globFile(opts)
-      const replace = opts.to.split('/').filter(Boolean)
+      const paths = await this.globFile({ from: map.from })
+      // console.log('copy', { map, paths })
+      const replace = map.to.split('/').filter(Boolean)
       for (const p of paths) {
         const rest = p
           .split('/')
           .filter(Boolean)
           .slice(replace.length)
-        const src = join(this.path as string, p)
+        const src = join(this.rootPath, p)
         if (!(await this.fs.pathExists(src))) {
           this.warn(`${src} not found`)
           continue
@@ -74,62 +87,64 @@ export abstract class Template extends BaseClass {
         const dest = join(this.targetDir, replace.join('/'), rest.join('/'))
         this.debug(
           'copy:',
-          src.replace(this.path + '/', ''),
+          src.replace(this.rootPath + '/', ''),
           '=>',
           dest.replace(this.targetDir + '/', '')
         )
-        await this.fs.ensureDir(dirname(dest))
-        await this.fs.copy(src, dest)
+        await this.fs.copy(src, dest, map.options || {})
       }
     }
   }
-  private async render(files: any[], data: Record<string | number, any>, ...options: any[]) {
-    const maps = ensureArray(files)
-    for (const map of maps) {
-      const opts = isString(map) ? { from: map, to: map } : map
-      if (!isValidObject(opts)) {
-        continue
-      }
 
-      const paths = await this.globFile(opts)
-      const replace = opts.to.split('/').filter(Boolean)
+  private async render(fileMaps: any[], data: Record<string | number, any>, ...options: any[]) {
+    if (!this.renderer || !isFunction(this.renderer)) {
+      return
+    }
+    const maps = this.foramtFileMaps(fileMaps)
+    for (const map of maps) {
+      const paths = await this.globFile({ from: map.from })
+      const replace = map.to.split('/').filter(Boolean)
       for (const p of paths) {
         const rest = p
           .split('/')
           .filter(Boolean)
           .slice(replace.length)
-        const src = join(this.path as string, p)
+        const src = join(this.rootPath, p)
         const stats = await this.fs.stat(src)
         if (stats.isFile()) {
           const content = await this.fs.readFile(src, 'utf8')
-          const rendered = await this.renderFn(content.trim() + `\n`, data, ...options) // ejs.render(content.trim() + `\n`, data, { async: true })
-          const destFile = join(this.targetDir, replace.join('/'), rest.join('/'))
-          this.debug('render:', p, '=>', destFile)
-          await this.fs.ensureDir(dirname(destFile))
-          await this.write(rendered, destFile)
+          const rendered = await this.renderer(
+            content.trim() + `\n`,
+            { ...data, ...(map.data || {}) },
+            ...options
+          ) // ejs.render(content.trim() + `\n`, data, { async: true })
+          const dest = join(this.targetDir, replace.join('/'), rest.join('/'))
+          this.debug('render:', p, '=>', dest.replace(this.targetDir + '/', ''))
+          await this.fs.outputFile(dest, rendered, map.options || {})
         }
       }
     }
   }
 
-  private async write(content: string, dest: string) {
-    await this.fs.ensureDir(dirname(dest))
-    await this.fs.writeFile(dest, content)
+  private foramtFileMaps(fileMaps: any[]) {
+    return ensureArray(fileMaps)
+      .map((m: any) => (isString(m) ? { from: m, to: m } : isFunction(m) ? m() : m))
+      .filter((m: any) => Boolean(m) && m.from && m.to)
   }
 
-  private async globFile({ from, options }: Record<string | number, any>, cwd = this.path) {
+  private async globFile({ from, options }: Record<string | number, any>) {
     const patterns = ensureArray(from)
     let ret: string[] = []
     for (const p of patterns) {
       if (p.trim()) {
         const r = await this.glob(p.trim(), {
-          cwd,
+          cwd: this.rootPath,
           dot: true,
           ...(options || {})
         })
         ret = ret.concat(r)
       }
     }
-    return ret
+    return [...new Set(ret)]
   }
 }

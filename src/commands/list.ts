@@ -7,7 +7,7 @@ import { isValidArray, ensureArray, flatten, isFunction } from '@fbi-js/utils'
 const screenColumns = process.stdout.columns > 120 ? 120 : process.stdout.columns || 80
 const minPadWdith = 16
 
-export default class ListCommand extends Command {
+export default class CommandList extends Command {
   id = 'list'
   alias = 'ls'
   args = '[factories...]'
@@ -33,16 +33,17 @@ export default class ListCommand extends Command {
         .filter(Boolean)
     } else {
       const using = ensureArray(this.context.get('config.factory'))
-      if (using) {
+      if (isValidArray(using)) {
         this.listUsing = this.factory.factories.filter((f: Factory) =>
           using.some((f2: any) => f2.id === f.id)
         )
-        if (isValidArray(this.listUsing)) {
-          this.listOthers = this.factory.factories.filter(
+      }
+
+      this.listOthers = isValidArray(this.listUsing)
+        ? this.factory.factories.filter(
             (f: Factory) => !this.listUsing.find((f2: Factory) => f2.id === f.id)
           )
-        }
-      }
+        : this.factory.factories
     }
 
     const allFactories = [...this.listTarget, ...this.listUsing, ...this.listOthers]
