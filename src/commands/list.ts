@@ -25,12 +25,6 @@ export default class CommandList extends Command {
   async run(factories: any, flags: any) {
     this.debug(`Factory: (${this.factory.id})`, 'from command', this.id, { factories, flags })
     this.factory.createAllFactories()
-
-    // const ff = this.factory.resolveFactory('factory')
-    // const t1 = (ff && ff.resolveTemplate('factory')) || null
-
-    // console.log(t1 && t1.resolveTemplate('command'))
-
     const hasTarget = isValidArray(factories)
     if (hasTarget) {
       this.listTarget = factories
@@ -66,7 +60,7 @@ export default class CommandList extends Command {
           .filter(Boolean)
           .map((template: Template) => template.id.length),
         minPadWdith
-      ) + 4
+      ) + 8
 
     if (hasTarget) {
       for (const obj of this.listTarget) {
@@ -74,49 +68,47 @@ export default class CommandList extends Command {
       }
     } else {
       if (isValidArray(this.listUsing)) {
-        this.log(this.style.bold.green('※ Currently using:'))
+        this.log(this.style.bold.green('\n※ Factory in use:'))
         for (const obj of this.listUsing) {
           this.log(await this.showDetail(obj, true))
         }
-      } else {
-        this.log('current directory is not an fbi project')
-        this.log(`use ${this.style.cyan('fbi create')} to create a project`)
-      }
-
-      if (isValidArray(this.listOthers)) {
+      } else if (isValidArray(this.listOthers)) {
         this.log(this.showList(this.listOthers, this.style.cyan('※ Available factories:')))
-        this.log(`\n  ${this.style.grey('use fbi ls <factory>` for detailed usage of a plugin')}`)
+        this.log(`\n  use ${this.style.cyan('fbi list <factory>')} for detailed usage of a factory`)
+        this.log(`  use ${this.style.cyan('fbi create')} to create a project`)
+      } else {
+        this.log('No factories available')
       }
     }
   }
 
   private showList(list: any[], title: string) {
-    const wrapOpts = [screenColumns - this.padWidth, this.padWidth + 2]
-
     let txt = title ? `\n${this.style.bold(title)}\n` : ''
     for (const item of list) {
-      txt += `\n  ${((item.alias ? item.alias + ', ' : '') + (item.id || item.name)).padEnd(
-        this.padWidth,
-        ' '
-      )}${this.wrap(item.description, ...wrapOpts)}`
+      const name = (item.alias ? item.alias + ', ' : '') + (item.id || item.name)
+      txt += this.colWrap(
+        this.lines(name, this.padWidth + 4, 2, true, true),
+        this.lines(item.description, screenColumns - (this.padWidth + 10))
+      )
     }
     return txt
   }
 
-  private async showDetail(obj: any, highlight = false, showProjects = false) {
+  private async showDetail(obj: Factory, highlight = false, showProjects = false) {
     let verTxt = ''
-    if (obj.version) {
-      if (obj.version.current) {
-        verTxt += ' ' + this.style[obj.version.isFresh ? 'green' : 'red'](obj.version.current)
-      }
-      if (obj.version.latest) {
-        verTxt += ' ' + this.style.blue(obj.version.latest)
-      }
-    }
+    // if (obj.version) {
+    //   if (obj.version.current) {
+    //     verTxt += ' ' + this.style[obj.version.isFresh ? 'green' : 'red'](obj.version.current)
+    //   }
+    //   if (obj.version.latest) {
+    //     verTxt += ' ' + this.style.blue(obj.version.latest)
+    //   }
+    // }
     let txt = `\n  ${this.style.bold(obj.id)}${verTxt}`
 
     if (obj.description) {
-      txt += '\n\n  ' + this.wrap(obj.description, screenColumns - 2, 2)
+      // txt += '\n\n  ' + this.wrap(obj.description, screenColumns - 2, 2)
+      txt += '\n\n  ' + obj.description
     }
 
     // commands list
@@ -125,57 +117,64 @@ export default class CommandList extends Command {
       let title = '\n  ▼ Commands:'
       txt += highlight ? title : this.style.bold(title)
       for (const cmd of obj.commands) {
-        const disabled = isFunction(cmd.disabled) ? await cmd.disabled() : cmd.disabled
-        const nameStr = `${cmd.alias ? cmd.alias + ', ' : ''}${cmd.id}${
+        const disabled = isFunction(cmd.disable) ? await cmd.disable() : cmd.disable
+        const name = `${cmd.alias ? cmd.alias + ', ' : ''}${cmd.id}${
           cmd.args ? ` ${cmd.args}` : ''
         }${disabled ? ' (disabled)' : ''}`.padEnd(this.padWidth, ' ')
-        txt += `\n  ${
-          disabled ? this.style.dim(nameStr) : highlight ? this.style.green(nameStr) : nameStr
-        }${
-          cmd.description
-            ? this.wrap(disabled ? this.style.dim(cmd.description) : cmd.description)
-            : ''
-        }`
+        const nameStr =
+          '  ' + (disabled ? this.style.dim(name) : highlight ? this.style.green(name) : name)
+        txt += this.colWrap([nameStr], this.lines(cmd.description))
       }
-      // txt += `\n  ${this.style.grey('Usage: fbi <command>')}`
-      // txt += `\n  ${this.style.grey('Use `fbi <command> -h` for detailed usage of a command')}`
     } else {
       txt += this.style.dim(`\n  No commands available`)
     }
 
     // templates list
-    txt += '\n'
     if (isValidArray(obj.templates)) {
       let title = '\n\n  ▼ Templates:'
       txt += highlight ? title : this.style.bold(title)
       for (const t of obj.templates) {
-        txt += `\n  ${t.id.padEnd(this.padWidth, ' ')}${this.wrap(t.description)}`
+        txt += this.colWrap(
+          this.lines(`- ${t.id}`, this.padWidth - 1, 2, true, true),
+          this.lines(t.description)
+        )
+
+        if (isValidArray(t.templates)) {
+          for (const subt of t.templates) {
+            txt += this.colWrap(
+              this.lines(`  - ${subt.id}`, this.padWidth - 1, 2, true, true),
+              this.lines(subt.description)
+            )
+          }
+        }
       }
-      // txt += `\n  ${this.style.grey('Usage: fbi create <template>')}`
     } else {
       txt += this.style.dim(`\n  No templates available`)
     }
 
     // global plugin === command
-    if (obj.command) {
-      txt += `\n\n      type: global`
-      txt += `\n   version: ${obj.version}`
-      txt += `\n   command: ${obj.command.id}`
-      txt += `\n     alias: ${obj.command.alias}`
-      txt += `\n      from: ${obj.from}`
-    }
+    // if (obj.command) {
+    //   txt += `\n\n      type: global`
+    //   txt += `\n   version: ${obj.version}`
+    //   txt += `\n   command: ${obj.command.id}`
+    //   txt += `\n     alias: ${obj.command.alias}`
+    //   txt += `\n      from: ${obj.from}`
+    // }
 
-    if (showProjects && isValidArray(obj.projects)) {
-      let title = '\n\n  ▼ Projects using the plugin:'
-      txt += highlight ? title : this.style.bold(title)
-      for (let project of obj.projects) {
-        // check if project exist
-        const exist = await this.fs.pathExists(project.path)
-        if (exist) {
-          txt += `\n  ${project.name}: ${project.path}`
-        } else {
-          // remove item from store
-          this.store.del(`${obj.id}.projects`, { path: project.path })
+    if (showProjects) {
+      const projects = this.store.get(`${obj.id}.projects`)
+      if (isValidArray(projects)) {
+        let title = '\n\n  ▼ Projects using the plugin:'
+        txt += highlight ? title : this.style.bold(title)
+        for (let project of projects) {
+          // check if project exist
+          const exist = await this.fs.pathExists(project.path)
+          if (exist) {
+            txt += `\n  ${project.name}: ${project.path}`
+          } else {
+            // remove item from store
+            this.store.del(`${obj.id}.projects`, { path: project.path })
+          }
         }
       }
     }
@@ -183,23 +182,39 @@ export default class CommandList extends Command {
     return txt
   }
 
-  private wrap(str: string, width = screenColumns - this.padWidth, indent = this.padWidth) {
-    if (str.match(/[\n]\s+/)) return str
-    const minWidth = 40
-    if (width < minWidth) return str
+  private lines(
+    str: string,
+    width: number = screenColumns - this.padWidth,
+    indent: number = 0,
+    minWidth: boolean = false,
+    wordBreak: boolean = false
+  ) {
+    if (str.match(/[\n]\s+/)) return [str]
+    let lines = []
+    const indentStr = indent ? Array(indent + 1).join(' ') : ''
 
-    const regex = new RegExp(
-      '.{1,' + (width - 1) + '}([\\s\u200B]|$)|[^\\s\u200B]+?([\\s\u200B]|$)',
-      'g'
+    const regex = wordBreak
+      ? new RegExp(`.{${width}}`, 'g')
+      : new RegExp('.{1,' + (width - 1) + '}([\\s\u200B]|$)|[^\\s\u200B]+?([\\s\u200B]|$)', 'g')
+    lines = str.match(regex) || []
+
+    if (wordBreak) {
+      lines.push(str.substring(lines.join('').length))
+    }
+
+    return (lines as string[]).map(
+      (l: string) => indentStr + (minWidth ? l.padEnd(width + 1, ' ') : l.trimRight())
     )
-    const lines = str.match(regex) || []
-    return lines
-      .map((line, i) => {
-        if (line.slice(-1) === '\n') {
-          line = line.slice(0, line.length - 1)
-        }
-        return (i > 0 && indent ? Array(indent + 1).join(' ') : '') + line.trimRight()
-      })
-      .join('\n')
+  }
+
+  private colWrap(left: string[], right: string[], padWidth = 4) {
+    let txt = ''
+    const leftMaxWidth = Math.max(...left.map((s: string) => s.length))
+    const pad = leftMaxWidth + padWidth
+    const lines = Math.max(left.length, right.length)
+    for (let i = 0; i < lines; i++) {
+      txt += `\n${left[i] || ''}`.padEnd(pad, ' ') + `${right[i] || ''}`
+    }
+    return txt
   }
 }

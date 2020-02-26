@@ -26,8 +26,8 @@ export class Cli extends BaseClass {
       if (factoryId) {
         const found = this.store.get(factoryId)
         if (found && found.path) {
-          const factoryInstance = this.fbi.createFactory(found.path)
-          this.registerCommands(this.program, factoryInstance.commands)
+          const factory = this.fbi.createFactory(found.path)
+          this.registerCommands(this.program, factory.commands)
         }
       }
     }
@@ -65,7 +65,20 @@ export class Cli extends BaseClass {
       if (command.description) {
         cmd.description(command.description)
       }
+      const _this = this
       cmd.action(async function(...args: any[]) {
+        const disabled = command.disable ? await command.disable() : ''
+        const prefix = `command "${command.id}" has been disabled.`
+        const message =
+          typeof disabled === 'string' && disabled.trim()
+            ? `${prefix} ${disabled.trim()}`
+            : disabled
+            ? prefix
+            : ''
+        if (message) {
+          _this.warn(message).exit()
+        }
+
         return command.run(...args, this.opts())
       })
 

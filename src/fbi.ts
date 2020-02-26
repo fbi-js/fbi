@@ -32,9 +32,8 @@ export class Fbi extends Factory {
   }
 
   public createFactory(factory: any, ignoreDuplicateError = false) {
-    const factoryInstance = this._createFactory(
-      isString(factory) ? require(factory).default : factory
-    )
+    const fn = isString(factory) ? require(factory) : factory
+    const factoryInstance = this._createFactory(fn.default || fn)
 
     if (!factoryInstance) {
       this.error(`Fbi:`, `can not create factory`, factory)
