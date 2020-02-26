@@ -1,4 +1,4 @@
-import { isWindows, isMacos, isLinux, hasGit, hasNpm, hasYarn, hasPnpm } from '@fbi-js/utils'
+import { isWindows, isMacos, isLinux, hasGit, hasNpm, hasYarn, hasPnpm } from '../utils'
 
 export function getEnv() {
   return {

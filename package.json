@@ -35,8 +35,6 @@
   "homepage": "https://github.com/fbi-js/fbi-next",
   "bugs": "https://github.com/fbi-js/fbi-next/issues",
   "dependencies": {
-    "@fbi-js/commander": "workspace:*",
-    "@fbi-js/utils": "workspace:*",
     "chalk": "^3.0.0",
     "clean-stack": "^2.2.0",
     "commander": "5.0.0-3",

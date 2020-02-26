@@ -2,7 +2,7 @@ import { Fbi } from '../fbi'
 import { Factory } from '../core/Factory'
 import { Command } from '../core/command'
 import { Template } from '../core/template'
-import { groupBy, flatten, isValidArray } from '@fbi-js/utils'
+import { groupBy, flatten, isValidArray } from '../utils'
 
 export default class CommandCreate extends Command {
   id = 'create'

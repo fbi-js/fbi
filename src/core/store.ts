@@ -9,7 +9,7 @@ import {
   isArray,
   getValueByProperty,
   setValueByProperty
-} from '@fbi-js/utils'
+} from '../utils'
 
 export class Store {
   private data: any

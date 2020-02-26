@@ -1,4 +1,4 @@
-import { isValidArray, isArray } from '@fbi-js/utils'
+import { isValidArray, isArray } from './utils'
 import { BaseClass, Command } from './'
 import { Fbi } from './fbi'
 const pkg = require('../package.json')

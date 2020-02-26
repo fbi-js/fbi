@@ -1,6 +1,6 @@
 import { join } from 'path'
 import { BaseClass } from './base'
-import { isValidArray, isFunction, isString, ensureArray, isArray } from '@fbi-js/utils'
+import { isValidArray, isFunction, isString, ensureArray } from '../utils'
 
 type FileMap = {
   from: string
@@ -53,15 +53,15 @@ export abstract class Template extends BaseClass {
     await this.writing()
     const project = this.data.project
     this.targetDir = join(process.cwd(), (project && project.name) || '')
-    this.debug(`${debugPrefix} targetDir: ${this.targetDir}`)
+    this.debug(`${debugPrefix} rootPath: ${this.rootPath} targetDir: ${this.targetDir}`)
 
     if (this.files.copy && isValidArray(this.files.copy)) {
-      this.debug(`${debugPrefix} start copy`)
+      this.debug(`${debugPrefix} start copy`, this.files.copy)
       await this.copy(this.files.copy)
     }
 
     if (isFunction(this.renderer) && this.files.render && isValidArray(this.files.render)) {
-      this.debug(`${debugPrefix} start render`)
+      this.debug(`${debugPrefix} start render`, this.files.render)
       await this.render(this.files.render, this.data, this.renderOptions)
     }
 
@@ -138,6 +138,7 @@ export abstract class Template extends BaseClass {
     const maps = this.foramtFileMaps(fileMaps)
     for (const map of maps) {
       const paths = await this.globFile({ from: map.from })
+      console.log({ paths })
       const replace = map.to.split('/').filter(Boolean)
       for (const p of paths) {
         const rest = p
@@ -153,7 +154,7 @@ export abstract class Template extends BaseClass {
             content.trim() + `\n`,
             { ...data, ...(map.data || {}) },
             ...opts
-          ) // ejs.render(content.trim() + `\n`, data, { async: true })
+          )
           const dest = join(this.targetDir, replace.join('/'), rest.join('/'))
           this.debug('render:', p, '=>', dest.replace(this.targetDir + '/', ''))
           await this.fs.outputFile(dest, rendered, map.options || {})
@@ -164,14 +165,29 @@ export abstract class Template extends BaseClass {
 
   private foramtFileMaps(fileMaps: any[]): FileMap[] {
     return ensureArray(fileMaps)
-      .map((m: any) => (isString(m) ? { from: m, to: m } : isFunction(m) ? m() : m))
+      .map((m: any) =>
+        isString(m)
+          ? {
+              from: m,
+              to: m
+                .split('/')
+                .filter((x: string) => !!x && !x.includes('*'))
+                .join('/')
+            }
+          : isFunction(m)
+          ? m()
+          : m
+      )
       .filter((m: any) => Boolean(m) && m.from && m.to)
   }
 
   private async globFile({ from, options }: Record<string, any>): Promise<string[]> {
     const patterns = ensureArray(from)
     let ret: string[] = []
-    for (const p of patterns) {
+    for (let p of patterns) {
+      if (p.startsWith('./')) {
+        p = p.slice(2)
+      }
       if (p.trim()) {
         const r = await this.glob(p.trim(), {
           cwd: this.rootPath,

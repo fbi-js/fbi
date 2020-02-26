@@ -5,7 +5,7 @@ import * as chalk from 'chalk'
 import { prompt } from 'enquirer'
 import glob = require('tiny-glob')
 import cleanStack = require('clean-stack')
-import { isWindows, isString } from '@fbi-js/utils'
+import { isWindows, isString } from '../utils'
 
 import { Store } from './store'
 import { getEnv, resolveConfig, hasOwnProperty, defaultConfigs } from '../helpers'

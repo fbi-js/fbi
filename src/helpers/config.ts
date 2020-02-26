@@ -1,6 +1,6 @@
 import { join } from 'path'
 import * as fs from 'fs-extra'
-import { isValidArray, isFunction, isObject, merge } from '@fbi-js/utils'
+import { isValidArray, isFunction, isObject, merge } from '../utils'
 
 export const nonEditableKeys = [
   'rootDirectory',

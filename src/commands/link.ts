@@ -1,4 +1,4 @@
-import { join, basename } from 'path'
+import { join, isAbsolute } from 'path'
 import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 
@@ -18,7 +18,14 @@ export default class CommandLink extends Command {
 
     for (const id of ids) {
       // base info
-      const baseInfo = await this.resolveLocalPath(id)
+      const factory = this.factory.createFactory(id)
+      const baseInfo: any = factory
+        ? {
+            id: factory.id,
+            type: 'local',
+            from: isAbsolute(id) ? id : join(process.cwd(), id)
+          }
+        : null
       if (!baseInfo) {
         this.error(`Unable to load ${this.style.yellow(id)}. Please check if the resource exists`)
         continue
@@ -44,18 +51,5 @@ export default class CommandLink extends Command {
 
       linkSpinner.succeed(`${this.style.yellow(baseInfo.id)} successfully linked`)
     }
-  }
-
-  private async resolveLocalPath(url: string) {
-    const localPath = join(process.cwd(), url)
-    if (await this.fs.pathExists(localPath)) {
-      return {
-        id: url === '.' ? basename(localPath) : url,
-        type: 'local',
-        from: localPath
-      }
-    }
-
-    return null
   }
 }

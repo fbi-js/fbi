@@ -2,7 +2,7 @@ import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 import { Factory } from '../core/factory'
 import { Template } from '../core/template'
-import { isValidArray, ensureArray, flatten, isFunction } from '@fbi-js/utils'
+import { isValidArray, ensureArray, flatten, isFunction } from '../utils'
 
 const screenColumns = process.stdout.columns > 120 ? 120 : process.stdout.columns || 80
 const minPadWdith = 16
@@ -74,10 +74,12 @@ export default class CommandList extends Command {
         }
       } else if (isValidArray(this.listOthers)) {
         this.log(this.showList(this.listOthers, this.style.cyan('※ Available factories:')))
-        this.log(`\n  use ${this.style.cyan('fbi list <factory>')} for detailed usage of a factory`)
-        this.log(`  use ${this.style.cyan('fbi create')} to create a project`)
+        this.log(`\nuse ${this.style.cyan('fbi list <factory>')} for detailed usage of a factory`)
+        this.log(`use ${this.style.cyan('fbi create')} to create a project`)
       } else {
         this.log('No factories available')
+        this.log(`Check official factories here: http://github.com/fbi-js`)
+        this.log(`Use ${this.style.cyan('fbi add [factories]')} for adding factories`)
       }
     }
   }
