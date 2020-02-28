@@ -1,41 +1,32 @@
-import { join } from 'path'
 import * as fs from 'fs-extra'
-import {
-  git,
-  isGitRepo,
-  isObject,
-  isValidObject,
-  merge,
-  isArray,
-  getValueByProperty,
-  setValueByProperty
-} from '../utils'
+import * as assert from 'assert'
+import { isAbsolute, extname } from 'path'
+import { isObject, isValidObject, merge, isArray, getObjectValue, setObjectValue } from '../utils'
 
 export class Store {
-  private data: any
-  private filepath?: string
+  private data: Record<string, any> = {}
 
-  constructor(name?: string, rootDirectory?: string) {
-    if (name && rootDirectory) {
-      this.filepath = join(rootDirectory, `${name}.json`)
+  constructor(readonly filepath?: string) {
+    if (filepath) {
+      assert(
+        isAbsolute(filepath),
+        `store filepath should be an absolute path. recived "${filepath}"`
+      )
+      assert(
+        extname(filepath) === '.json',
+        `store file's extname should be ".json". recived "${extname(filepath)}"`
+      )
+      this.init()
     }
-    this.data = {}
-
-    this.init()
   }
 
   private init() {
     if (this.filepath) {
-      if (fs.pathExistsSync(this.filepath)) {
-        try {
-          this.data = require(this.filepath)
-        } catch (err) {
-          this.data = {}
-          this.sync()
-        }
+      const oldData = fs.readJsonSync(this.filepath, { throws: false })
+      if (oldData) {
+        this.data = oldData
       } else {
-        this.data = {}
-        this.sync()
+        fs.outputJsonSync(this.filepath, this.data)
       }
     }
   }
@@ -45,7 +36,7 @@ export class Store {
       return this.data
     }
 
-    const data = getValueByProperty(this.data, key)
+    const data = getObjectValue(this.data, key)
     if (isArray(data) && isValidObject(where)) {
       return data.filter((item: Record<string | number, any>) =>
         Object.entries(where as any).some(([k, v]: any) => item[k] && item[k] === v)
@@ -56,7 +47,7 @@ export class Store {
   }
 
   set(key: string, value: any) {
-    setValueByProperty(this.data, key, value)
+    setObjectValue(this.data, key, value)
     return this.sync()
   }
 
@@ -64,8 +55,8 @@ export class Store {
     if (isObject(obj)) {
       this.data = merge(this.data, obj as any)
     } else if (typeof obj === 'string' && val) {
-      const oldValue = getValueByProperty(this.data, obj)
-      setValueByProperty(
+      const oldValue = getObjectValue(this.data, obj)
+      setObjectValue(
         this.data,
         obj,
         (isArray(oldValue) && isArray(val)) || (isObject(oldValue) && isObject(val))
@@ -82,17 +73,22 @@ export class Store {
   // del('a.arr', {x:1, y:2})
   del(key: string, where?: Record<string | number, any>) {
     if (isValidObject(where)) {
-      const arr = getValueByProperty(this.data, key)
+      const arr = getObjectValue(this.data, key)
       if (isArray(arr)) {
         const newArr = arr.filter((item: Record<string | number, any>) =>
           Object.entries(where as any).some(([k, v]: any) => item[k] === undefined || item[k] !== v)
         )
-        setValueByProperty(this.data, key, newArr)
+        setObjectValue(this.data, key, newArr)
       }
     } else {
-      setValueByProperty(this.data, key, null)
+      setObjectValue(this.data, key, null)
     }
 
+    return this.sync()
+  }
+
+  clear() {
+    this.data = {}
     return this.sync()
   }
 
@@ -103,14 +99,8 @@ export class Store {
         delete this.data[key]
       }
     }
-    return this.filepath ? fs.outputJSONSync(this.filepath, this.data || {}) : this.data
-  }
-
-  async listVersions(dir: string) {
-    if (await isGitRepo(dir)) {
-      return git.tag.list({ dir })
-    }
-
-    throw new Error(`${dir} is not a git repository`)
+    return this.filepath
+      ? fs.outputJSON(this.filepath, this.data || {}).then(() => this.data)
+      : this.data
   }
 }

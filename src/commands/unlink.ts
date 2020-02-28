@@ -26,11 +26,11 @@ export default class CommandUnLink extends Command {
         this.warn(`factory "${id}" not in the store`).exit()
       }
 
-      const linkSpinner = this.createSpinner(
+      const spinner = this.createSpinner(
         `Unlinking ${this.style.yellow.bold(id)} from the store...`
       ).start()
       this.store.del(id)
-      linkSpinner.succeed(`${this.style.yellow(id)} successfully unlinked`)
+      spinner.succeed(`${this.style.yellow(id)} successfully unlinked`)
     }
   }
 }

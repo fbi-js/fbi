@@ -1,6 +1,6 @@
 import { join } from 'path'
 import { BaseClass } from './base'
-import { isValidArray, isFunction, isString, ensureArray } from '../utils'
+import { isValidArray, isFunction, isString, ensureArray, isValidObject } from '../utils'
 
 type FileMap = {
   from: string
@@ -27,52 +27,48 @@ export abstract class Template extends BaseClass {
   protected data: Record<string | number, any> = {}
   protected files: Files = {}
   protected targetDir = process.cwd()
+  protected _debugPrefix = ''
+  private rootPath = ''
 
   constructor() {
     super()
   }
 
-  public async run(data?: any): Promise<any> {
-    if (data) {
-      this.data = data
-    }
+  public async run(data: Record<string, any>, flags: any): Promise<any> {
+    this.prepare(data)
 
-    if (!this.data.factory || !this.data.factory.path) {
-      this.error(`need path of factory`)
-      return this.exit()
-    }
+    // 1. gathering: this.data
+    this.debug(`${this._debugPrefix} run gathering`)
+    await this.gathering()
+    await this.afterGathering()
 
-    this.rootPath = join(this.data.factory.path, this.path)
+    // 2. checking: verify dir exist
+    this.debug(`${this._debugPrefix} run checking`)
+    await this.checking()
+    await this.afterChecking()
 
-    const debugPrefix = `Template "${this.id}"`
-    this.debug(`${debugPrefix} run prompting`)
-    await this.prompting()
-    this.debug(`${debugPrefix} run start`)
-    await this.start()
-    this.debug(`\n${debugPrefix} run writing`)
+    // 3. writing: this.files
+    this.debug(`${this._debugPrefix} run writing`)
     await this.writing()
-    const project = this.data.project
-    this.targetDir = join(process.cwd(), (project && project.name) || '')
-    this.debug(`${debugPrefix} rootPath: ${this.rootPath} targetDir: ${this.targetDir}`)
+    await this.afterWriting()
 
-    if (this.files.copy && isValidArray(this.files.copy)) {
-      this.debug(`${debugPrefix} start copy`, this.files.copy)
-      await this.copy(this.files.copy)
+    // 4. installing: deps
+    this.debug(`${this._debugPrefix} run installing`)
+    await this.installing(flags)
+    await this.afterInstalling()
+
+    // 5. ending: save data to store
+    this.debug(`${this._debugPrefix} run ending`)
+    await this.ending()
+    await this.afterEnding()
+
+    return {
+      name: this.data.project.name,
+      path: this.targetDir,
+      factory: this.data.factory.id,
+      template: this.data.factory.template,
+      features: this.data.project.features
     }
-
-    if (isFunction(this.renderer) && this.files.render && isValidArray(this.files.render)) {
-      this.debug(`${debugPrefix} start render`, this.files.render)
-      await this.render(this.files.render, this.data, this.renderOptions)
-    }
-
-    this.debug(`${debugPrefix} run install`)
-    await this.install()
-    this.debug(`${debugPrefix} run end`)
-    await this.end()
-
-    await this.configuring()
-
-    return this.data
   }
 
   public resolveTemplate(templateId: string) {
@@ -92,12 +88,46 @@ export abstract class Template extends BaseClass {
     return template
   }
 
-  protected async prompting(): Promise<any> {}
-  protected async start(): Promise<any> {}
-  protected async configuring(): Promise<any> {}
+  protected async gathering(): Promise<any> {}
+  protected async checking(): Promise<any> {}
   protected async writing(): Promise<any> {}
-  protected async install(): Promise<any> {}
-  protected async end(): Promise<any> {}
+  protected async installing(flags: any): Promise<any> {}
+  protected async ending(): Promise<any> {}
+
+  private async afterGathering() {
+    const { project } = this.data
+    this.targetDir = join(process.cwd(), (project && project.name) || '')
+    this.debug(`${this._debugPrefix} rootPath: ${this.rootPath} targetDir: ${this.targetDir}`)
+  }
+  private async afterChecking() {}
+  private async afterWriting() {
+    if (this.files.copy && isValidArray(this.files.copy)) {
+      this.debug(`${this._debugPrefix} start copy`, this.files.copy)
+      await this.copy(this.files.copy)
+    }
+
+    if (isFunction(this.renderer) && this.files.render && isValidArray(this.files.render)) {
+      this.debug(`${this._debugPrefix} start render`, this.files.render)
+      await this.render(this.files.render, this.data, this.renderOptions)
+    }
+  }
+  private async afterInstalling() {}
+  private async afterEnding() {}
+
+  private prepare(data?: any) {
+    this._debugPrefix = `Template "${this.id}"`
+
+    if (data && isValidObject(data)) {
+      this.data = data
+    }
+
+    if (!this.data.factory || !this.data.factory.path) {
+      this.error(`need path of factory`)
+      return this.exit()
+    }
+
+    this.rootPath = join(this.data.factory.path, this.path)
+  }
 
   private async copy(fileMaps: StringOrFileMap[]) {
     const maps: FileMap[] = this.foramtFileMaps(fileMaps)
@@ -138,7 +168,6 @@ export abstract class Template extends BaseClass {
     const maps = this.foramtFileMaps(fileMaps)
     for (const map of maps) {
       const paths = await this.globFile({ from: map.from })
-      console.log({ paths })
       const replace = map.to.split('/').filter(Boolean)
       for (const p of paths) {
         const rest = p

@@ -1,4 +1,4 @@
-import { isObject, isArray, isFunction, isString } from './type'
+import { isObject, isArray, isFunction, isString, isUndef } from './type'
 
 type AnyObject = Record<string | number, any>
 
@@ -79,10 +79,16 @@ export const stringifyObjectItems = (obj: any) => {
   return copy
 }
 
-// Example: getValueByProperty({a:{b:{c:{ xx: 11}}}}, 'a.b.c.xx')
-export const getValueByProperty = (obj: AnyObject, props: string) => {
-  const array = props.split('.').filter(Boolean)
+// Example: getObjectValue({a:{b:{c:{ xx: 11}}}}, 'a.b.c.xx')
+export const getObjectValue = (obj: AnyObject, props?: string) => {
+  if (!props) {
+    return obj
+  }
+  const array = props.split('.').filter((x: any) => !isUndef(x) && x !== '')
   const len = array.length
+  if (len < 1) {
+    return obj
+  }
   return array.slice(0).reduce((acc, curr, i, arr) => {
     const val = acc[curr]
     if (!val) {
@@ -93,16 +99,19 @@ export const getValueByProperty = (obj: AnyObject, props: string) => {
   }, obj)
 }
 
-// Example: setValueByProperty({}, 'a.b.c', [1,2,3])
-// Example: setValueByProperty({a:{b:{c:1}}}, 'a.b.c', [1,2,3])
-export const setValueByProperty = (obj: AnyObject, props: string, val: any, clone = false) => {
+// Example: setObjectValue({}, 'a.b.c', [1,2,3])
+// Example: setObjectValue({a:{b:{c:1}}}, 'a.b.c', [1,2,3])
+export const setObjectValue = (obj: AnyObject, props: string, val: any, clone = false) => {
   if (!obj) {
     return null
   }
 
-  const tmp = clone ? deepClone(obj) : obj
-  const array = props.split('.').filter(Boolean)
+  const array = props.split('.').filter((x: any) => !isUndef(x) && x !== '')
   const len = array.length
+  if (len < 1) {
+    return null
+  }
+  const tmp = clone ? deepClone(obj) : obj
   array.slice(0).reduce((acc, curr, i, arr) => {
     if (i === len - 1) acc[curr] = val
     else if (!acc[curr]) acc[curr] = {}
@@ -116,7 +125,7 @@ export const groupBy = (arr: Array<any>, fn: any): AnyObject => {
   const _fn = isFunction(fn)
     ? fn
     : isString(fn)
-    ? (obj: Record<string, any>) => getValueByProperty(obj, fn)
+    ? (obj: Record<string, any>) => getObjectValue(obj, fn)
     : null
   if (!_fn) {
     return arr

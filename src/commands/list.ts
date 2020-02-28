@@ -79,7 +79,8 @@ export default class CommandList extends Command {
       } else {
         this.log('No factories available')
         this.log(`Check official factories here: http://github.com/fbi-js`)
-        this.log(`Use ${this.style.cyan('fbi add [factories]')} for adding factories`)
+        this.log(`Use ${this.style.cyan('fbi add [factories...]')} for adding remote factories, or`)
+        this.log(`use ${this.style.cyan('fbi link [factories...]')} for linking local factories`)
       }
     }
   }

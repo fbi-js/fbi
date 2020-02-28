@@ -38,13 +38,10 @@ export default class CommandLink extends Command {
 
       // save in store
       this.debug('Save to store...')
-      const oldItem = this.store.get(baseInfo.id)
-      const timeinfo: { updatedAt?: number; createdAt?: number } = {}
-      timeinfo[oldItem ? 'updatedAt' : 'createdAt'] = Date.now()
       this.store.set(baseInfo.id, {
         ...baseInfo,
-        ...timeinfo,
-        path: baseInfo.from
+        path: baseInfo.from,
+        updatedAt: Date.now()
       })
 
       this.debug('Save to store, done')

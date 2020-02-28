@@ -27,7 +27,9 @@ export class Cli extends BaseClass {
         const found = this.store.get(factoryId)
         if (found && found.path) {
           const factory = this.fbi.createFactory(found.path)
-          this.registerCommands(this.program, factory.commands)
+          if (factory && factory.commands) {
+            this.registerCommands(this.program, factory.commands)
+          }
         }
       }
     }
@@ -78,8 +80,13 @@ export class Cli extends BaseClass {
         if (message) {
           _this.warn(message).exit()
         }
-
-        return command.run(...args, this.opts())
+        const opts = this.opts()
+        const parentOpts = this.parent.opts()
+        const debug = opts.debug || parentOpts.debug
+        return command.run(...args, {
+          ...opts,
+          debug
+        })
       })
 
       if (isValidArray(command.flags)) {
@@ -88,6 +95,7 @@ export class Cli extends BaseClass {
           cmd.option(tmp[0], ...tmp.slice(1))
         }
       }
+      cmd.option('-D, --debug', 'output extra debugging')
     }
   }
 

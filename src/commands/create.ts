@@ -63,6 +63,8 @@ export default class CommandCreate extends Command {
       'factory.id'
     )
 
+    // this.prompt
+
     const { selected } = await this.prompt({
       type: 'select',
       name: 'selected',
@@ -85,7 +87,7 @@ export default class CommandCreate extends Command {
           factoryId: this.focused.value
         }
       }
-    })
+    } as any)
 
     const selectedTemplate = templates.find(
       (t: Template) => t.id === selected.templateId && t.factory.id === selected.factoryId
@@ -93,24 +95,42 @@ export default class CommandCreate extends Command {
 
     if (selectedTemplate) {
       // set init data
-      const info: any = await selectedTemplate.run({
-        factory: {
-          ...this.store.get(selected.factoryId),
-          id: selected.factoryId,
-          template: selected.templateId
-        }
-      })
+      const info: Record<string, any> = await selectedTemplate.run(
+        {
+          factory: {
+            ...this.store.get(selected.factoryId),
+            id: selected.factoryId,
+            template: selected.templateId
+          }
+        },
+        flags
+      )
+
+      if (!info) {
+        return
+      }
 
       // update store
-      this.debug(`Save project info to store`)
-      this.store.merge(`${selectedTemplate.factory.id}.projects`, [
-        {
-          ...info.project,
-          // version: version.latest,
-          template: selectedTemplate.id,
-          createdAt: Date.now()
+      this.debug(`Save info into project store`)
+      if (subTemplates) {
+        if (info.path) {
+          this.projectStore.merge(info.path, {
+            features: info.features,
+            updatedAt: Date.now()
+          })
         }
-      ])
+      } else {
+        if (info.path) {
+          this.projectStore.set(info.path, {
+            name: info.name,
+            path: info.path,
+            factory: info.factory,
+            template: info.template,
+            features: info.features,
+            createdAt: Date.now()
+          })
+        }
+      }
     }
   }
 }

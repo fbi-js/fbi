@@ -14,12 +14,13 @@ export default class CommandInfo extends Command {
   }
 
   async run(factories: any, flags: any) {
-    this.clearConsole()
+    this.clear()
 
-    let config = this.loadConfig()
+    const config = this.loadConfig()
+    let globalConfig = {}
 
     if (flags.edit) {
-      const ret = await this.prompt({
+      const ret: Record<'config', any> = await this.prompt({
         type: 'Form',
         name: 'config',
         message: 'Edit fbi global config:',
@@ -33,14 +34,23 @@ export default class CommandInfo extends Command {
               : null
           )
           .filter(Boolean)
-      })
+      } as any)
 
       if (ret.config) {
-        config = config.store.merge(ret.config)
+        globalConfig = await this.configStore.merge(ret.config)
       }
     }
 
     const context = this.context.get()
-    console.log(JSON.stringify(context, null, 2))
+    this.log('debug:', context.debug)
+    this.log('env:', context.env)
+    this.log('config:', {
+      ...context.config,
+      ...globalConfig,
+      _global: {
+        ...context.config._global,
+        ...globalConfig
+      }
+    })
   }
 }

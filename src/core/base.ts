@@ -1,11 +1,14 @@
+import { join } from 'path'
 import * as ora from 'ora'
 import * as execa from 'execa'
 import * as fs from 'fs-extra'
 import * as chalk from 'chalk'
 import { prompt } from 'enquirer'
 import glob = require('tiny-glob')
+import * as readline from 'readline'
 import cleanStack = require('clean-stack')
 import { isWindows, isString } from '../utils'
+const symbols = require('enquirer/lib/symbols')
 
 import { Store } from './store'
 import { getEnv, resolveConfig, hasOwnProperty, defaultConfigs } from '../helpers'
@@ -34,20 +37,36 @@ context.set('debug', false)
 
 export abstract class BaseClass {
   private _store?: Store
+  private _configStore?: Store
+  private _projectStore?: Store
   public context = context
 
   get store() {
     if (!this._store) {
-      this._store = new Store(defaultConfigs.directoryName, defaultConfigs.rootDirectory)
+      this._store = new Store(join(defaultConfigs.rootDirectory, 'factories.json'))
     }
     return this._store
   }
 
-  get fs(): any {
+  get projectStore() {
+    if (!this._projectStore) {
+      this._projectStore = new Store(join(defaultConfigs.rootDirectory, 'projects.json'))
+    }
+    return this._projectStore
+  }
+
+  get configStore() {
+    if (!this._configStore) {
+      this._configStore = new Store(join(defaultConfigs.rootDirectory, 'configs.json'))
+    }
+    return this._configStore
+  }
+
+  get fs() {
     return fs
   }
 
-  get glob(): any {
+  get glob() {
     return glob
   }
 
@@ -55,7 +74,7 @@ export abstract class BaseClass {
     return chalk
   }
 
-  get prompt(): any {
+  get prompt() {
     return prompt
   }
 
@@ -64,7 +83,7 @@ export abstract class BaseClass {
   }
 
   loadConfig() {
-    const config = resolveConfig(context.get('env'), this.store)
+    const config = resolveConfig(context.get('env'), this.configStore, this.projectStore)
     context.set('config', config)
     return config
   }
@@ -77,7 +96,8 @@ export abstract class BaseClass {
     console.log(...messages)
     return this
   }
-  debug = (...messages: any[]): this => {
+
+  debug(...messages: any[]): this {
     if (context.get('debug')) {
       console.log(chalk.dim(`[debug]`), ...messages.map(m => safeStylized(m, chalk.dim)))
     }
@@ -85,7 +105,7 @@ export abstract class BaseClass {
   }
 
   warn(...messages: any[]): this {
-    console.log(chalk.yellow(`[warn]`), ...messages.map(m => safeStylized(m, chalk.yellow)))
+    console.log(chalk.yellow(symbols.warning), ...messages.map(m => safeStylized(m, chalk.yellow)))
     return this
   }
 
@@ -93,13 +113,36 @@ export abstract class BaseClass {
     const errors = messages.map((err: any) =>
       isString(err) ? err : (err.stack && cleanError(err.stack)) || err
     )
-    console.log(chalk.red(`[error]`), ...errors.map(m => safeStylized(m, chalk.red)))
+    console.log(chalk.red(symbols.cross), ...errors.map(m => safeStylized(m, chalk.red)))
     return this
+  }
+
+  logStart(...messages: any[]): this {
+    return this.log(symbols.pointerSmall, ...messages)
+  }
+
+  logEnd(...messages: any[]): this {
+    return this.log(symbols.check, ...messages)
+  }
+
+  logItem(...messages: any[]): this {
+    return this.log(symbols.bullet, ...messages)
   }
 
   clearConsole(): this {
     process.stdout.write(isWindows ? '\x1B[2J\x1B[0f' : '\x1B[2J\x1B[3J\x1B[H')
     return this
+  }
+
+  clear() {
+    if (console.clear) {
+      console.clear()
+    } else if (process.stdout.isTTY) {
+      const blank = '\n'.repeat(process.stdout.rows || 0)
+      console.log(blank)
+      readline.cursorTo(process.stdout, 0, 0)
+      readline.clearScreenDown(process.stdout)
+    }
   }
 
   exit(code?: number): void {

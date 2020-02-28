@@ -1,11 +1,11 @@
 import { join } from 'path'
 import * as fs from 'fs-extra'
+import { Store } from '../core/store'
 import { isValidArray, isFunction, isObject, merge } from '../utils'
 
 export const nonEditableKeys = [
   'rootDirectory',
   'directoryName',
-  'globalConfigFile',
   'factory',
   '_global',
   '_local',
@@ -16,14 +16,7 @@ const home = (process.platform === 'win32' && process.env.USERPROFILE) || proces
 
 export const defaultConfigs = {
   rootDirectory: join(home, '.fbi'),
-  directoryName: 'factories',
-  globalConfigFile: 'global-config.json'
-  // localConfigFile: '.fbi.config.js',
-  // packageFile: 'package.json',
-  // packageKey: 'fbi',
-  // organization: 'https://github.com/fbi-js',
-  // packageManager: env.hasPnpm ? 'pnpm' : env.hasYarn ? 'yarn' : env.hasNpm ? 'npm' : '',
-  // factory: null
+  directoryName: 'factories'
 }
 
 function resolveLocalConfig(config: Record<string | number, any>): Record<string | number, any> {
@@ -52,30 +45,35 @@ function resolveLocalConfig(config: Record<string | number, any>): Record<string
 function resolveFactoryConfig(
   config: Record<string | number, any>,
   factory: Record<string | number, any>,
-  store: any
+  projectStore: Store
 ): Record<string | number, any> {
-  const factoryInfo = store.get(factory.id)
+  const factoryInfo = projectStore.get(factory.id)
 
   if (!factoryInfo) {
     return {}
   }
 
-  const project = store.get(`${factory.id}.projects`, { path: process.cwd() })
-  const extraInfo = (project && project[0]) || {}
+  // const project = store.get(`${factory.id}.projects`, { path: process.cwd() })
+  // const extraInfo = (project && project[0]) || {}
+  const project = projectStore.get(process.cwd()) || {}
 
   try {
     const factoryConfig = require(join(factoryInfo.path, config.localConfigFile))
 
     return {
       ...factoryConfig,
-      ...extraInfo
+      ...project
     }
   } catch (err) {
     return {}
   }
 }
 
-export function resolveConfig(env: any, store?: any): Record<string | number, any> {
+export function resolveConfig(
+  env: any,
+  configStore: Store,
+  projectStore: Store
+): Record<string | number, any> {
   const config: Record<string | number, any> = {
     ...defaultConfigs,
     localConfigFile: '.fbi.config.js',
@@ -83,31 +81,33 @@ export function resolveConfig(env: any, store?: any): Record<string | number, an
     packageKey: 'fbi',
     organization: 'https://github.com/fbi-js',
     packageManager: env.hasPnpm ? 'pnpm' : env.hasYarn ? 'yarn' : env.hasNpm ? 'npm' : ''
-    // factory: null
   }
-  const localConfig = resolveLocalConfig(config)
-  const factoryConfig =
-    store && localConfig.factory && localConfig.factory.id
-      ? resolveFactoryConfig(config, localConfig.factory, store)
-      : {}
+  const globalConfig = configStore.get()
+  const baseConfig = merge(config, globalConfig)
 
-  for (const [key, val] of Object.entries(factoryConfig)) {
-    if (!nonEditableKeys.includes(key)) {
-      config[key] = val
-    }
-  }
+  const localConfig = resolveLocalConfig(baseConfig)
+  // const factoryConfig =
+  //   projectStore && localConfig.factory && localConfig.factory.id
+  //     ? resolveFactoryConfig(baseConfig, localConfig.factory, projectStore)
+  //     : {}
+
+  // for (const [key, val] of Object.entries(factoryConfig)) {
+  //   if (!nonEditableKeys.includes(key)) {
+  //     baseConfig[key] = val
+  //   }
+  // }
 
   for (const [key, val] of Object.entries(localConfig)) {
     if (!nonEditableKeys.includes(key)) {
-      config[key] = val
+      baseConfig[key] = val
     }
   }
 
   return {
-    ...config,
+    ...baseConfig,
     factory: localConfig.factory,
-    _global: config,
-    _factory: factoryConfig,
+    _global: baseConfig,
+    // _factory: factoryConfig,
     _local: localConfig
   }
 }

@@ -4,22 +4,26 @@ import { Factory } from './core/factory'
 import { Command } from './core/command'
 import { Template } from './core/template'
 import { Plugin } from './core/plugin'
+import CommandAdd from './commands/add'
 import CommandList from './commands/list'
 import CommandLink from './commands/link'
 import CommandUnLink from './commands/unlink'
 import CommandInfo from './commands/info'
 import CommandCreate from './commands/create'
+import CommandClean from './commands/clean'
 import PluginLogger from './plugins/logger'
 
 export class Fbi extends Factory {
   id = 'fbi'
   factories: Factory[] = []
   commands: Command[] = [
+    new CommandAdd(this),
     new CommandList(this),
     new CommandLink(this),
     new CommandUnLink(this),
     new CommandInfo(this),
-    new CommandCreate(this)
+    new CommandCreate(this),
+    new CommandClean(this)
   ]
   templates: Template[] = []
   plugins: Plugin[] = [new PluginLogger(this)]
@@ -96,62 +100,5 @@ export class Fbi extends Factory {
     }
 
     return factory
-  }
-
-  public runCommand(factoryId: string, commandId: string): void {
-    if (factoryId) {
-      // run factory command
-      const factory = this.resolveFactory(factoryId)
-      if (!factory) {
-        this.error('Fbi:', `Factory "${factoryId}" not found`).exit()
-        return
-      }
-      if (commandId) {
-        factory.runCommand(commandId)
-      }
-    } else if (commandId) {
-      // run fbi command
-      const command = this.commands.find(x => x.id === commandId)
-      if (command) {
-        // run plugin hooks
-        let context = {}
-        for (let plugin of this.plugins) {
-          if (plugin.beforeEachCommand) {
-            context = plugin.beforeEachCommand({
-              context: {
-                ...context,
-                from: plugin.id
-              },
-              command,
-              plugin
-            })
-          }
-        }
-        command.run(context)
-      } else {
-        this.error(`Fbi:`, `Command ${commandId} not found`)
-      }
-    }
-  }
-
-  public runTemplate(factoryId: string, templateId: string): void {
-    if (factoryId) {
-      const factory = this.resolveFactory(factoryId)
-      if (!factory) {
-        this.error('Fbi:', `Factory "${factoryId}" not found`).exit()
-        return
-      }
-      if (templateId) {
-        factory.runTemplate(templateId)
-      }
-    } else if (templateId) {
-      // run fbi command
-      const template = this.templates.find(x => x.id === templateId)
-      if (template) {
-        template.run()
-      } else {
-        this.error(`Fbi:`, `Template ${templateId} not found`)
-      }
-    }
   }
 }

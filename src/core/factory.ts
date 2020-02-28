@@ -24,46 +24,4 @@ export abstract class Factory extends BaseClass {
 
     return template
   }
-
-  // public createCommand(option: any): ICommand {
-  //   this.log(`Factory: (${this.id})`, `createCommand ${option.id}`)
-  //   const command: ICommand = new Command(option.id)
-  //   this.commands.push(command)
-  //   return command
-  // }
-
-  // public createTemplate(option: any): AbstractTemplate {
-  //   this.log(`Factory: (${this.id})`, `createTemplate ${option.id}`)
-  //   const template: AbstractTemplate = new Template(option.id)
-  //   this.templates.push(template)
-  //   return template
-  // }
-
-  // public createPlugin(option: any): AbstractPlugin {
-  //   this.log(`Factory: (${this.id})`, `createPlugin ${option.id}`)
-  //   const plugin: AbstractPlugin = new Plugin(option.id)
-  //   this.plugins.push(plugin)
-  //   return plugin
-  // }
-
-  public runCommand(...args: any[]): void {
-    const id = args[0]
-    const command = this.commands.find(x => x.id === id || x.alias === id)
-    if (command) {
-      // run plugins
-      command.run()
-    } else {
-      this.error(`Factory: (${this.id})`, `Command ${id} not found`)
-    }
-  }
-
-  public runTemplate(...args: any[]): void
-  public runTemplate(id: string): void {
-    const template = this.templates.find(x => x.id === id)
-    if (template) {
-      template.run()
-    } else {
-      this.error(`Factory: (${this.id})`, `template ${id} not found`)
-    }
-  }
 }
