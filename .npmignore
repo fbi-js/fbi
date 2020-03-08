@@ -1,0 +1,14 @@
+.*.swp
+._*
+.DS_Store
+.git
+.npmrc
+.lock-wscript
+npm-debug.log
+
+src
+tsconfig.json
+.eslintignore
+.eslintrc.js
+.gitignore
+.prettierrc
