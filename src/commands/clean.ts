@@ -1,6 +1,6 @@
 import { Fbi } from '../fbi'
 import { Command } from '../core/command'
-import { isValidObject, isModuleAvailable } from '../utils'
+import { isValidObject, pathResolve } from '../utils'
 
 export default class CommandCreate extends Command {
   id = 'clean'
@@ -29,7 +29,7 @@ export default class CommandCreate extends Command {
             return x
           }
           // non-available
-          return !isModuleAvailable(x.path) ? x : null
+          return !pathResolve(x.path) ? x : null
         })
       )
     ).filter(Boolean)

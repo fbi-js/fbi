@@ -46,11 +46,11 @@ export function applyMixins(
   return derivedCtor
 }
 
-export function isModuleAvailable(path: string) {
+export function pathResolve(path: string, options: Record<string, any> = {}) {
   try {
-    require.resolve(path)
-    return true
+    const _path = require.resolve(path, options)
+    return _path
   } catch (e) {
-    return false
+    return ''
   }
 }

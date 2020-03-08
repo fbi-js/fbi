@@ -4,7 +4,7 @@ export abstract class Command extends BaseClass {
   public abstract id = ''
   alias: string = ''
   args: string = ''
-  flags: string[][] = []
+  flags: any[][] = []
   description: string = ''
 
   public abstract run(...args: any[]): void

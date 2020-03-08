@@ -24,12 +24,11 @@ export class Cli extends BaseClass {
     } else {
       const factoryId = (config.factory && config.factory.id) || ''
       if (factoryId) {
-        const found = this.store.get(factoryId)
-        if (found && found.path) {
-          const factory = this.fbi.createFactory(found.path)
-          if (factory && factory.commands) {
-            this.registerCommands(this.program, factory.commands)
-          }
+        const factory = this.fbi.resolveFactory(factoryId)
+        if (factory && factory.commands) {
+          this.registerCommands(this.program, factory.commands)
+        } else {
+          this.error(`factory "${factoryId}" not found`)
         }
       }
     }

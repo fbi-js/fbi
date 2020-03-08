@@ -1,5 +1,5 @@
 import { join, isAbsolute } from 'path'
-import { isClass, isValidArray, isString, isModuleAvailable } from './utils'
+import { isClass, isValidArray, isString, pathResolve } from './utils'
 import { Factory } from './core/factory'
 import { Command } from './core/command'
 import { Template } from './core/template'
@@ -39,13 +39,12 @@ export class Fbi extends Factory {
   public createFactory(factory: any, ignoreDuplicateError = false) {
     let fn
     if (isString(factory)) {
-      const fullpath = isAbsolute(factory) ? factory : join(process.cwd(), factory)
-
-      if (!isModuleAvailable(fullpath)) {
+      const realpath = pathResolve(factory)
+      if (!realpath) {
         return null
       }
 
-      fn = require(fullpath)
+      fn = require(realpath)
     } else {
       fn = factory
     }
@@ -79,7 +78,7 @@ export class Fbi extends Factory {
     if (factories) {
       for (const [key, val] of Object.entries(factories)) {
         const f: any = val
-        if (!f || !f.path || !isModuleAvailable(f.path)) {
+        if (!f || !f.path || !pathResolve(f.path)) {
           this.debug(`factory "${key}" can't resolve from ${f.path}. delete from store`)
           this.store.del(key)
         } else {
@@ -93,12 +92,29 @@ export class Fbi extends Factory {
 
   public resolveFactory(factoryId: string) {
     const factory = this.factories.find(f => f.id === factoryId)
-    if (!factory) {
-      this.debug('Fbi:', `Factory "${factoryId}" not found`)
-    } else {
-      this.debug(`Fbi: found factory "${factoryId}"`)
+    if (factory) {
+      this.debug('Fbi:', `Factory "${factoryId}" found in memory`)
+      return factory
     }
 
-    return factory
+    // from store
+    const foundInStore = this.store.get(factoryId)
+    if (foundInStore) {
+      this.debug('Fbi:', `Factory "${factoryId}" found in store`)
+      return this.createFactory(foundInStore.path)
+    }
+
+    // from node_modules
+    const realpath = pathResolve(factoryId, {
+      paths: [process.cwd()]
+    })
+    if (realpath) {
+      this.debug('Fbi:', `Factory "${factoryId}" found in node_modules`)
+      const factoryFn = require(realpath)
+      return this.createFactory(factoryFn)
+    }
+
+    this.debug('Fbi:', `Factory "${factoryId}" not found`)
+    return null
   }
 }
