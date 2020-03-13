@@ -8,7 +8,7 @@ export default class CommandCreate extends Command {
   alias = ''
   args = '<repositories...>'
   description = `add factories from remote git repositories`
-  flags = []
+  flags = [['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm']]
 
   constructor(public factory: Fbi) {
     super()
@@ -19,19 +19,23 @@ export default class CommandCreate extends Command {
     const rootDir = join(config.rootDirectory, config.directoryName)
 
     for (let repo of repositories) {
-      const info = await this.checkGitUrl(repo, config)
+      const info = this.getBaseInfo(repo, config)
       if (!info) {
         continue
       }
 
       const targetDir = join(rootDir, info.name)
-      if (await this.fs.pathExists(targetDir)) {
-        this.error(`'${info.name}' already exist`)
-        continue
+      const exist = await this.fs.pathExists(targetDir)
+      if (exist) {
+        await this.update(targetDir, info.name)
+      } else {
+        const valid = await this.checkGitUrl(info.url)
+        if (!valid) {
+          continue
+        }
+        this.debug(`git clone ${info.url} ${targetDir}`)
+        await this.add(info.name, info.url, targetDir)
       }
-
-      this.debug(`git clone ${info.url} ${targetDir}`)
-      await this.add(info.name, info.url, targetDir)
 
       // save to store
       const data = {
@@ -43,10 +47,15 @@ export default class CommandCreate extends Command {
       }
       this.debug('Save to store:', data)
       this.store.set(data.id, data)
+
+      await this.install(flags || {}, targetDir)
+
+      const version = await this.getVersionInfo(targetDir)
+      this.store.set(`${info.name}.version`, version)
     }
   }
 
-  private async checkGitUrl(url: string, { organization }: any) {
+  private getBaseInfo(url: string, { organization }: any) {
     let gitUrl = ''
     if (isGitUrl(url)) {
       gitUrl = url
@@ -68,18 +77,22 @@ export default class CommandCreate extends Command {
       this.error(`invalid url:`, gitUrl)
       return null
     }
-    const spinner = this.createSpinner(`Checking remote url '${gitUrl}'`).start()
-    const remoteExist = await git.remoteExist(gitUrl)
-    if (!remoteExist) {
-      spinner.fail(`Remote path not exist: ${gitUrl}`)
-      return null
-    }
-    spinner.succeed(`Passed: ${gitUrl}`)
 
     return {
       name,
       url: gitUrl
     }
+  }
+
+  private async checkGitUrl(url: string) {
+    const spinner = this.createSpinner(`Checking remote url '${url}'`).start()
+    const remoteExist = await git.remoteExist(url)
+    if (!remoteExist) {
+      spinner.fail(`Remote path not exist: ${url}`)
+      return false
+    }
+    spinner.succeed(`Valid: ${url}`)
+    return true
   }
 
   private async add(name: string, src: string, dest: string) {
@@ -91,6 +104,48 @@ export default class CommandCreate extends Command {
     } catch (err) {
       spinner.fail(`Failed to add ${name}`)
       this.error(err)
+    }
+  }
+
+  private async update(targetDir: string, name: string) {
+    const spinner = this.createSpinner(`Already exist: ${name}. Try updating...`).start()
+    await git.hardReset('', {
+      cwd: targetDir
+    })
+    await git.pull('', {
+      cwd: targetDir
+    })
+    spinner.succeed(`Updated`)
+  }
+
+  private async install(flags: Record<string, any>, targetDir: string) {
+    const spinner = this.createSpinner(`Installing dependencies...`).start()
+    try {
+      const packageManager = flags.packageManager || this.context.get('config').packageManager
+      const cmds = packageManager === 'yarn' ? [packageManager] : [packageManager, 'install']
+      this.debug(`\nrunning \`${cmds.join(' ')}\` in ${targetDir}`)
+      await this.exec(cmds[0], cmds.slice(1), {
+        cwd: targetDir
+      })
+      spinner.succeed(`Installed dependencies`)
+    } catch (err) {
+      spinner.fail('Failed to install dependencies. You can install them manually.')
+      this.error(err)
+    }
+  }
+
+  private async getVersionInfo(dir: string) {
+    const factory = this.factory.createFactory(dir)
+    if (!factory) {
+      return
+    }
+    const config = this.context.get('config')
+    const factoriesDir = join(config.rootDirectory, config.directoryName)
+    const versionInfo = await factory.version?.init(dir, factoriesDir)
+
+    return {
+      baseDir: factoriesDir,
+      ...versionInfo
     }
   }
 }

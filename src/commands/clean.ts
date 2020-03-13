@@ -13,7 +13,7 @@ export default class CommandCreate extends Command {
     super()
   }
 
-  public async run(args: any, flags: any) {
+  public async run(flags: any) {
     await this.removeUnavailableFactories()
     await this.removeUnavailableProjects()
   }

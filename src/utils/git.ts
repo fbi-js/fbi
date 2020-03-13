@@ -37,7 +37,7 @@ const checkout = (arr?: any, opts?: object) =>
 const merge = (t: Argv, argv?: Argv, opts?: object) => exec(`git merge ${argv} ${t}`, opts)
 const clear = (opts?: object) => exec('git gc', opts)
 const clean = (opts?: object) => exec('git clean -f -d', opts)
-const resetHard = (n?: Argv, opts?: object) => exec(`git reset --hard ${n || 'HEAD'}`, opts)
+const hardReset = (n?: Argv, opts?: object) => exec(`git reset --hard ${n || 'HEAD'}`, opts)
 
 const status = {
   // info
@@ -139,7 +139,7 @@ export const git = {
   merge,
   clear,
   clean,
-  resetHard,
+  hardReset,
   status,
   stash,
   tag,

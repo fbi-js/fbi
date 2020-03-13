@@ -7,6 +7,7 @@ type FileMap = {
   to: string
   options?: {}
   data?: {}
+  cwd?: string
 }
 
 type StringOrFileMap = string | FileMap
@@ -54,7 +55,7 @@ export abstract class Template extends BaseClass {
 
     // 4. installing: deps
     this.debug(`${this._debugPrefix} run installing`)
-    await this.installing(flags)
+    await this.installing(flags || {})
     await this.afterInstalling()
 
     // 5. ending: save data to store
@@ -132,8 +133,7 @@ export abstract class Template extends BaseClass {
   private async copy(fileMaps: StringOrFileMap[]) {
     const maps: FileMap[] = this.foramtFileMaps(fileMaps)
     for (const map of maps) {
-      const paths = await this.globFile({ from: map.from })
-      // console.log('copy', { map, paths })
+      const paths = await this.globFile(map)
       const replace = map.to.split('/').filter(Boolean)
       for (const p of paths) {
         const rest = p
@@ -167,7 +167,7 @@ export abstract class Template extends BaseClass {
     }
     const maps = this.foramtFileMaps(fileMaps)
     for (const map of maps) {
-      const paths = await this.globFile({ from: map.from })
+      const paths = await this.globFile(map)
       const replace = map.to.split('/').filter(Boolean)
       for (const p of paths) {
         const rest = p
@@ -200,7 +200,7 @@ export abstract class Template extends BaseClass {
               from: m,
               to: m
                 .split('/')
-                .filter((x: string) => !!x && !x.includes('*'))
+                .filter((x: string) => !!x && !x.includes('*') && !x.includes('!'))
                 .join('/')
             }
           : isFunction(m)
@@ -210,16 +210,17 @@ export abstract class Template extends BaseClass {
       .filter((m: any) => Boolean(m) && m.from && m.to)
   }
 
-  private async globFile({ from, options }: Record<string, any>): Promise<string[]> {
+  private async globFile({ from, options, cwd = '' }: Record<string, any>): Promise<string[]> {
     const patterns = ensureArray(from)
     let ret: string[] = []
     for (let p of patterns) {
       if (p.startsWith('./')) {
         p = p.slice(2)
       }
-      if (p.trim()) {
-        const r = await this.glob(p.trim(), {
-          cwd: this.rootPath,
+      const trimp = p.trim()
+      if (trimp) {
+        const r = await this.glob(trimp, {
+          cwd: join(this.rootPath, cwd || ''),
           dot: true,
           ...(options || {})
         })

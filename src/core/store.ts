@@ -1,7 +1,15 @@
 import * as fs from 'fs-extra'
 import * as assert from 'assert'
 import { isAbsolute, extname } from 'path'
-import { isObject, isValidObject, merge, isArray, getObjectValue, setObjectValue } from '../utils'
+import {
+  isObject,
+  isValidObject,
+  merge,
+  isArray,
+  getObjectValue,
+  setObjectValue,
+  orderBy
+} from '../utils'
 
 export class Store {
   private data: Record<string, any> = {}
@@ -44,6 +52,18 @@ export class Store {
     }
 
     return data
+  }
+
+  find(where: Record<string | number, any>, key?: string, order?: Record<string, any>) {
+    const data = key ? getObjectValue(this.data, key) : this.data
+
+    const result: Record<string, any>[] = Object.values(
+      data
+    ).filter((item: Record<string | number, any>) =>
+      Object.entries(where as any).some(([k, v]: any) => item[k] && item[k] === v)
+    )
+
+    return order ? orderBy(result, order.props, order.orders) : result
   }
 
   set(key: string, value: any) {

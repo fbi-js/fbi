@@ -3,11 +3,11 @@ import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 
 export default class CommandUnLink extends Command {
-  id = 'unlink'
+  id = 'remove'
   alias = ''
   args = '[factories...]'
   flags = []
-  description = `unlink factories from the store`
+  description = `remove factories from the store`
 
   constructor(public factory: Fbi) {
     super()
@@ -27,16 +27,20 @@ export default class CommandUnLink extends Command {
       }
 
       const spinner = this.createSpinner(
-        `Unlinking ${this.style.yellow.bold(id)} from the store...`
+        `Removing ${this.style.yellow.bold(id)} from the store...`
       ).start()
+
+      // remove main dir
+      await this.fs.remove(factory.path)
+
+      // remove version dirs
       if (factory.version?.versions) {
-        // remove version dirs
         for (let version of factory.version.versions) {
           await this.fs.remove(join(factory.version.baseDir, `${factory.id}__${version.short}`))
         }
       }
       this.store.del(id)
-      spinner.succeed(`${this.style.yellow(id)} successfully unlinked`)
+      spinner.succeed(`${this.style.yellow(id)} successfully removed`)
     }
   }
 }

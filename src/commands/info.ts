@@ -4,7 +4,7 @@ import { nonEditableKeys } from '../helpers'
 
 export default class CommandInfo extends Command {
   id = 'info'
-  alias = 'if'
+  alias = ''
   args = ''
   flags = [['-e, --edit', 'Edit config']]
   description = `show context info `
@@ -13,7 +13,7 @@ export default class CommandInfo extends Command {
     super()
   }
 
-  async run(factories: any, flags: any) {
+  async run(flags: any) {
     this.clear()
 
     const config = this.loadConfig()

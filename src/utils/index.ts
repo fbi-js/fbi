@@ -3,6 +3,7 @@ export * from './git'
 export * from './object'
 export * from './type'
 export * from './format'
+export * from './version'
 
 export const timeMeasurement = (
   name: string | undefined,

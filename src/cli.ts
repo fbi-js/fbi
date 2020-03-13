@@ -18,17 +18,20 @@ export class Cli extends BaseClass {
     const isBuiltInCmd = this.isBuiltInCommand()
     const config = this.loadConfig()
     this.debug('isBuiltInCmd:', isBuiltInCmd)
+
     if (isBuiltInCmd) {
       this.registerCommands(this.program, this.fbi.commands)
-      this.program.allowUnknownOption()
     } else {
       const factoryId = (config.factory && config.factory.id) || ''
+      const factoryVersion = (config.factory && config.factory.version) || ''
       if (factoryId) {
-        const factory = this.fbi.resolveFactory(factoryId)
+        const factory = this.fbi.resolveFactory(factoryId, factoryVersion)
         if (factory && factory.commands) {
           this.registerCommands(this.program, factory.commands)
         } else {
-          this.error(`factory "${factoryId}" not found`)
+          this.error(
+            `factory "${factoryId}${factoryVersion ? `@${factoryVersion}` : ''}" not found`
+          )
         }
       }
     }
@@ -46,7 +49,7 @@ export class Cli extends BaseClass {
       .storeOptionsAsProperties(false)
       .passCommandToAction(false)
       .name(id)
-      .version(`${id} ${pkg.version}`, '-v, --version', 'output the current version')
+      .version(`${id} ${pkg.version}`, '-V, --version', 'output the current version')
       .usage('[command] ...')
       .description(pkg.description)
       .on('--help', () => {
@@ -79,19 +82,21 @@ export class Cli extends BaseClass {
         if (message) {
           _this.warn(message).exit()
         }
-        const opts = this.opts()
+        // set 'debug' flag from parent flags
         const parentOpts = this.parent.opts()
-        const debug = opts.debug || parentOpts.debug
-        return command.run(...args, {
-          ...opts,
-          debug
-        })
+        if (parentOpts.debug) {
+          this._setOptionValue('debug', parentOpts.debug)
+        }
+
+        return command.run(...args)
       })
 
       if (isValidArray(command.flags)) {
         for (const flag of command.flags) {
-          const tmp = ((isArray(flag) && flag) || []).filter(Boolean)
-          cmd.option(tmp[0], ...tmp.slice(1))
+          const _flag = ((isArray(flag) && flag) || []).filter(Boolean)
+          if (_flag.length > 0) {
+            cmd.option(_flag[0], ..._flag.slice(1))
+          }
         }
       }
       cmd.option('-D, --debug', 'output extra debugging')
@@ -100,7 +105,7 @@ export class Cli extends BaseClass {
 
   private isBuiltInCommand(argv = process.argv) {
     const id = argv.slice(2)[0]
-    if (!id) {
+    if (!id || id.startsWith('-')) {
       return true
     }
     const cmd = this.fbi.commands.find(c => c.id === id || c.alias === id)

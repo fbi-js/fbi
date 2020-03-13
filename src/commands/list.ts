@@ -11,12 +11,18 @@ export default class CommandList extends Command {
   id = 'list'
   alias = 'ls'
   args = '[factories...]'
-  flags = []
+  flags = [
+    ['-p, --projects', 'show projects'],
+    ['-v, --versions', 'show versions']
+  ]
   description = `list factories and commands info`
   private padWidth = 0
   private listTarget: Factory[] = []
   private listUsing: Factory[] = []
   private listOthers: Factory[] = []
+  private using: any[] = []
+  private showProjects = false
+  private showVersions = false
 
   constructor(public factory: Fbi) {
     super()
@@ -25,16 +31,19 @@ export default class CommandList extends Command {
   async run(factories: any, flags: any) {
     this.debug(`Factory: (${this.factory.id})`, 'from command', this.id, { factories, flags })
     this.factory.createAllFactories()
+    this.showProjects = flags.projects
+    this.showVersions = flags.versions
+
     const hasTarget = isValidArray(factories)
     if (hasTarget) {
       this.listTarget = factories
         .map((id: string) => this.factory.resolveFactory(id))
         .filter(Boolean)
     } else {
-      const using = ensureArray(this.context.get('config.factory'))
-      if (isValidArray(using)) {
+      this.using = ensureArray(this.context.get('config.factory'))
+      if (isValidArray(this.using)) {
         this.listUsing = this.factory.factories.filter((f: Factory) =>
-          using.some((f2: any) => f2.id === f.id)
+          this.using.some((f2: any) => f2.id === f.id)
         )
       }
 
@@ -68,9 +77,9 @@ export default class CommandList extends Command {
       }
     } else {
       if (isValidArray(this.listUsing)) {
-        this.log(this.style.bold.green('\n※ Factory in use:'))
+        this.log(this.style.bold.green('\n※ Using:'))
         for (const obj of this.listUsing) {
-          this.log(await this.showDetail(obj, true))
+          this.log(await this.showDetail(obj, true, true))
         }
       } else if (isValidArray(this.listOthers)) {
         this.log(this.showList(this.listOthers, this.style.cyan('※ Available factories:')))
@@ -97,27 +106,24 @@ export default class CommandList extends Command {
     return txt
   }
 
-  private async showDetail(obj: Factory, highlight = false, showProjects = false) {
+  private async showDetail(obj: Factory, highlight = false, isCurrent = false) {
     let verTxt = ''
-    // if (obj.version) {
-    //   if (obj.version.current) {
-    //     verTxt += ' ' + this.style[obj.version.isFresh ? 'green' : 'red'](obj.version.current)
-    //   }
-    //   if (obj.version.latest) {
-    //     verTxt += ' ' + this.style.blue(obj.version.latest)
-    //   }
-    // }
-    let txt = `\n  ${this.style.bold(obj.id)}${verTxt}`
+    if (isCurrent) {
+      const current = this.using.find(u => u.id === obj.id)
+      if (current && current.version) {
+        verTxt += this.style.italic(`@${current.version}`)
+      }
+    }
+    let txt = `\n  ${this.style.bold(obj.id + verTxt)}`
 
     if (obj.description) {
-      // txt += '\n\n  ' + this.wrap(obj.description, screenColumns - 2, 2)
       txt += '\n\n  ' + obj.description
     }
 
     // commands list
     txt += '\n'
     if (isValidArray(obj.commands)) {
-      let title = '\n  ▼ Commands:'
+      let title = '\n  Commands:'
       txt += highlight ? title : this.style.bold(title)
       for (const cmd of obj.commands) {
         const disabled = isFunction(cmd.disable) ? await cmd.disable() : cmd.disable
@@ -134,7 +140,7 @@ export default class CommandList extends Command {
 
     // templates list
     if (isValidArray(obj.templates)) {
-      let title = '\n\n  ▼ Templates:'
+      let title = '\n\n  Templates:'
       txt += highlight ? title : this.style.bold(title)
       for (const t of obj.templates) {
         txt += this.colWrap(
@@ -164,19 +170,36 @@ export default class CommandList extends Command {
     //   txt += `\n      from: ${obj.from}`
     // }
 
-    if (showProjects) {
-      const projects = this.store.get(`${obj.id}.projects`)
+    if (this.showVersions) {
+      const factory = this.store.get(obj.id)
+      if (factory.version && factory.version.versions) {
+        txt += '\n\n  Versions:'
+        txt +=
+          '\n  ' + factory.version.versions.map((v: any) => this.style.italic(v.short)).join(', ')
+      }
+    }
+
+    if (this.showProjects) {
+      const projects = this.projectStore.find(
+        {
+          factory: obj.id
+        },
+        '',
+        {
+          props: ['createdAt'],
+          orders: ['desc']
+        }
+      )
       if (isValidArray(projects)) {
-        let title = '\n\n  ▼ Projects using the plugin:'
-        txt += highlight ? title : this.style.bold(title)
+        txt += '\n\n  Projects:'
         for (let project of projects) {
           // check if project exist
           const exist = await this.fs.pathExists(project.path)
           if (exist) {
-            txt += `\n  ${project.name}: ${project.path}`
+            txt += `\n  - ${project.name}: ${this.style.dim(project.path)}`
           } else {
             // remove item from store
-            this.store.del(`${obj.id}.projects`, { path: project.path })
+            this.projectStore.del(project.path)
           }
         }
       }

@@ -16,9 +16,15 @@ export default class CommandLink extends Command {
   async run(factories: any, flags: any) {
     const ids = (Array.isArray(factories) && factories.length > 0 && factories) || ['.']
 
+    const config = this.context.get('config')
+    const factoriesDir = join(config.rootDirectory, config.directoryName)
+
     for (const id of ids) {
       // base info
       const factory = this.factory.createFactory(id)
+      if (!factory) {
+        continue
+      }
       const baseInfo: any = factory
         ? {
             id: factory.id,
@@ -30,6 +36,9 @@ export default class CommandLink extends Command {
         this.error(`Unable to load ${this.style.yellow(id)}. Please check if the resource exists`)
         continue
       }
+
+      const versionInfo = await factory.version.init(baseInfo.from, factoriesDir)
+
       this.debug(JSON.stringify(baseInfo))
 
       const linkSpinner = this.createSpinner(
@@ -40,6 +49,10 @@ export default class CommandLink extends Command {
       this.debug('Save to store...')
       this.store.set(baseInfo.id, {
         ...baseInfo,
+        version: {
+          baseDir: factoriesDir,
+          ...versionInfo
+        },
         path: baseInfo.from,
         updatedAt: Date.now()
       })

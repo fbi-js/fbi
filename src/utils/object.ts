@@ -144,3 +144,14 @@ export const getShortestItem = (...vals: any[]) =>
   vals.reduce((a, x) => (x.length < a.length ? x : a))
 
 export const ensureArray = (val: unknown) => (Array.isArray(val) ? val : [val])
+
+export const orderBy = (arr: Record<string, any>[], props: string[], orders?: string[]) =>
+  [...arr].sort((a, b) =>
+    props.reduce((acc, prop, i) => {
+      if (acc === 0) {
+        const [p1, p2] = orders && orders[i] === 'desc' ? [b[prop], a[prop]] : [a[prop], b[prop]]
+        acc = p1 > p2 ? 1 : p1 < p2 ? -1 : 0
+      }
+      return acc
+    }, 0)
+  )

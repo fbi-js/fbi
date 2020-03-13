@@ -6,10 +6,12 @@ import { groupBy, flatten, isValidArray } from '../utils'
 
 export default class CommandCreate extends Command {
   id = 'create'
-  alias = 'c'
+  alias = ''
   args = '[template] [project]'
   description = `create a project via template`
-  flags = [['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm']]
+  flags = [
+    ['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm', 'npm']
+  ]
 
   constructor(public factory: Fbi) {
     super()
@@ -63,8 +65,6 @@ export default class CommandCreate extends Command {
       'factory.id'
     )
 
-    // this.prompt
-
     const { selected } = await this.prompt({
       type: 'select',
       name: 'selected',
@@ -89,17 +89,19 @@ export default class CommandCreate extends Command {
       }
     } as any)
 
-    const selectedTemplate = templates.find(
+    const selectedTemplate: Template = templates.find(
       (t: Template) => t.id === selected.templateId && t.factory.id === selected.factoryId
     )
 
     if (selectedTemplate) {
       // set init data
+      const factoryInfo = this.store.get(selected.factoryId)
       const info: Record<string, any> = await selectedTemplate.run(
         {
           factory: {
-            ...this.store.get(selected.factoryId),
-            id: selected.factoryId,
+            id: factoryInfo.id,
+            path: factoryInfo.version?.latest?.dir || factoryInfo.path,
+            version: factoryInfo.version?.latest?.short,
             template: selected.templateId
           }
         },
@@ -124,8 +126,9 @@ export default class CommandCreate extends Command {
           this.projectStore.set(info.path, {
             name: info.name,
             path: info.path,
-            factory: info.factory,
-            template: info.template,
+            factory: factoryInfo.id,
+            version: factoryInfo.version?.latest?.short,
+            template: selected.templateId,
             features: info.features,
             createdAt: Date.now()
           })
