@@ -2,6 +2,7 @@ import { join, isAbsolute } from 'path'
 import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 
+// Does not support version control
 export default class CommandLink extends Command {
   id = 'link'
   alias = ''
@@ -37,9 +38,7 @@ export default class CommandLink extends Command {
         continue
       }
 
-      const versionInfo = await factory.version.init(baseInfo.from, factoriesDir)
-
-      this.debug(JSON.stringify(baseInfo))
+      this.debug(JSON.stringify({ baseInfo }))
 
       const linkSpinner = this.createSpinner(
         `Linking ${this.style.yellow.bold(baseInfo.id)} from ${this.style.blue(baseInfo.from)}...`
@@ -49,10 +48,6 @@ export default class CommandLink extends Command {
       this.debug('Save to store...')
       this.store.set(baseInfo.id, {
         ...baseInfo,
-        version: {
-          baseDir: factoriesDir,
-          ...versionInfo
-        },
         path: baseInfo.from,
         updatedAt: Date.now()
       })

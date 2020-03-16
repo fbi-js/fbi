@@ -7,8 +7,7 @@ import { prompt } from 'enquirer'
 import glob = require('tiny-glob')
 import * as readline from 'readline'
 import cleanStack = require('clean-stack')
-import { isWindows, isString } from '../utils'
-const symbols = require('enquirer/lib/symbols')
+import { isWindows, isString, symbols } from '../utils'
 
 import { Store } from './store'
 import { getEnv, resolveConfig, hasOwnProperty, defaultConfigs } from '../helpers'
@@ -126,7 +125,7 @@ export abstract class BaseClass {
   }
 
   logItem(...messages: any[]): this {
-    return this.log(symbols.bullet, ...messages)
+    return this.log(symbols.bulletWhite, ...messages)
   }
 
   clearConsole(): this {

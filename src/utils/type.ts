@@ -2,6 +2,7 @@ export const isUndef = (val: any) => val == null || val == undefined
 export const isArray = (val: unknown) => Array.isArray(val)
 export const isString = (val: unknown) => typeof val === 'string'
 export const isBoolean = (val: unknown) => typeof val === 'boolean'
+export const isNumber = (val: unknown) => typeof val === 'number'
 export const isFunction = (val: unknown) => typeof val === 'function'
 export const isObject = (val: any) => Boolean(val) && val.constructor.name === 'Object'
 export const isAsyncFunction = (val: any) =>

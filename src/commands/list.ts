@@ -2,7 +2,7 @@ import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 import { Factory } from '../core/factory'
 import { Template } from '../core/template'
-import { isValidArray, ensureArray, flatten, isFunction } from '../utils'
+import { isValidArray, flatten, isFunction, isNumber, symbols } from '../utils'
 
 const screenColumns = process.stdout.columns > 120 ? 120 : process.stdout.columns || 80
 const minPadWdith = 16
@@ -12,15 +12,12 @@ export default class CommandList extends Command {
   alias = 'ls'
   args = '[factories...]'
   flags = [
+    ['-a, --all', 'show all factories'],
     ['-p, --projects', 'show projects'],
     ['-v, --versions', 'show versions']
   ]
   description = `list factories and commands info`
   private padWidth = 0
-  private listTarget: Factory[] = []
-  private listUsing: Factory[] = []
-  private listOthers: Factory[] = []
-  private using: any[] = []
   private showProjects = false
   private showVersions = false
 
@@ -28,36 +25,34 @@ export default class CommandList extends Command {
     super()
   }
 
-  async run(factories: any, flags: any) {
-    this.debug(`Factory: (${this.factory.id})`, 'from command', this.id, { factories, flags })
-    this.factory.createAllFactories()
+  async run(targetFactories: any, flags: any) {
+    this.debug(`Factory: (${this.factory.id})`, 'from command', this.id, { targetFactories, flags })
     this.showProjects = flags.projects
     this.showVersions = flags.versions
 
-    const hasTarget = isValidArray(factories)
-    if (hasTarget) {
-      this.listTarget = factories
-        .map((id: string) => this.factory.resolveFactory(id))
-        .filter(Boolean)
-    } else {
-      this.using = ensureArray(this.context.get('config.factory'))
-      if (isValidArray(this.using)) {
-        this.listUsing = this.factory.factories.filter((f: Factory) =>
-          this.using.some((f2: any) => f2.id === f.id)
-        )
-      }
+    const hasTarget = isValidArray(targetFactories)
+    const current = this.context.get('config.factory')
+    const showAll = flags.all || (!hasTarget && !(current && current.id))
 
-      this.listOthers = isValidArray(this.listUsing)
-        ? this.factory.factories.filter(
-            (f: Factory) => !this.listUsing.find((f2: Factory) => f2.id === f.id)
-          )
-        : this.factory.factories
+    let factories: Factory[]
+    if (showAll) {
+      factories = this.factory.createAllFactories()
+    } else {
+      if (hasTarget) {
+        factories = targetFactories
+          .map((id: string) => this.factory.resolveFactory(id))
+          .filter(Boolean)
+      } else {
+        // show using
+        factories = [this.factory.resolveFactory(current.id, current.version)].filter(
+          Boolean
+        ) as Factory[]
+      }
     }
 
-    const allFactories = [...this.listTarget, ...this.listUsing, ...this.listOthers]
     this.padWidth =
       Math.max(
-        ...flatten(allFactories.map((item: Factory) => item.commands || null))
+        ...flatten(factories.map((item: Factory) => item.commands || null))
           .filter(Boolean)
           .map(
             (command: Command) =>
@@ -65,56 +60,50 @@ export default class CommandList extends Command {
                 command.args ? ` ${command.args}` : ''
               }`.length
           ),
-        ...flatten(allFactories.map((item: Factory) => item.templates || null))
+        ...flatten(factories.map((item: Factory) => item.templates || null))
           .filter(Boolean)
           .map((template: Template) => template.id.length),
         minPadWdith
       ) + 8
 
-    if (hasTarget) {
-      for (const obj of this.listTarget) {
-        this.log(await this.showDetail(obj, true))
-      }
+    const showIndex = factories.length > 1
+    for (const [idx, factory] of factories.entries()) {
+      this.log(await this.showDetail(factory, current, showIndex ? idx : undefined))
+    }
+
+    if (factories.length < 1) {
+      // no factories
+      this.log('No factories available')
+      this.log(`Check official factories here: http://github.com/fbi-js`)
+      this.log(`Use ${this.style.cyan('fbi add [factories...]')} to add remote factories`)
+      this.log(`Use ${this.style.cyan('fbi link [factories...]')} to link local factories`)
     } else {
-      if (isValidArray(this.listUsing)) {
-        this.log(this.style.bold.green('\n※ Using:'))
-        for (const obj of this.listUsing) {
-          this.log(await this.showDetail(obj, true, true))
-        }
-      } else if (isValidArray(this.listOthers)) {
-        this.log(this.showList(this.listOthers, this.style.cyan('※ Available factories:')))
-        this.log(`\nuse ${this.style.cyan('fbi list <factory>')} for detailed usage of a factory`)
-        this.log(`use ${this.style.cyan('fbi create')} to create a project`)
-      } else {
-        this.log('No factories available')
-        this.log(`Check official factories here: http://github.com/fbi-js`)
-        this.log(`Use ${this.style.cyan('fbi add [factories...]')} for adding remote factories, or`)
-        this.log(`use ${this.style.cyan('fbi link [factories...]')} for linking local factories`)
+      this.log()
+      if (showAll) {
+        this.log(`Use ${this.style.cyan('fbi create')} to create a project`)
+        this.log(`Use ${this.style.cyan('fbi add [factories...]')} to add remote factories`)
+        this.log(`Use ${this.style.cyan('fbi link [factories...]')} to link local factories`)
+      } else if (current) {
+        this.log(`  Use ${this.style.cyan('fbi <command>')} to run a command`)
+        this.log(`  Use ${this.style.cyan('fbi create>')} to use a sub template`)
       }
     }
   }
 
-  private showList(list: any[], title: string) {
-    let txt = title ? `\n${this.style.bold(title)}\n` : ''
-    for (const item of list) {
-      const name = (item.alias ? item.alias + ', ' : '') + (item.id || item.name)
-      txt += this.colWrap(
-        this.lines(name, this.padWidth + 4, 2, true, true),
-        this.lines(item.description, screenColumns - (this.padWidth + 10))
-      )
-    }
-    return txt
-  }
-
-  private async showDetail(obj: Factory, highlight = false, isCurrent = false) {
-    let verTxt = ''
-    if (isCurrent) {
-      const current = this.using.find(u => u.id === obj.id)
-      if (current && current.version) {
-        verTxt += this.style.italic(`@${current.version}`)
-      }
-    }
-    let txt = `\n  ${this.style.bold(obj.id + verTxt)}`
+  private async showDetail(obj: Factory, current: any, idx?: number) {
+    const showIdx = isNumber(idx)
+    const isCurrent = current && obj.id === current.id
+    const index = showIdx ? this.style.bold(symbols.numbers[idx as number]) : ' '
+    const title = this.style.bold(obj.id)
+    const version = isCurrent && current.version ? this.style.italic(`@${current.version}`) : ''
+    const path = this.style.dim(
+      obj.rootDir
+        ? obj.rootDir.startsWith(process.cwd())
+          ? obj.rootDir.replace(process.cwd() + '/', '')
+          : obj.rootDir
+        : ''
+    )
+    let txt = `\n${index} ${title}${version} ${path}`
 
     if (obj.description) {
       txt += '\n\n  ' + obj.description
@@ -124,14 +113,14 @@ export default class CommandList extends Command {
     txt += '\n'
     if (isValidArray(obj.commands)) {
       let title = '\n  Commands:'
-      txt += highlight ? title : this.style.bold(title)
+      txt += title
       for (const cmd of obj.commands) {
         const disabled = isFunction(cmd.disable) ? await cmd.disable() : cmd.disable
         const name = `${cmd.alias ? cmd.alias + ', ' : ''}${cmd.id}${
           cmd.args ? ` ${cmd.args}` : ''
         }${disabled ? ' (disabled)' : ''}`.padEnd(this.padWidth, ' ')
         const nameStr =
-          '  ' + (disabled ? this.style.dim(name) : highlight ? this.style.green(name) : name)
+          '  ' + (disabled ? this.style.dim(name) : isCurrent ? this.style.green(name) : name)
         txt += this.colWrap([nameStr], this.lines(cmd.description))
       }
     } else {
@@ -141,7 +130,7 @@ export default class CommandList extends Command {
     // templates list
     if (isValidArray(obj.templates)) {
       let title = '\n\n  Templates:'
-      txt += highlight ? title : this.style.bold(title)
+      txt += title
       for (const t of obj.templates) {
         txt += this.colWrap(
           this.lines(`- ${t.id}`, this.padWidth - 1, 2, true, true),

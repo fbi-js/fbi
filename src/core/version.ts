@@ -3,7 +3,7 @@ import { join, dirname, basename } from 'path'
 import * as assert from 'assert'
 
 import { BaseClass } from './base'
-import { git, isGitRepo, groupBy, getPathByVersion } from '../utils'
+import { git, isGitRepo, groupBy, getPathByVersion, getVersionByPath } from '../utils'
 
 const types = ['tag', 'branch']
 
@@ -11,28 +11,26 @@ export class Version extends BaseClass {
   private type = 'tag' // or branch
   private enable: boolean = false
   private versions: Record<string, any>[] = []
-  // main source dir
-  private mainPath: string = ''
-  // for version dir
+  // versions dir
   private baseDir: string = ''
 
-  constructor(public baseName: string = '') {
+  // mainPath: main source dir
+  // baseName: factory name
+  constructor(public baseName: string = '', public mainPath: string) {
     super()
+    assert(mainPath.trim(), `mainPath should not be empty`)
   }
 
-  public async init(mainPath: string, baseDir: string, type = 'tag') {
-    assert(mainPath.trim(), `mainPath should not be empty`)
+  public async init(baseDir: string, type = 'tag') {
     assert(types.includes(type), `supported types: ${types.join(', ')}`)
-
-    this.mainPath = mainPath
-    this.baseDir = baseDir || dirname(this.mainPath)
-    this.baseName = this.baseName || basename(this.mainPath)
     this.type = type
-    this.enable = isGitRepo(mainPath)
-
+    this.enable = isGitRepo(this.mainPath)
     if (!this.enable) {
       return null
     }
+
+    this.baseDir = baseDir || dirname(this.mainPath)
+    this.baseName = this.baseName || basename(this.mainPath)
     this.logStart('Factory version initializing')
     const vers = await this.getVersions()
     this.versions =
@@ -145,11 +143,11 @@ export class Version extends BaseClass {
 
     for (const dir of dirs) {
       // don't remove valid versions
-      const ver = dir.replace(getPathByVersion('', this.baseName, ''), '')
+      const ver = getVersionByPath(dir, '', this.baseName)
       if (!this.versions.find(v => v.short === ver)) {
         const target = join(this.baseDir, dir)
         await this.fs.remove(target)
-        this.logItem(`Removed inValid version: ${dirname(target)}`)
+        this.logItem(`Removed inValid version: ${target}`)
       }
     }
   }

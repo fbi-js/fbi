@@ -5,6 +5,8 @@ export * from './type'
 export * from './format'
 export * from './version'
 
+export const symbols: SymbolsType = require('enquirer/lib/symbols')
+
 export const timeMeasurement = (
   name: string | undefined,
   cacheObject: Record<string, any>
@@ -49,9 +51,67 @@ export function applyMixins(
 
 export function pathResolve(path: string, options: Record<string, any> = {}) {
   try {
-    const _path = require.resolve(path, options)
-    return _path
+    return require.resolve(path, options)
   } catch (e) {
     return ''
   }
+}
+
+interface SymbolsType {
+  check: string
+  cross: string
+  info: string
+  line: string
+  pointer: string
+  pointerSmall: string
+  question: string
+  warning: string
+  upDownDoubleArrow: string
+  upDownDoubleArrow2: string
+  upDownArrow: string
+  asterisk: string
+  asterism: string
+  bulletWhite: string
+  electricArrow: string
+  ellipsisLarge: string
+  ellipsisSmall: string
+  fullBlock: string
+  identicalTo: string
+  indicator: string
+  leftAngle: string
+  mark: string
+  minus: string
+  multiplication: string
+  obelus: string
+  percent: string
+  pilcrow: string
+  pilcrow2: string
+  pencilUpRight: string
+  pencilDownRight: string
+  pencilRight: string
+  plus: string
+  plusMinus: string
+  pointRight: string
+  rightAngle: string
+  section: string
+  hexagon: { off: string; on: string; disabled: string }
+  ballot: { on: string; off: string; disabled: string }
+  stars: { on: string; off: string; disabled: string }
+  folder: { on: string; off: string; disabled: string }
+  prefix: {
+    pending: string
+    submitted: string
+    cancelled: string
+  }
+  separator: {
+    pending: string
+    submitted: string
+    cancelled: string
+  }
+  radio: {
+    off: string
+    on: string
+    disabled: string
+  }
+  numbers: string[]
 }

@@ -1,8 +1,10 @@
+import { join } from 'path'
 import { BaseClass } from './base'
 import { Command } from './command'
 import { Template } from './template'
 import { Plugin } from './plugin'
 import { Version } from './version'
+import { pathResolve } from '../utils'
 
 type VersionInfo = {
   baseDir: string
@@ -25,14 +27,27 @@ export abstract class Factory extends BaseClass {
   public templates: Template[] = []
   public plugins: Plugin[] = []
   public description: string = ''
-  public version: Version = new Version()
+  public version: Version | null = null
+  public _version: string = ''
+  public rootDir: string = ''
 
-  constructor() {
+  constructor(rootDir: string = '') {
     super()
+    this.rootDir = rootDir
+    // this.version = new Version(this.rootDir)
   }
 
   public init() {
-    this.version = new Version(this.id)
+    this.version = new Version(this.id, this.rootDir)
+
+    // get version number
+    try {
+      const pkgPath = pathResolve(join(this.rootDir, 'package.json'))
+      const { version } = require(pkgPath)
+      if (version) {
+        this._version = version
+      }
+    } catch (err) {}
   }
 
   public resolveTemplate(templateId: string) {
