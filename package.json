@@ -27,7 +27,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neikvon/fbi.git"
+    "url": "git+https://github.com/fbi-js/fbi.git"
   },
   "keywords": [
     "fbi",
@@ -42,8 +42,8 @@
     "dependencies"
   ],
   "bugs": {
-    "url": "https://github.com/neikvon/fbi/issues"
+    "url": "https://github.com/fbi-js/fbi/issues"
   },
-  "homepage": "https://github.com/neikvon/fbi#readme",
+  "homepage": "https://github.com/fbi-js/fbi#readme",
   "author": "neikvon <neikvon@icloud.com>"
 }
