@@ -120,7 +120,7 @@ export class Store {
       }
     }
     return this.filepath
-      ? fs.outputJSON(this.filepath, this.data || {}).then(() => this.data)
+      ? fs.outputJSON(this.filepath, this.data || {},{spaces:4}).then(() => this.data)
       : this.data
   }
 }
