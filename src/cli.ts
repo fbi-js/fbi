@@ -40,8 +40,8 @@ export class Cli extends BaseClass {
     this.program.on('option:debug', () => {
       this.context.set('debug', true)
     })
-
-    await this.program.parseAsync(process.argv).catch(err => (err ? this.error(err).exit() : ''))
+    // 处理执行命令时的错误
+    await this.program.parseAsync(process.argv).catch((err) => (err ? this.error(err).exit() : ''))
   }
 
   private createProgram(id: string): commander.Command {
@@ -59,8 +59,8 @@ export class Cli extends BaseClass {
       .option('-D, --debug', 'output extra debugging')
   }
 
-  private registerCommands(program: commander.Command, commands: Command[]) {
-    for (let command of commands) {
+  private registerCommands(program: commander.Command, commands: Command[]): void {
+    for (const command of commands) {
       const nameAndArgs = `${command.id}${command.args ? ` ${command.args}` : ''}`
       const cmd = program.command(nameAndArgs)
       if (command.alias) {
@@ -70,7 +70,7 @@ export class Cli extends BaseClass {
         cmd.description(command.description)
       }
       const _this = this
-      cmd.action(async function(...args: any[]) {
+      cmd.action(async function (...args: any[]) {
         const disabled = command.disable ? await command.disable() : ''
         const prefix = `command "${command.id}" has been disabled.`
         const message =
@@ -88,6 +88,7 @@ export class Cli extends BaseClass {
           this._setOptionValue('debug', parentOpts.debug)
         }
 
+        // 执行命令
         return command.run(...args)
       })
 
@@ -103,12 +104,12 @@ export class Cli extends BaseClass {
     }
   }
 
-  private isBuiltInCommand(argv = process.argv) {
+  private isBuiltInCommand(argv = process.argv): boolean {
     const id = argv.slice(2)[0]
     if (!id || id.startsWith('-')) {
       return true
     }
-    const cmd = this.fbi.commands.find(c => c.id === id || c.alias === id)
+    const cmd = this.fbi.commands.find((c) => c.id === id || c.alias === id)
     return !!cmd
   }
 }

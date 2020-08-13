@@ -18,15 +18,16 @@ export default class CommandCreate extends Command {
     const config = this.context.get('config')
     const rootDir = join(config.rootDirectory, config.directoryName)
 
-    for (let repo of repositories) {
+    for (const repo of repositories) {
       const info = this.getBaseInfo(repo, config)
       if (!info) {
         continue
       }
-
+      // 安装目录及安装目录是否存在
       const targetDir = join(rootDir, info.name)
       const exist = await this.fs.pathExists(targetDir)
       if (exist) {
+        // 若已存在则更新模板
         await this.update(targetDir, info.name)
       } else {
         const valid = await this.checkGitUrl(info.url)
@@ -69,10 +70,7 @@ export default class CommandCreate extends Command {
     }
 
     gitUrl = gitUrl.endsWith('.git') ? gitUrl : `${gitUrl}.git`
-    const name = gitUrl
-      .split('/')
-      .pop()
-      ?.replace('.git', '')
+    const name = gitUrl.split('/').pop()?.replace('.git', '')
     if (!name) {
       this.error(`invalid url:`, gitUrl)
       return null

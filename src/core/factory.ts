@@ -51,7 +51,7 @@ export abstract class Factory extends BaseClass {
   }
 
   public resolveTemplate(templateId: string) {
-    const template = this.templates.find(x => x.id === templateId)
+    const template = this.templates.find((x) => x.id === templateId)
     if (!template) {
       this.debug(`Factory (${this.id}):`, `template "${templateId}" not found`)
     } else {

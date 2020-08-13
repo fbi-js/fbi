@@ -90,6 +90,7 @@ export default class CommandList extends Command {
     }
   }
 
+  // 展示factory详细信息
   private async showDetail(obj: Factory, current: any, idx?: number) {
     const showIdx = isNumber(idx)
     const isCurrent = current && obj.id === current.id

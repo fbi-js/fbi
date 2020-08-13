@@ -16,6 +16,7 @@
     "/bin"
   ],
   "scripts": {
+    "dev": "./bin/run -V",
     "help": "tsc --help",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "posttest": "tslint -p test -t stylish",
