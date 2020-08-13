@@ -72,3 +72,10 @@ $ fbi create
 │ └── version.ts 版本号处理相关方法
 ├── tsconfig.json
 </pre>
+
+## 插件说明
+
+- ora 一个优雅的 Node.js 终端加载动画效果
+- mocha 是一个功能丰富的 javascript 测试框架，运行在 node.js 和浏览器中，使异步测试变得简单有趣。Mocha 测试连续运行，允许灵活和准确的报告，同时将未捕获的异常映射到正确的测试用例。在 Github 上托管。
+- commander 命令行参数处理工具
+- semver 版本号对比库

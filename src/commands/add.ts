@@ -139,7 +139,7 @@ export default class CommandCreate extends Command {
     }
     const config = this.context.get('config')
     const factoriesDir = join(config.rootDirectory, config.directoryName)
-    const versionInfo = await factory.version?.init(dir, factoriesDir)
+    const versionInfo = await factory.version?.init(factoriesDir)
 
     return {
       baseDir: factoriesDir,
