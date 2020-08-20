@@ -15,15 +15,58 @@ $ pnpm i -g fbi@next
 ## Configure
 
 ```bash
-$ fbi-next add [repositories]
+$ fbi-next add <repositories...>
 ```
 
 ## Usage
 
-### Create a new project
+### Create a new project via template
 
 ```bash
-$ fbi-next create [tempalate name]
+$ fbi-next create <tempalate name>
+```
+
+### List factories and commands info
+
+```bash
+$ fbi-next list/ls [factory name]
+```
+
+### Link local factories to the store
+
+```bash
+$ fbi-next link [factories...]
+```
+
+### Unlink factories from the store
+
+```bash
+$ fbi-next unlink <factories...>
+```
+
+### Clean info in store
+
+```bash
+$ fbi-next clean <factories...>
+```
+
+### Remove factories from the store
+
+```bash
+$ fbi-next remove <factories...>
+```
+
+### Show context info
+
+```bash
+$ fbi-next info
+```
+
+### Other commands
+
+```bash
+$ fbi-next -V/--version
+$ fbi-next -h/--help
 ```
 
 ## peoject constructure
