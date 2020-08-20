@@ -15,7 +15,7 @@ $ pnpm i -g fbi@next
 ## Configure
 
 ```bash
-$ fbi add fbi-js/factory-node
+$ fbi-next add [repositories]
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ $ fbi add fbi-js/factory-node
 ### Create a new project
 
 ```bash
-$ fbi create
+$ fbi-next create [tempalate name]
 ```
 
 ## peoject constructure
