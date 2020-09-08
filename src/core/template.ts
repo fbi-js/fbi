@@ -40,7 +40,7 @@ export abstract class Template extends BaseClass {
 
     // 1. gathering: this.data
     this.debug(`${this._debugPrefix} run gathering`)
-    await this.gathering()
+    await this.gathering(flags || {})
     await this.afterGathering()
 
     // 2. checking: verify dir exist
@@ -89,7 +89,7 @@ export abstract class Template extends BaseClass {
     return template
   }
 
-  protected async gathering(): Promise<any> {}
+  protected async gathering(flags: any): Promise<any> {}
   protected async checking(): Promise<any> {}
   protected async writing(): Promise<any> {}
   protected async installing(flags: any): Promise<any> {}
