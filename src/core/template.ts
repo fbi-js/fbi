@@ -33,6 +33,7 @@ export abstract class Template extends BaseClass {
 
   constructor() {
     super()
+    
   }
 
   public async run(data: Record<string, any>, flags: any): Promise<any> {

@@ -65,7 +65,7 @@ $ fbi-next info
 ### Other commands
 
 ```bash
-$ fbi-next -V/--version
+$ fbi-next -v/--version
 $ fbi-next -h/--help
 ```
 

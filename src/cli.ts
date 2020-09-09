@@ -49,14 +49,14 @@ export class Cli extends BaseClass {
       .storeOptionsAsProperties(false)
       .passCommandToAction(false)
       .name(id)
-      .version(`${id} ${pkg.version}`, '-V, --version', 'output the current version')
+      .version(`${id} ${pkg.version}`, '-v, --version', 'output the current version')
       .usage('[command] ...')
       .description(pkg.description)
       .on('--help', () => {
         console.log('')
         console.log(`Run ${id + ' <command> -h'} for detailed usage of given command`)
       })
-      .option('-D, --debug', 'output extra debugging')
+      .option('-d, --debug', 'output extra debugging')
   }
 
   private registerCommands(program: commander.Command, commands: Command[]): void {
@@ -100,7 +100,7 @@ export class Cli extends BaseClass {
           }
         }
       }
-      cmd.option('-D, --debug', 'output extra debugging')
+      cmd.option('-d, --debug', 'output extra debugging')
     }
   }
 
