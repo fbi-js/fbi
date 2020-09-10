@@ -15,7 +15,7 @@ $ pnpm i -g fbi@next
 ## Configure
 
 ```bash
-$ fbi-next add <repositories...>
+$ fbi add <repositories...>
 ```
 
 ## Usage
@@ -23,50 +23,50 @@ $ fbi-next add <repositories...>
 ### Create a new project via template
 
 ```bash
-$ fbi-next create <tempalate name>
+$ fbi create <tempalate name>
 ```
 
 ### List factories and commands info
 
 ```bash
-$ fbi-next list/ls [factory name]
+$ fbi list/ls [factory name]
 ```
 
 ### Link local factories to the store
 
 ```bash
-$ fbi-next link [factories...]
+$ fbi link [factories...]
 ```
 
 ### Unlink factories from the store
 
 ```bash
-$ fbi-next unlink <factories...>
+$ fbi unlink <factories...>
 ```
 
 ### Clean info in store
 
 ```bash
-$ fbi-next clean <factories...>
+$ fbi clean <factories...>
 ```
 
 ### Remove factories from the store
 
 ```bash
-$ fbi-next remove <factories...>
+$ fbi remove <factories...>
 ```
 
 ### Show context info
 
 ```bash
-$ fbi-next info
+$ fbi info
 ```
 
 ### Other commands
 
 ```bash
-$ fbi-next -v/--version
-$ fbi-next -h/--help
+$ fbi -v/--version
+$ fbi -h/--help
 ```
 
 ## peoject constructure
@@ -122,3 +122,9 @@ $ fbi-next -h/--help
 - mocha 是一个功能丰富的 javascript 测试框架，运行在 node.js 和浏览器中，使异步测试变得简单有趣。Mocha 测试连续运行，允许灵活和准确的报告，同时将未捕获的异常映射到正确的测试用例。在 Github 上托管。
 - commander 命令行参数处理工具
 - semver 版本号对比库
+
+## 待完成
+
+- unlink 和 remove 存在相似之处，是否可以合并
+- create 命令支持 project 参数
+- task 支持

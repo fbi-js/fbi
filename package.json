@@ -6,7 +6,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "bin": {
-    "fbi-next": "./bin/run"
+    "fbi": "./bin/run"
   },
   "engines": {
     "node": ">=8.0.0"
