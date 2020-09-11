@@ -119,8 +119,9 @@ export class Store {
         delete this.data[key]
       }
     }
-    return this.filepath
-      ? fs.outputJsonSync(this.filepath, this.data || {},{spaces:4}).then(() => this.data)
-      : this.data
+    if(this.filepath) {
+      fs.outputJsonSync(this.filepath, this.data || {},{spaces:4})
+    }
+    return this.data
   }
 }

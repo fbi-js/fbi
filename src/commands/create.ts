@@ -7,8 +7,8 @@ import { groupBy, flatten, isValidArray } from '../utils'
 export default class CommandCreate extends Command {
   id = 'create'
   alias = ''
-  args = '[template] [project]'
-  description = `create a project via template`
+  args = '[template｜factory] [project]'
+  description = `create a project via template or factory`
   flags = [
     ['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm', 'npm']
   ]
@@ -56,9 +56,20 @@ export default class CommandCreate extends Command {
     if (inputTemplate) {
       templateInstances = templates.filter((t: Template) => t.id === inputTemplate)
       if (!isValidArray(templateInstances)) {
-        return this.error(`template "${inputTemplate}" not found`).exit()
+        // return this.error(`template "${inputTemplate}" not found`).exit()
+
+        // 若已有添加模板中不存在则添加远程模板
+        const addCommand = this.factory.commands.find(it => it.id === 'add')
+        await addCommand?.run([inputTemplate], flags)
+        const nowFactories = this.factory.createAllFactories()
+        const nowTemplates = flatten(nowFactories.map((f: Factory) => f.templates))
+        templateInstances = nowTemplates.filter((t: Template) => t.id === inputTemplate)
+        if (!isValidArray(templateInstances)) {
+          return this.error(`template "${inputTemplate}" not found`).exit()
+        }
       }
     }
+
 
     templateInstances = groupBy(
       (isValidArray(templateInstances) && templateInstances) || templates,

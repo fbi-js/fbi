@@ -3,7 +3,7 @@ import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 import { git, isGitUrl } from '../utils'
 
-export default class CommandCreate extends Command {
+export default class CommandAdd extends Command {
   id = 'add'
   alias = ''
   args = '<repositories...>'
@@ -23,8 +23,8 @@ export default class CommandCreate extends Command {
       if (!info) {
         continue
       }
-      // 安装目录及安装目录是否存在
       const targetDir = join(rootDir, info.name)
+      // 添加的仓库是否已存在
       const exist = await this.fs.pathExists(targetDir)
       if (exist) {
         // 若已存在则更新模板
