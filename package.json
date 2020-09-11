@@ -1,7 +1,7 @@
 {
   "name": "fbi",
   "description": "A workflow tool in command-line",
-  "version": "v4.0.0-next.5",
+  "version": "v4.0.0-next.6",
   "author": "shaw @neikvon",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
