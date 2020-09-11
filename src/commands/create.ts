@@ -50,7 +50,7 @@ export default class CommandCreate extends Command {
 
     // get all templates
     // const factories = this.factory.createAllFactories()
-    const templates = subTemplates || flatten(factories.map((f: Factory) => f.templates))
+    let templates = subTemplates || flatten(factories.map((f: Factory) => f.templates))
 
     let templateInstances
     if (inputTemplate) {
@@ -61,9 +61,12 @@ export default class CommandCreate extends Command {
         // 若已有添加模板中不存在则添加远程模板
         const addCommand = this.factory.commands.find(it => it.id === 'add')
         await addCommand?.run([inputTemplate], flags)
-        const nowFactories = this.factory.createAllFactories()
-        const nowTemplates = flatten(nowFactories.map((f: Factory) => f.templates))
-        templateInstances = nowTemplates.filter((t: Template) => t.id === inputTemplate)
+        const nowFactories = this.factory.createAllFactories() || []
+        const addFactory = nowFactories.find(it => it.id === inputTemplate)
+        templates = flatten(nowFactories.map((f:Factory) => f.templates))
+        templateInstances = addFactory?.templates
+        // const nowTemplates = flatten(nowFactories.map((f: Factory) => f.templates))
+        // templateInstances = nowTemplates.filter((t: Template) => t.id === inputTemplate)
         if (!isValidArray(templateInstances)) {
           return this.error(`template "${inputTemplate}" not found`).exit()
         }
