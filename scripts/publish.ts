@@ -47,6 +47,7 @@ async function publish() {
   await run(`git commit -am "chore(release): bump ${version}"`)
   await run(`git tag -a ${version} -m "${version}"`)
   await run(`npm publish --no-git-checks --tag ${tag}`)
+  await run('git push --quiet')
   await run('git push --tags --quiet')
 }
 
