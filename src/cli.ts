@@ -1,8 +1,10 @@
-import { isValidArray, isArray } from './utils'
-import { BaseClass, Command } from './'
-import { Fbi } from './fbi'
-const pkg = require('../package.json')
 import * as commander from 'commander'
+
+import { Fbi } from './fbi'
+import { BaseClass, Command } from './'
+import { Factory } from './core/factory'
+import { isValidArray, isArray } from './utils'
+const pkg = require('../package.json')
 
 export class Cli extends BaseClass {
   fbi: Fbi
@@ -24,14 +26,25 @@ export class Cli extends BaseClass {
     } else {
       const factoryId = (config.factory && config.factory.id) || ''
       const factoryVersion = (config.factory && config.factory.version) || ''
+      let factories: Factory[] = []
+
       if (factoryId) {
         const factory = this.fbi.resolveFactory(factoryId, factoryVersion)
-        if (factory && factory.commands) {
-          this.registerCommands(this.program, factory.commands)
-        } else {
+        if (!factory) {
           this.error(
             `factory "${factoryId}${factoryVersion ? `@${factoryVersion}` : ''}" not found`
           )
+        } else {
+          factories.push(factory)
+        }
+      } else {
+        const _factories = this.fbi.resolveGlobalFactories()
+        factories = factories.concat(_factories)
+      }
+
+      for (let factory of factories) {
+        if (factory.commands) {
+          this.registerCommands(this.program, factory.commands)
         }
       }
     }

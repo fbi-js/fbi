@@ -30,7 +30,8 @@ export default class CommandLink extends Command {
         ? {
             id: factory.id,
             type: 'local',
-            from: isAbsolute(id) ? id : join(process.cwd(), id)
+            from: isAbsolute(id) ? id : join(process.cwd(), id),
+            global: factory.isGlobal
           }
         : null
       if (!baseInfo) {
