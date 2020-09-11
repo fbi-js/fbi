@@ -2,10 +2,14 @@ import path from 'path'
 import test from 'ava'
 import execa from 'execa'
 import utils from '../../lib/utils'
-import {version as pkgVersion} from '../../package'
+import { version as pkgVersion } from '../../package'
 
 const fbi = path.join(__dirname, '../../bin/fbi')
-process.chdir(__dirname)
+// process.chdir(__dirname)
+
+test.before(async t => {
+  process.chdir(__dirname)
+})
 
 test('fbi --version', async t => {
   t.is(await execa.stdout(fbi, ['--version']), 'v' + pkgVersion)
@@ -38,7 +42,7 @@ test('fbi ls config', async t => {
 })
 
 test('fbi ls store', async t => {
-  const storeFilePath = path.join(utils.fs.homeDir, '.fbi', 'info.json')
+  const storeFilePath = path.join(utils.fs.homeDir, '.fbi', 'store.json')
   if (!await utils.fs.exist(storeFilePath)) {
     await utils.fs.write(storeFilePath, '{}')
   }

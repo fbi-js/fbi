@@ -1,40 +1,33 @@
 {
   "name": "fbi",
-  "version": "3.0.1",
+  "version": "3.3.0",
   "description": "Node.js workflow tool.",
   "engines": {
-    "node": ">= 7.6.0",
-    "npm": ">= 3.10.0"
+    "node": ">= 8.2.1",
+    "npm": ">= 5.0.0"
   },
   "main": "lib/index.js",
   "bin": {
     "fbi": "./bin/fbi"
   },
   "scripts": {
-    "test": "xo && nyc ava",
-    "commit": "git cz",
-    "publish-beta": "npm version prerelease && git push && git push --tags && npm publish --tag next",
-    "publish-patch": "npm version patch && git push && git push --tags && npm publish",
-    "publish-minor": "npm version minor && git push && git push --tags && npm publish",
-    "publish-major": "npm version major && git push && git push --tags && npm publish",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
-    "release-changelog": "git add CHANGELOG.md && git commit -m 'release CHANGELOG.md' && git push",
+    "lint": "standard --fix",
+    "test": "standard && nyc ava --verbose",
     "coveralls": "nyc report --reporter=text-lcov | coveralls && rm -rf ./coverage"
   },
   "dependencies": {},
   "devDependencies": {
-    "ava": "0.24.0",
-    "coveralls": "^3.0.0",
-    "cz-conventional-changelog": "^2.1.0",
-    "execa": "^0.8.0",
-    "nyc": "11.4.0",
-    "tempfile": "^2.0.0",
-    "xo": "^0.18.2"
+    "ava": "0.25.0",
+    "coveralls": "^3.0.2",
+    "execa": "^1.0.0",
+    "nyc": "13.1.0",
+    "standard": "^12.0.1",
+    "tempfile": "^2.0.0"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neikvon/fbi.git"
+    "url": "git+https://github.com/fbi-js/fbi.git"
   },
   "keywords": [
     "fbi",
@@ -49,46 +42,8 @@
     "dependencies"
   ],
   "bugs": {
-    "url": "https://github.com/neikvon/fbi/issues"
+    "url": "https://github.com/fbi-js/fbi/issues"
   },
-  "homepage": "https://github.com/neikvon/fbi#readme",
-  "author": "neikvon <neikvon@icloud.com>",
-  "xo": {
-    "esnext": true,
-    "globals": [],
-    "ignores": [],
-    "plugins": [],
-    "semicolon": false,
-    "space": 2,
-    "rules": {
-      "camelcase": 0,
-      "unicorn/no-process-exit": 0,
-      "no-throw-literal": 0,
-      "no-await-in-loop": 0,
-      "no-warning-comments": 0,
-      "max-params": [
-        1,
-        {
-          "max": 5
-        }
-      ],
-      "no-use-extend-native/no-use-extend-native": 0,
-      "no-extend-native": 0,
-      "max-depth": [
-        "error",
-        6
-      ],
-      "complexity": [
-        "error",
-        {
-          "max": 25
-        }
-      ]
-    }
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
-  }
+  "homepage": "https://github.com/fbi-js/fbi#readme",
+  "author": "neikvon <neikvon@icloud.com>"
 }

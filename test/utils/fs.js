@@ -87,7 +87,7 @@ test('copy', async t => {
       __dirname,
       '../fixtures/mdirp-copy/mdirp1/mdirp2/5-copy.txt'
     )
-    await utils.fs.copy({from: tmp, to: target})
+    await utils.fs.copy({ from: tmp, to: target })
     t.pass()
   } catch (err) {
     t.fail(err)
@@ -96,12 +96,10 @@ test('copy', async t => {
 
 test('list', async t => {
   try {
-    const list = await utils.fs.list(path.join(__dirname, '../fixtures/'), [
-      'mdirp1',
-      '5.txt'
+    const list = await utils.fs.list(path.join(__dirname, '../core/'), [
+      'store.js'
     ])
-    console.log(list)
-    t.pass()
+    t.true(list.length > 0)
   } catch (err) {
     t.fail(err)
   }

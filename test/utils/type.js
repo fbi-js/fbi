@@ -1,5 +1,5 @@
 import test from 'ava'
-import {type} from '../../lib/utils'
+import { type } from '../../lib/utils'
 
 test('isJson', t => {
   t.true(type.isJson({}))
@@ -32,6 +32,8 @@ test('isObject', t => {
 
 test('isPath', t => {
   t.true(type.isPath('../a/b.txt'))
+  t.true(type.isPath('/a/b.txt'))
+  t.false(type.isPath('https://a.github.com/x.git'))
   t.false(type.isPath('a'))
   t.false(type.isPath(null))
   t.false(type.isPath(undefined))

@@ -1,5 +1,5 @@
 import test from 'ava'
-import {style} from '../../lib/utils'
+import { style } from '../../lib/utils'
 
 test('style', t => {
   const styles = [

@@ -1,1 +1,3 @@
-ctx.emit('exit')
+/* global ctx */
+
+ctx.emit('exit', 'nevermind', 'just test')

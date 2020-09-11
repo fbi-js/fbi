@@ -20,7 +20,9 @@
     "package.json",
     "fbi",
     "yarn.lock",
-    "package-lock.json"
+    "package-lock.json",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "TEMPLATE_ADD_IGNORE": [".DS_Store", ".svn", ".git", "dst"],
   "VERSION_SEPARATOR": "@"

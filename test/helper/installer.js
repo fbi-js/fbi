@@ -4,24 +4,27 @@ import installer from '../../lib/helpers/installer'
 import utils from '../../lib/utils'
 
 const logger = new utils.Logger()
-const dir = path.join(__dirname, '../fixtures/templates/installer')
-const dir2 = path.join(__dirname, '../fixtures/templates/installer2')
-const dir3 = path.join(__dirname, '../fixtures/templates/installer3')
+const root = path.join(__dirname, '../fixtures/installer')
+const dirNoPkg = path.join(root, 'no-pkg')
+const dirDepsNoexist = path.join(root, 'deps-noexist')
+const dir1 = path.join(root, '1')
+const dir2 = path.join(root, '2')
+const dir3 = path.join(root, '3')
+const dir4 = path.join(root, '4')
 
 test('check: package.json not exist', async t => {
-  const ret = await installer.check(dir2)
+  const ret = await installer.check(dirNoPkg)
   t.false(ret, 'package.json should not exist')
 })
 
 test('check: dependencies not exist', async t => {
-  const ret = await installer.check(dir3)
+  const ret = await installer.check(dirDepsNoexist)
   t.false(ret, 'dependencies should not exist')
 })
 
 test('npm install dependencies', async t => {
-  // Install
   const ret = await installer.start({
-    dir,
+    dir: dir1,
     logger,
     show: false
   })
@@ -30,7 +33,7 @@ test('npm install dependencies', async t => {
 
 test('npm install devDependencies', async t => {
   const ret = await installer.start({
-    dir,
+    dir: dir2,
     logger,
     packages: ['debug'],
     type: 'dev',
@@ -42,12 +45,11 @@ test('npm install devDependencies', async t => {
 test('yarn install dependencies', async t => {
   try {
     await installer.start({
-      dir,
+      dir: dir3,
       logger,
       command: 'yarn'
     })
     t.pass()
-    // Tt.true(retInstall, 'install fail')
   } catch (err) {
     t.pass()
   }
@@ -56,7 +58,7 @@ test('yarn install dependencies', async t => {
 test('yarn add devDependencies', async t => {
   try {
     await installer.start({
-      dir,
+      dir: dir4,
       logger,
       command: 'yarn',
       action: 'add',
@@ -64,9 +66,7 @@ test('yarn add devDependencies', async t => {
       type: 'prod'
     })
     t.pass()
-    // Tt.true(ret, 'install fail')
   } catch (err) {
-    // Tt.fail(err)
     t.pass()
   }
 })

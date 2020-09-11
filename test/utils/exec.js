@@ -1,5 +1,5 @@
 import test from 'ava'
-import {exec} from '../../lib/utils'
+import { exec } from '../../lib/utils'
 
 test('empty', async t => {
   const ret = await exec('')

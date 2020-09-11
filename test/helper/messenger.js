@@ -1,7 +1,7 @@
-import {EventEmitter} from 'events'
+import { EventEmitter } from 'events'
 import test from 'ava'
 import messenger from '../../lib/helpers/messenger'
-import {Logger} from '../../lib/utils'
+import { Logger } from '../../lib/utils'
 
 const logger = new Logger()
 
