@@ -56,8 +56,6 @@ export default class CommandCreate extends Command {
     if (inputTemplate) {
       templateInstances = templates.filter((t: Template) => t.id === inputTemplate)
       if (!isValidArray(templateInstances)) {
-        // return this.error(`template "${inputTemplate}" not found`).exit()
-
         // 若已有添加模板中不存在则添加远程模板
         const addCommand = this.factory.commands.find(it => it.id === 'add')
         await addCommand?.run([inputTemplate], flags)
@@ -65,8 +63,6 @@ export default class CommandCreate extends Command {
         const addFactory = nowFactories.find(it => it.id === inputTemplate)
         templates = flatten(nowFactories.map((f:Factory) => f.templates))
         templateInstances = addFactory?.templates
-        // const nowTemplates = flatten(nowFactories.map((f: Factory) => f.templates))
-        // templateInstances = nowTemplates.filter((t: Template) => t.id === inputTemplate)
         if (!isValidArray(templateInstances)) {
           return this.error(`template "${inputTemplate}" not found`).exit()
         }
@@ -117,6 +113,9 @@ export default class CommandCreate extends Command {
             path: factoryInfo.version?.latest?.dir || factoryInfo.path,
             version: factoryInfo.version?.latest?.short,
             template: selected.templateId
+          },
+          project: {
+            name: project
           }
         },
         flags

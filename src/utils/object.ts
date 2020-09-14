@@ -21,7 +21,7 @@ export const uniqueElements = (...arrs: any[]) => {
 export const shallowClone = (obj: AnyObject) => Object.assign({}, obj)
 
 export const deepClone = (obj: any) => {
-  let clone = Object.assign({}, obj)
+  const clone = Object.assign({}, obj)
   Object.keys(clone).forEach(
     key => (clone[key] = typeof obj[key] === 'object' ? deepClone(obj[key]) : obj[key])
   )
@@ -70,7 +70,7 @@ export const stringifyObjectItems = (obj: any) => {
   }
   const copy = deepClone(obj)
 
-  for (let [name, value] of Object.entries(copy)) {
+  for (const [name, value] of Object.entries(copy)) {
     if (typeof name === 'string') {
       copy[name] = JSON.stringify(value)
     }

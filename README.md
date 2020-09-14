@@ -2,8 +2,6 @@
 
 > 功能完善中...
 
-# 入门
-
 ## 安装
 
 FBI 需安装在全局，以便在任意目录可开始你的工作流。
@@ -24,12 +22,12 @@ $ pnpm i -g fbi@next
 $ fbi add <remote repositories...>
 ```
 
-> 查看更多官方模板：[官方模板列表](https://github.com/fbi-js)
+> 查看更多官方模板：[官方模板列表](/pages/4x/more.md)
 
 ### 二、通过添加的模板创建项目
 
 ```bash
-$ fbi create <tempalate name>
+$ fbi create <tempalate|factory> [project]
 ```
 
 > 使用 `$ fbi ls` 可以查看已添加和关联的仓库及模板
