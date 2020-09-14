@@ -1,7 +1,7 @@
 {
   "name": "fbi",
   "description": "A workflow tool in command-line",
-  "version": "4.0.0-next.5",
+  "version": "v4.0.0-next.6",
   "author": "shaw @neikvon",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -22,7 +22,8 @@
     "posttest": "tslint -p test -t stylish",
     "build": "rm -rf lib && tsc",
     "watch": "npm run build && tsc --watch",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "publish": "ts-node scripts/publish.ts"
   },
   "keywords": [
     "fbi",
@@ -56,7 +57,7 @@
     "@types/glob": "^7.1.1",
     "@types/inquirer": "^6.5.0",
     "@types/mocha": "^7.0.1",
-    "@types/node": "^13.7.1",
+    "@types/node": "^14.10.0",
     "@types/semver": "^7.1.0",
     "@typescript-eslint/eslint-plugin": "^2.19.2",
     "@typescript-eslint/parser": "^2.19.2",

@@ -71,7 +71,7 @@ export class Fbi extends Factory {
       factoryInstance.init()
     }
 
-    if (this.factories.find(x => factoryInstance && x.id === factoryInstance.id)) {
+    if (this.factories.find((x) => factoryInstance && x.id === factoryInstance.id)) {
       if (!ignoreDuplicateError) {
         this.error(`Fbi:`, `factory "${factoryInstance.id}" already exist`)
       }
@@ -85,7 +85,7 @@ export class Fbi extends Factory {
   public createAllFactories() {
     this.debug('createAllFactories')
     if (isValidArray(this._factories)) {
-      this._factories.map(x => this.createFactory(x, true))
+      this._factories.map((x) => this.createFactory(x, true))
     }
 
     // create from store
@@ -104,7 +104,7 @@ export class Fbi extends Factory {
 
     // create from local
     const local = this.context.get('config.factory')
-    if (local && local.id && !this.factories.find(f => f.id === local.id)) {
+    if (local && local.id && !this.factories.find((f) => f.id === local.id)) {
       this.resolveFromLocal(local.id, local.version)
     }
 
@@ -126,8 +126,22 @@ export class Fbi extends Factory {
     return this.resolveFromLocal(targetId, targetVersion)
   }
 
+  public resolveGlobalFactories() {
+    // resolve global factories
+    let globalFactories: any[] = []
+    const factories = this.store.get()
+    for (const [_, value] of Object.entries(factories)) {
+      const info: any = value
+      if (info.global) {
+        globalFactories.push(this.createFactory(info.path))
+      }
+    }
+
+    return globalFactories
+  }
+
   private resolveFromCache(targetId: string, targetVersion?: string) {
-    const factory = this.factories.find(f => f.id === targetId)
+    const factory = this.factories.find((f) => f.id === targetId)
     if (!factory) {
       return null
     }

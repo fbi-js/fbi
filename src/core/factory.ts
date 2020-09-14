@@ -30,6 +30,7 @@ export abstract class Factory extends BaseClass {
   public version: Version | null = null
   public _version: string = ''
   public rootDir: string = ''
+  public isGlobal = false
 
   constructor(rootDir: string = '') {
     super()
