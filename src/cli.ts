@@ -26,7 +26,7 @@ export class Cli extends BaseClass {
     } else {
       const factoryId = (config.factory && config.factory.id) || ''
       const factoryVersion = (config.factory && config.factory.version) || ''
-      let factories: Factory[] = []
+      const factories: Factory[] = this.fbi.resolveGlobalFactories()
 
       if (factoryId) {
         const factory = this.fbi.resolveFactory(factoryId, factoryVersion)
@@ -35,11 +35,8 @@ export class Cli extends BaseClass {
             `factory "${factoryId}${factoryVersion ? `@${factoryVersion}` : ''}" not found`
           )
         } else {
-          factories.push(factory)
+          factories.unshift(factory)
         }
-      } else {
-        const _factories = this.fbi.resolveGlobalFactories()
-        factories = factories.concat(_factories)
       }
 
       for (let factory of factories) {

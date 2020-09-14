@@ -3,14 +3,19 @@ import { isValidArray } from './type'
 
 type Argv = string | number
 
-const exec = (str: string, opts: Record<string, any> = {}) => {
-  const arr = str.split(' ').filter(Boolean)
-  return execa(arr[0], arr.slice(1), opts)
+const exec = async (str: string, opts: Record<string, any> = {}) => {
+  const cmd = str.split(' ').filter(Boolean).join(' ')
+  try {
+    const { stdout } = await execa.command(cmd, opts)
+    return stdout
+  } catch (err) {
+    throw err
+  }
 }
 
 const pathOrAll = (arr: any) => (isValidArray(arr) ? arr.join(' ') : '.')
 // string to array
-const s2a = ({ stdout }: any): string[] | PromiseLike<string[]> =>
+const s2a = (stdout: any): string[] | PromiseLike<string[]> =>
   stdout
     .trim()
     .split('\n')
@@ -51,11 +56,11 @@ const status = {
       .then(s2a)
       .catch(() => false),
   isRebasing: (opts?: object) =>
-    exec('git status', opts).then(({ stdout }) => stdout.includes('rebase in progress')),
+    exec('git status', opts).then((stdout) => stdout && stdout.includes('rebase in progress')),
   conflictStrings: (opts?: object) => exec('git grep -n "<<<<<<< "', opts).then(s2a),
   conflictFiles: (opts?: object) => exec('git grep --name-only "<<<<<<< "', opts).then(s2a),
   changes: (opts?: object) => exec('git status --porcelain', opts).then(s2a),
-  needPull: (opts?: object) => exec('git fetch --dry-run', opts).then(res => !!res),
+  needPull: (opts?: object) => exec('git fetch --dry-run', opts).then((res) => !!res),
 
   // action
   show: (opts?: object) =>
@@ -78,7 +83,7 @@ const stash = {
 const tag = {
   // info
   list: (opts?: object) => exec('git tag', opts).then(s2a),
-  latest: (opts?: object) => exec('git describe --abbrev=0', opts),
+  latest: (opts?: object) => exec('git describe --abbrev=0', opts).catch((err) => console.log),
 
   // action
   add: (n: Argv, opts?: object) => exec(`git tag -a ${n}`, opts),
@@ -97,7 +102,7 @@ const branch = {
   remotes: (opts?: object) =>
     exec('git branch -vvr --format="%(refname:lstrip=3)"', opts)
       .then(s2a)
-      .then(r => r.filter(n => n !== 'HEAD')),
+      .then((r) => r.filter((n) => n !== 'HEAD')),
   stales: (opts?: object) =>
     exec(
       'git branch -vv --format="%(if:equals=gone)%(upstream:track,nobracket)%(then)%(refname:short)%(end)"',
