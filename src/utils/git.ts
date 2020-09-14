@@ -1,4 +1,4 @@
-import * as execa from 'execa'
+import execa from 'execa'
 import { isValidArray } from './type'
 
 type Argv = string | number

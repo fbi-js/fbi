@@ -65,7 +65,7 @@ export default class CommandCreate extends Command {
       'factory.id'
     )
 
-    const { selected } = await this.prompt({
+    const { selected } = (await this.prompt({
       type: 'select',
       name: 'selected',
       message: inputTemplate ? 'Confirm which template to use' : 'Choose a template',
@@ -81,13 +81,13 @@ export default class CommandCreate extends Command {
           )
         })
       ),
-      result(templateId: string) {
+      result(templateId: any) {
         return {
           templateId,
           factoryId: this.focused.value
-        }
+        } as any
       }
-    } as any)
+    })) as any
 
     const selectedTemplate: Template = templates.find(
       (t: Template) => t.id === selected.templateId && t.factory.id === selected.factoryId

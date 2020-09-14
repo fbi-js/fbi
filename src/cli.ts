@@ -1,4 +1,4 @@
-import * as commander from 'commander'
+import commander from 'commander'
 
 import { Fbi } from './fbi'
 import { BaseClass, Command } from './'

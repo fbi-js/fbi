@@ -87,7 +87,7 @@ export default class CommandCreate extends Command {
   }
 
   private async selectDeletion(arr: Record<string, any>[]) {
-    const { selected } = await this.prompt({
+    const { selected } = (await this.prompt({
       type: 'multiselect',
       name: 'selected',
       message: `Select items for deletion from store`,
@@ -97,10 +97,10 @@ export default class CommandCreate extends Command {
         value: x.path,
         hint: x.path
       })),
-      result(names: string[]) {
+      result(names: any) {
         return this.map(names)
       }
-    } as any)
+    })) as any
 
     return isValidObject(selected) ? selected : null
   }

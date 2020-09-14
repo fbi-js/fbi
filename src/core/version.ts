@@ -1,6 +1,6 @@
-import * as semver from 'semver'
+import semver from 'semver'
 import { join, dirname, basename } from 'path'
-import * as assert from 'assert'
+import assert from 'assert'
 
 import { BaseClass } from './base'
 import { git, isGitRepo, groupBy, getPathByVersion, getVersionByPath } from '../utils'
@@ -36,11 +36,11 @@ export class Version extends BaseClass {
     this.versions =
       this.type === 'tag'
         ? this.parseVersions(vers)
-        : vers.map(v => ({
+        : vers.map((v) => ({
             short: v,
             long: v
           }))
-    this.logItem(`Valid versions: ${this.versions.map(v => v.short).join(', ')}`)
+    this.logItem(`Valid versions: ${this.versions.map((v) => v.short).join(', ')}`)
 
     await this.cleanUp()
 
@@ -65,7 +65,7 @@ export class Version extends BaseClass {
     let version
     if (this.type === 'branch') {
       if (target) {
-        const found = this.versions.find(v => v.short === target || v.long === target)
+        const found = this.versions.find((v) => v.short === target || v.long === target)
         if (!found) {
           return null
         }
@@ -84,9 +84,9 @@ export class Version extends BaseClass {
         }
       }
     } else {
-      const versions = this.versions.map(v => v.long)
+      const versions = this.versions.map((v) => v.long)
       const long = semver.maxSatisfying(versions, target || '*')
-      const short = this.versions.find(v => v.long === long)?.short
+      const short = this.versions.find((v) => v.long === long)?.short
       const dir = getPathByVersion(this.baseDir, this.baseName, short)
       version = { dir, long, short }
     }
@@ -105,9 +105,9 @@ export class Version extends BaseClass {
   }
 
   public getLatest() {
-    const versions = this.versions.map(v => v.long)
+    const versions = this.versions.map((v) => v.long)
     const long = semver.maxSatisfying(versions, '*')
-    return this.versions.find(v => v.long === long)?.short
+    return this.versions.find((v) => v.long === long)?.short
   }
 
   private getVersions() {
@@ -124,7 +124,7 @@ export class Version extends BaseClass {
     // slim versions
     const groupVersions = groupBy(semver.sort(versions).reverse(), semver.minor)
     return Object.values(groupVersions)
-      .map(val => semver.maxSatisfying(val, '*') || '')
+      .map((val) => semver.maxSatisfying(val, '*') || '')
       .filter(Boolean)
       .map((val: any) => ({
         short: this.parseVersion(val),
@@ -144,7 +144,7 @@ export class Version extends BaseClass {
     for (const dir of dirs) {
       // don't remove valid versions
       const ver = getVersionByPath(dir, '', this.baseName)
-      if (!this.versions.find(v => v.short === ver)) {
+      if (!this.versions.find((v) => v.short === ver)) {
         const target = join(this.baseDir, dir)
         await this.fs.remove(target)
         this.logItem(`Removed inValid version: ${target}`)

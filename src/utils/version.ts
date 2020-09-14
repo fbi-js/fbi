@@ -1,5 +1,5 @@
 import { join } from 'path'
-import * as semver from 'semver'
+import semver from 'semver'
 
 export function parseVersion(version: string): string {
   const parsed = semver.parse(version)
