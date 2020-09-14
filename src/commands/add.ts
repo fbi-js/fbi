@@ -51,8 +51,13 @@ export default class CommandCreate extends Command {
 
       await this.install(flags || {}, targetDir)
 
-      const version = await this.getVersionInfo(targetDir)
-      this.store.set(`${info.name}.version`, version)
+      const { version, global } = await this.getVersionInfo(targetDir)
+      if (version) {
+        this.store.set(`${info.name}.version`, version)
+      }
+      if (global) {
+        this.store.set(`${info.name}.global`, global)
+      }
     }
   }
 
@@ -135,15 +140,18 @@ export default class CommandCreate extends Command {
   private async getVersionInfo(dir: string) {
     const factory = this.factory.createFactory(dir)
     if (!factory) {
-      return
+      return {}
     }
     const config = this.context.get('config')
     const factoriesDir = join(config.rootDirectory, config.directoryName)
     const versionInfo = await factory.version?.init(factoriesDir)
 
     return {
-      baseDir: factoriesDir,
-      ...versionInfo
+      version: {
+        baseDir: factoriesDir,
+        ...versionInfo
+      },
+      global: factory.isGlobal
     }
   }
 }
