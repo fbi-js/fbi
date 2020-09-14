@@ -1,0 +1,10 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [4.0.0-alpha.0](https://github.com/fbi-js/fbi/compare/v4.0.0-next.6...v4.0.0-alpha.0) (2020-09-14)
+
+
+### Bug Fixes
+
+* always resolve gobal factories ([084389c](https://github.com/fbi-js/fbi/commit/084389c8beacce8546df35bc305fd1af58982319))
