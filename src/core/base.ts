@@ -10,13 +10,13 @@ import cleanStack = require('clean-stack')
 import { isWindows, isString, symbols } from '../utils'
 
 import { Store } from './store'
-import { getEnv, resolveConfig, hasOwnProperty, defaultConfigs } from '../helpers'
+import { getEnv, resolveConfig, objHasProperty, defaultConfigs } from '../helpers'
 
 function cleanError(err: object | string): string {
   const stack =
     typeof err === 'string'
       ? err
-      : typeof err === 'object' && hasOwnProperty(err, 'stack') && typeof err.stack === 'string'
+      : typeof err === 'object' && objHasProperty(err, 'stack') && typeof err.stack === 'string'
       ? err.stack
       : ''
 
@@ -70,6 +70,7 @@ export abstract class BaseClass {
   }
 
   get style(): chalk.Chalk {
+    // @ts-ignore
     return chalk
   }
 

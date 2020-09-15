@@ -9,10 +9,10 @@ const types = ['tag', 'branch']
 
 export class Version extends BaseClass {
   private type = 'tag' // or branch
-  private enable: boolean = false
+  private enable = false
   private versions: Record<string, any>[] = []
   // versions dir
-  private baseDir: string = ''
+  private baseDir = ''
 
   // mainPath: main source dir
   // baseName: factory name

@@ -39,7 +39,7 @@ export class Cli extends BaseClass {
         }
       }
 
-      for (let factory of factories) {
+      for (const factory of factories) {
         if (factory.commands) {
           this.registerCommands(this.program, factory.commands)
         }

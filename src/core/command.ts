@@ -2,10 +2,10 @@ import { BaseClass } from './base'
 
 export abstract class Command extends BaseClass {
   public abstract id = ''
-  alias: string = ''
-  args: string = ''
+  alias = ''  
+  args = ''
   flags: any[][] = []
-  description: string = ''
+  description = ''
 
   public abstract run(...args: any[]): void
   public disable(): boolean | string | Promise<boolean | string> {

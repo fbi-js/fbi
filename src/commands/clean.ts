@@ -2,7 +2,7 @@ import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 import { isValidObject, pathResolve } from '../utils'
 
-export default class CommandCreate extends Command {
+export default class CommandClean extends Command {
   id = 'clean'
   alias = ''
   args = ''

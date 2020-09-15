@@ -2,7 +2,7 @@ import { join, sep } from 'path'
 import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 
-export default class CommandUnLink extends Command {
+export default class CommandRemove extends Command {
   id = 'remove'
   alias = ''
   args = '[factories...]'

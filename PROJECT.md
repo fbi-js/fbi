@@ -57,5 +57,5 @@
 ## 待完成
 
 - unlink 和 remove 存在相似之处，是否可以合并
-- create 命令支持 project 参数
+- create 命令支持 project 参数（完成）
 - task 支持
