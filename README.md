@@ -19,7 +19,7 @@ $ pnpm i -g fbi@next
 ### 一、基于远程仓库添加 fbi 模板
 
 ```
-$ fbi add <remote repositories...>
+$ fbi add <repositories...>
 ```
 
 > 查看更多官方模板：[官方模板列表](/pages/4x/more.md)

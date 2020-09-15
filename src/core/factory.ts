@@ -26,13 +26,13 @@ export abstract class Factory extends BaseClass {
   public commands: Command[] = []
   public templates: Template[] = []
   public plugins: Plugin[] = []
-  public description: string = ''
+  public description = ''
   public version: Version | null = null
-  public _version: string = ''
-  public rootDir: string = ''
+  public _version = ''
+  public rootDir = ''
   public isGlobal = false
 
-  constructor(rootDir: string = '') {
+  constructor(rootDir = '') {
     super()
     this.rootDir = rootDir
     // this.version = new Version(this.rootDir)

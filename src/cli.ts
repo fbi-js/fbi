@@ -42,7 +42,7 @@ export class Cli extends BaseClass {
         factories = factories.concat(_factories)
       }
 
-      for (let factory of factories) {
+      for (const factory of factories) {
         if (factory.commands) {
           this.registerCommands(this.program, factory.commands)
         }

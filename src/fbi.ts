@@ -1,5 +1,5 @@
 import { isAbsolute, join, sep } from 'path'
-import * as assert from 'assert'
+import assert from 'assert'
 import {
   isClass,
   isValidArray,
@@ -128,7 +128,7 @@ export class Fbi extends Factory {
 
   public resolveGlobalFactories() {
     // resolve global factories
-    let globalFactories: any[] = []
+    const globalFactories: any[] = []
     const factories = this.store.get()
     for (const [_, value] of Object.entries(factories)) {
       const info: any = value

@@ -14,6 +14,7 @@ module.exports = {
     '@typescript-eslint/no-var-requires': 0,
     '@typescript-eslint/no-this-alias': 0,
     'no-empty': 0,
-    'no-prototype-builtins': 0
+    'no-prototype-builtins': 0,
+    '@typescript-eslint/ban-ts-ignore': 0
   }
 }

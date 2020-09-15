@@ -1,4 +1,4 @@
-import * as execa from 'execa'
+import execa from 'execa'
 import { isValidArray } from './type'
 
 type Argv = string | number
@@ -14,6 +14,7 @@ const s2a = ({ stdout }: any): string[] | PromiseLike<string[]> =>
   stdout
     .trim()
     .split('\n')
+    // eslint-disable-next-line no-useless-escape
     .map((b: string) => b.replace(/^[\'\"]+|[\'\"]+$/g, '').trim())
     .filter((l: string) => l.trim())
 

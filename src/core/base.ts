@@ -1,8 +1,8 @@
 import { join } from 'path'
-import * as ora from 'ora'
-import * as execa from 'execa'
+import ora from 'ora'
+import execa from 'execa'
 import * as fs from 'fs-extra'
-import * as chalk from 'chalk'
+import chalk from 'chalk'
 import { prompt } from 'enquirer'
 import glob = require('tiny-glob')
 import * as readline from 'readline'
@@ -70,6 +70,7 @@ export abstract class BaseClass {
   }
 
   get style(): chalk.Chalk {
+    // @ts-ignore
     return chalk
   }
 

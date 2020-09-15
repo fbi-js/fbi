@@ -1,5 +1,5 @@
 import * as fs from 'fs-extra'
-import * as assert from 'assert'
+import assert from 'assert'
 import { isAbsolute, extname } from 'path'
 import {
   isObject,

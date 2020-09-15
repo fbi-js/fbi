@@ -1,6 +1,6 @@
 import * as semver from 'semver'
 import { join, dirname, basename } from 'path'
-import * as assert from 'assert'
+import assert from 'assert'
 
 import { BaseClass } from './base'
 import { git, isGitRepo, groupBy, getPathByVersion, getVersionByPath } from '../utils'
@@ -9,10 +9,10 @@ const types = ['tag', 'branch']
 
 export class Version extends BaseClass {
   private type = 'tag' // or branch
-  private enable: boolean = false
+  private enable = false
   private versions: Record<string, any>[] = []
   // versions dir
-  private baseDir: string = ''
+  private baseDir = ''
 
   // mainPath: main source dir
   // baseName: factory name
@@ -36,7 +36,7 @@ export class Version extends BaseClass {
     this.versions =
       this.type === 'tag'
         ? this.parseVersions(vers)
-        : vers.map(v => ({
+        : vers.map((v: any) => ({
             short: v,
             long: v
           }))
