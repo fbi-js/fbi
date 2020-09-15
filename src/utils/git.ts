@@ -84,7 +84,7 @@ const stash = {
 const tag = {
   // info
   list: (opts?: object) => exec('git tag', opts).then(s2a),
-  latest: (opts?: object) => exec('git describe --abbrev=0', opts).catch((err) => console.log),
+  latest: (opts?: object) => exec('git describe --abbrev=0', opts).catch((_) => ''),
 
   // action
   add: (n: Argv, opts?: object) => exec(`git tag -a ${n}`, opts),
