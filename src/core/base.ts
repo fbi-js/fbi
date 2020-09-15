@@ -1,11 +1,11 @@
 import { join } from 'path'
 import ora from 'ora'
 import execa from 'execa'
-import * as fs from 'fs-extra'
+import fs from 'fs-extra'
 import chalk from 'chalk'
 import { prompt } from 'enquirer'
 import glob = require('tiny-glob')
-import * as readline from 'readline'
+import readline from 'readline'
 import cleanStack = require('clean-stack')
 import { isWindows, isString, symbols } from '../utils'
 
@@ -27,7 +27,7 @@ function cleanError(err: object | string): string {
 
 const safeStylized = (str: any, style: Function) => (typeof str === 'string' ? style(str) : str)
 
-  // handle ctrl+c on prompt
+// handle ctrl+c on prompt
 ;(prompt as any).on('cancel', () => process.exit())
 
 const context = new Store()
@@ -99,13 +99,16 @@ export abstract class BaseClass {
 
   debug(...messages: any[]): this {
     if (context.get('debug')) {
-      console.log(chalk.dim(`[debug]`), ...messages.map(m => safeStylized(m, chalk.dim)))
+      console.log(chalk.dim(`[debug]`), ...messages.map((m) => safeStylized(m, chalk.dim)))
     }
     return this
   }
 
   warn(...messages: any[]): this {
-    console.log(chalk.yellow(symbols.warning), ...messages.map(m => safeStylized(m, chalk.yellow)))
+    console.log(
+      chalk.yellow(symbols.warning),
+      ...messages.map((m) => safeStylized(m, chalk.yellow))
+    )
     return this
   }
 
@@ -113,7 +116,7 @@ export abstract class BaseClass {
     const errors = messages.map((err: any) =>
       isString(err) ? err : (err.stack && cleanError(err.stack)) || err
     )
-    console.log(chalk.red(symbols.cross), ...errors.map(m => safeStylized(m, chalk.red)))
+    console.log(chalk.red(symbols.cross), ...errors.map((m) => safeStylized(m, chalk.red)))
     return this
   }
 

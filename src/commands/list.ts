@@ -43,10 +43,11 @@ export default class CommandList extends Command {
           .map((id: string) => this.factory.resolveFactory(id))
           .filter(Boolean)
       } else {
-        // show using
-        factories = [this.factory.resolveFactory(current.id, current.version)].filter(
+        // show using & global
+        factories = this.factory.resolveGlobalFactories()
+        factories = ([this.factory.resolveFactory(current.id, current.version)].filter(
           Boolean
-        ) as Factory[]
+        ) as Factory[]).concat(factories)
       }
     }
 

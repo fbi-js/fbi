@@ -1,5 +1,5 @@
 import { join } from 'path'
-import * as fs from 'fs-extra'
+import fs from 'fs-extra'
 import { Store } from '../core/store'
 import { isValidArray, isFunction, isObject, merge } from '../utils'
 

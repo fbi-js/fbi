@@ -1,4 +1,4 @@
-import * as fs from 'fs-extra'
+import fs from 'fs-extra'
 import assert from 'assert'
 import { isAbsolute, extname } from 'path'
 import {
@@ -119,8 +119,8 @@ export class Store {
         delete this.data[key]
       }
     }
-    if(this.filepath) {
-      fs.outputJsonSync(this.filepath, this.data || {},{spaces:4})
+    if (this.filepath) {
+      fs.outputJsonSync(this.filepath, this.data || {}, { spaces: 4 })
     }
     return this.data
   }
