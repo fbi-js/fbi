@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.0.0-alpha.8](https://github.com/fbi-js/fbi/compare/v4.0.0-alpha.7...v4.0.0-alpha.8) (2020-09-15)
+
+
+### Bug Fixes
+
+* load config in factory's constructor ([160adc2](https://github.com/fbi-js/fbi/commit/160adc2e7e819cabe2fea5c5f51ed8ccab9d1f77))
+
 ## [4.0.0-alpha.7](https://github.com/fbi-js/fbi/compare/v4.0.0-alpha.6...v4.0.0-alpha.7) (2020-09-15)
 
 
