@@ -39,6 +39,7 @@ export abstract class Factory extends BaseClass {
   }
 
   public init() {
+    this.loadConfig()
     this.version = new Version(this.id, this.rootDir)
 
     // get version number
