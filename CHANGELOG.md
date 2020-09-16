@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.0.0-alpha.9](https://github.com/fbi-js/fbi/compare/v4.0.0-alpha.8...v4.0.0-alpha.9) (2020-09-16)
+
+
+### Features
+
+* **version:** support "main" as default branch ([0c1bcf6](https://github.com/fbi-js/fbi/commit/0c1bcf6824d36f44661eb3a7acca1abc4958f2e5))
+
 ## [4.0.0-alpha.8](https://github.com/fbi-js/fbi/compare/v4.0.0-alpha.7...v4.0.0-alpha.8) (2020-09-15)
 
 
