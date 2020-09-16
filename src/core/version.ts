@@ -73,7 +73,7 @@ export class Version extends BaseClass {
         version = {
           ...found,
           dir:
-            found.short !== 'master'
+            found.short !== 'master' && found.short !== 'main'
               ? getPathByVersion(this.baseDir, this.baseName, found.short)
               : this.mainPath
         }
@@ -95,7 +95,7 @@ export class Version extends BaseClass {
       return version
     }
 
-    if (!['master'].includes(version.short)) {
+    if (!['master', 'main'].includes(version.short)) {
       this.logItem(`Initializing version '${version.short}'...`)
       await this.fs.copy(this.mainPath, version.dir)
       await git.checkout(version.long, { cwd: version.dir })
