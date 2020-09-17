@@ -2,8 +2,11 @@
 ._*
 .DS_Store
 .git
+.git
+.github
+.editorconfig
 .npmrc
-.lock-wscript
+.vscode
 npm-debug.log
 
 src
@@ -12,3 +15,4 @@ tsconfig.json
 .eslintrc.js
 .gitignore
 .prettierrc
+PROJECT.md

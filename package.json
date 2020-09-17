@@ -11,10 +11,6 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "files": [
-    "/lib",
-    "/bin"
-  ],
   "scripts": {
     "dev": "./bin/run -v",
     "help": "tsc --help",
