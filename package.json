@@ -1,49 +1,63 @@
 {
   "name": "fbi",
-  "version": "3.3.2",
-  "description": "Node.js workflow tool.",
-  "engines": {
-    "node": ">= 8.2.1",
-    "npm": ">= 5.0.0"
-  },
+  "description": "A workflow tool in command-line",
+  "version": "4.0.2",
+  "author": "shaw @neikvon",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "bin": {
-    "fbi": "./bin/fbi"
+    "fbi": "./bin/run"
+  },
+  "engines": {
+    "node": ">=10.0.0"
   },
   "scripts": {
-    "lint": "standard --fix",
-    "test": "standard && nyc ava --verbose",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls && rm -rf ./coverage"
+    "build": "rm -rf lib && tsc",
+    "watch": "npm run build && tsc --watch",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "posttest": "tslint -p test -t stylish",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
-  "dependencies": {},
-  "devDependencies": {
-    "ava": "0.25.0",
-    "coveralls": "^3.0.2",
-    "execa": "^1.0.0",
-    "nyc": "13.1.0",
-    "standard": "^12.0.1",
-    "tempfile": "^2.0.0"
-  },
+  "keywords": [
+    "fbi",
+    "tool",
+    "workflow",
+    "development",
+    "command line",
+    "node.js"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fbi-js/fbi.git"
   },
-  "keywords": [
-    "fbi",
-    "workflow",
-    "tool",
-    "development",
-    "template",
-    "task",
-    "cli",
-    "commandline",
-    "teamwork",
-    "dependencies"
-  ],
+  "homepage": "https://github.com/fbi-js/fbi",
   "bugs": {
     "url": "https://github.com/fbi-js/fbi/issues"
   },
-  "homepage": "https://github.com/fbi-js/fbi#readme",
-  "author": "neikvon <neikvon@icloud.com>"
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "clean-stack": "^3.0.0",
+    "commander": "6.1.0",
+    "ejs": "^3.1.5",
+    "enquirer": "^2.3.6",
+    "execa": "^4.0.3",
+    "fs-extra": "^9.0.1",
+    "ora": "^5.1.0",
+    "semver": "^7.3.2",
+    "tiny-glob": "^0.2.6",
+    "tslib": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.0.4",
+    "@types/fs-extra": "^9.0.1",
+    "@types/node": "^14.10.1",
+    "@types/semver": "^7.3.3",
+    "@typescript-eslint/eslint-plugin": "^4.1.0",
+    "@typescript-eslint/parser": "^4.1.0",
+    "eslint": "^7.9.0",
+    "eslint-config-prettier": "^6.11.0",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.2"
+  }
 }
