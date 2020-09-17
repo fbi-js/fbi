@@ -12,14 +12,11 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "dev": "./bin/run -v",
-    "help": "tsc --help",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "posttest": "tslint -p test -t stylish",
     "build": "rm -rf lib && tsc",
     "watch": "npm run build && tsc --watch",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
-    "publish": "ts-node scripts/publish.ts"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "posttest": "tslint -p test -t stylish",
+    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
   },
   "keywords": [
     "fbi",
