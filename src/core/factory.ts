@@ -36,7 +36,6 @@ export abstract class Factory extends BaseClass {
     super()
     this.rootDir = rootDir
     this.loadConfig()
-    // this.version = new Version(this.rootDir)
   }
 
   public init() {
