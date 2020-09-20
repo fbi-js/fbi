@@ -80,7 +80,7 @@ export function resolveConfig(
     packageFile: 'package.json',
     packageKey: 'fbi',
     organization: 'https://github.com/fbi-js',
-    packageManager: env.hasPnpm ? 'pnpm' : env.hasYarn ? 'yarn' : env.hasNpm ? 'npm' : ''
+    packageManager: env.hasNpm ? 'npm' : env.hasYarn ? 'yarn' : env.hasPnpm ? 'pnpm' : ''
   }
   const globalConfig = configStore.get()
   const baseConfig = merge(config, globalConfig)
