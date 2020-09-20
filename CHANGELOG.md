@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.3](https://github.com/fbi-js/fbi/compare/v4.0.2...v4.0.3) (2020-09-20)
+
+
+### Bug Fixes
+
+* change npm first ([9725f6f](https://github.com/fbi-js/fbi/commit/9725f6fba35d0d005369647f36142daa47bb3f59))
+
+### [3.3.2](https://github.com/fbi-js/fbi/compare/v4.0.0-next.6...v3.3.2) (2020-09-11)
+
+### [3.3.1](https://github.com/fbi-js/fbi/compare/v4.0.0-next.1...v3.3.1) (2020-05-08)
+
+
+### Bug Fixes
+
+* style.grey is not a function ([32a2df5](https://github.com/fbi-js/fbi/commit/32a2df594f5de9f110b3b0a008ef82fa03788086))
+
 ### [4.0.2](https://github.com/fbi-js/fbi/compare/v4.0.1...v4.0.2) (2020-09-17)
 
 ### [4.0.1](https://github.com/fbi-js/fbi/compare/v4.0.0...v4.0.1) (2020-09-17)
