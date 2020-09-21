@@ -14,6 +14,9 @@ export default class CommandClean extends Command {
   }
 
   public async run(flags: any) {
+    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
+      flags
+    })
     await this.removeUnavailableFactories()
     await this.removeUnavailableProjects()
   }

@@ -14,11 +14,12 @@ export default class CommandUnLink extends Command {
   }
 
   async run(factories: any, flags: any) {
+    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
+      factories,
+      flags
+    })
     const ids = (Array.isArray(factories) && factories.length > 0 && factories) || [
-      process
-        .cwd()
-        .split(sep)
-        .pop()
+      process.cwd().split(sep).pop()
     ]
     for (const id of ids) {
       const factory = this.store.get(id)

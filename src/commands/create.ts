@@ -18,6 +18,11 @@ export default class CommandCreate extends Command {
   }
 
   async run(inputTemplate: any, project: any, flags: any) {
+    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
+      inputTemplate,
+      project,
+      flags
+    })
     const factories = this.factory.createAllFactories()
 
     // if is fbi project
@@ -57,18 +62,17 @@ export default class CommandCreate extends Command {
       templateInstances = templates.filter((t: Template) => t.id === inputTemplate)
       if (!isValidArray(templateInstances)) {
         // 若已有添加模板中不存在则添加远程模板
-        const addCommand = this.factory.commands.find(it => it.id === 'add')
+        const addCommand = this.factory.commands.find((it) => it.id === 'add')
         await addCommand?.run([inputTemplate], flags)
         const nowFactories = this.factory.createAllFactories() || []
-        const addFactory = nowFactories.find(it => it.id === inputTemplate)
-        templates = flatten(nowFactories.map((f:Factory) => f.templates))
+        const addFactory = nowFactories.find((it) => it.id === inputTemplate)
+        templates = flatten(nowFactories.map((f: Factory) => f.templates))
         templateInstances = addFactory?.templates
         if (!isValidArray(templateInstances)) {
           return this.error(`template "${inputTemplate}" not found`).exit()
         }
       }
     }
-
 
     templateInstances = groupBy(
       (isValidArray(templateInstances) && templateInstances) || templates,

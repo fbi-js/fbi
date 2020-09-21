@@ -14,6 +14,10 @@ export default class CommandRemove extends Command {
   }
 
   async run(factories: any, flags: any) {
+    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
+      factories,
+      flags
+    })
     const ids = (Array.isArray(factories) && factories.length > 0 && factories) || [
       process
         .cwd()

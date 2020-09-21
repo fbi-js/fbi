@@ -26,7 +26,10 @@ export default class CommandList extends Command {
   }
 
   async run(targetFactories: any, flags: any) {
-    this.debug(`Factory: (${this.factory.id})`, 'from command', this.id, { targetFactories, flags })
+    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
+      targetFactories,
+      flags
+    })
     this.showProjects = flags.projects
     this.showVersions = flags.versions
 

@@ -15,6 +15,10 @@ export default class CommandAdd extends Command {
   }
 
   public async run(repositories: any, flags: any) {
+    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
+      repositories,
+      flags
+    })
     const config = this.context.get('config')
     const rootDir = join(config.rootDirectory, config.directoryName)
 

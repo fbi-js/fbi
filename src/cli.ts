@@ -111,6 +111,7 @@ export class Cli extends BaseClass {
         }
       }
       cmd.option('-d, --debug', 'output extra debugging')
+      cmd.allowUnknownOption(true)
     }
   }
 

@@ -134,6 +134,7 @@ export class Fbi extends Factory {
       const info: any = value
       if (info.global) {
         globalFactories.push(this.createFactory(info.path))
+        this.debug('Fbi<resolveGlobalFactories>:', info.id)
       }
     }
 
@@ -145,7 +146,7 @@ export class Fbi extends Factory {
     if (!factory) {
       return null
     }
-    this.debug('Fbi:', `Factory "${targetId}" found in memory`)
+    this.debug(`Factory "${targetId}" found in memory`)
     return factory
   }
 
@@ -155,7 +156,7 @@ export class Fbi extends Factory {
     if (!factoryInfo) {
       return null
     }
-    this.debug('Fbi:', `Factory "${targetId}" found in store`)
+    this.debug(`Factory "${targetId}" found in store`)
     // local link not support version control
     if (targetVersion && factoryInfo.type !== 'local') {
       const matchVersion = factoryInfo.version?.versions
@@ -183,7 +184,7 @@ export class Fbi extends Factory {
     const arr = realpath.split(sep)
     const idx = arr.lastIndexOf('node_modules')
     const dir = arr.slice(0, idx + 2).join(sep)
-    this.debug('Fbi:', `Factory "${targetId}" found in node_modules`)
+    this.debug(`Factory "${targetId}" found in node_modules`)
     return this.createFactory(dir)
   }
 }

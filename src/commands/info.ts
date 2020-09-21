@@ -15,6 +15,9 @@ export default class CommandInfo extends Command {
 
   async run(flags: any) {
     this.clear()
+    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
+      flags
+    })
 
     const config = this.loadConfig()
     let globalConfig = {}
