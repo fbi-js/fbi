@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.0.4](https://github.com/fbi-js/fbi/compare/v4.0.3...v4.0.4) (2020-09-21)
+
+
+### Bug Fixes
+
+* set allowUnknownOption=true for factory's commands ([b22e423](https://github.com/fbi-js/fbi/commit/b22e4239ea31dac545095738b515ed95a4a7827e))
+
 ### [4.0.3](https://github.com/fbi-js/fbi/compare/v4.0.2...v4.0.3) (2020-09-20)
 
 
