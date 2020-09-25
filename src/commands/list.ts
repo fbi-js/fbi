@@ -13,13 +13,12 @@ export default class CommandList extends Command {
   args = '[factories...]'
   flags = [
     ['-a, --all', 'show all factories'],
-    ['-p, --projects', 'show projects'],
-    ['-v, --versions', 'show versions']
+    ['-p, --projects', 'show projects']
   ]
   description = `list factories and commands info`
   private padWidth = 0
   private showProjects = false
-  private showVersions = false
+  private showVersions = true
 
   constructor(public factory: Fbi) {
     super()
@@ -31,7 +30,6 @@ export default class CommandList extends Command {
       flags
     })
     this.showProjects = flags.projects
-    this.showVersions = flags.versions
 
     const hasTarget = isValidArray(targetFactories)
     const current = this.context.get('config.factory')
@@ -88,8 +86,8 @@ export default class CommandList extends Command {
         this.log(`Use ${this.style.cyan('fbi add [factories...]')} to add remote factories`)
         this.log(`Use ${this.style.cyan('fbi link [factories...]')} to link local factories`)
       } else if (current) {
-        this.log(`  Use ${this.style.cyan('fbi <command>')} to run a command`)
-        this.log(`  Use ${this.style.cyan('fbi create>')} to use a sub template`)
+        this.log(`  Use ${this.style.cyan('fbi <command>')} to execute a command`)
+        this.log(`  Use ${this.style.cyan('fbi create')} to use a sub template`)
       }
     }
   }
@@ -168,8 +166,7 @@ export default class CommandList extends Command {
       const factory = this.store.get(obj.id)
       if (factory.version && factory.version.versions) {
         txt += '\n\n  Versions:'
-        txt +=
-          '\n  ' + factory.version.versions.map((v: any) => this.style.italic(v.short)).join(', ')
+        txt += '\n  ' + factory.version.versions.map((v: any) => v.short).join(', ')
       }
     }
 

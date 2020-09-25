@@ -21,6 +21,11 @@ export type FactoryInfo = {
   version?: VersionInfo
 }
 
+export type FactoryOptions = {
+  rootDir?: string
+  [key: string]: any
+}
+
 export abstract class Factory extends BaseClass {
   public abstract id = ''
   public commands: Command[] = []
@@ -32,18 +37,20 @@ export abstract class Factory extends BaseClass {
   public rootDir = ''
   public isGlobal = false
 
-  constructor(rootDir = '') {
+  constructor(public options?: FactoryOptions) {
     super()
-    this.rootDir = rootDir
-    this.loadConfig()
+    this.init()
   }
 
-  public init() {
-    this.version = new Version(this.id, this.rootDir)
+  protected init() {
+    if (!this.options?.rootDir) {
+      return
+    }
+    this.version = new Version(this.id, this.options.rootDir)
 
     // get version number
     try {
-      const pkgPath = pathResolve(join(this.rootDir, 'package.json'))
+      const pkgPath = pathResolve(join(this.options.rootDir, 'package.json'))
       const { version } = require(pkgPath)
       if (version) {
         this._version = version

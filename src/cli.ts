@@ -1,9 +1,10 @@
-import commander from 'commander'
+import commander, { createCommand } from 'commander'
 
 import { Fbi } from './fbi'
-import { BaseClass, Command } from './'
 import { Factory } from './core/factory'
+import { BaseClass, Command } from './'
 import { isValidArray, isArray } from './utils'
+
 const pkg = require('../package.json')
 
 export class Cli extends BaseClass {
@@ -19,10 +20,9 @@ export class Cli extends BaseClass {
   public async run() {
     const isBuiltInCmd = this.isBuiltInCommand()
     const config = this.loadConfig()
-    this.debug('isBuiltInCmd:', isBuiltInCmd)
 
     if (isBuiltInCmd) {
-      this.registerCommands(this.program, this.fbi.commands)
+      this.registerCommands(this.fbi.commands)
     } else {
       const factoryId = (config.factory && config.factory.id) || ''
       const factoryVersion = (config.factory && config.factory.version) || ''
@@ -41,7 +41,7 @@ export class Cli extends BaseClass {
 
       for (const factory of factories) {
         if (factory.commands) {
-          this.registerCommands(this.program, factory.commands)
+          this.registerCommands(factory.commands)
         }
       }
     }
@@ -50,37 +50,57 @@ export class Cli extends BaseClass {
     this.program.on('option:debug', () => {
       this.context.set('debug', true)
     })
-    // 处理执行命令时的错误
+
     await this.program.parseAsync(process.argv).catch((err) => (err ? this.error(err).exit() : ''))
   }
 
   private createProgram(id: string): commander.Command {
-    return new commander.Command()
+    const program = createCommand()
+    const _this = this
+    program
       .storeOptionsAsProperties(false)
       .passCommandToAction(false)
       .name(id)
       .version(`${id} ${pkg.version}`, '-v, --version', 'output the current version')
       .usage('[command] ...')
       .description(pkg.description)
+      .option('-d, --debug', 'output extra debugging')
       .on('--help', () => {
         console.log('')
-        console.log(`Run ${id + ' <command> -h'} for detailed usage of given command`)
+        console.log(`Run ${this.style.cyan(id + ' list')} for available commands`)
+        console.log(
+          `Run ${this.style.cyan(id + ' <command> -h')} for detailed usage of given command`
+        )
       })
-      .option('-d, --debug', 'output extra debugging')
+      .command('help', { hidden: true }) // hide 'help' command
+      .command('unknown', { isDefault: true, hidden: true }) // for 'fbi' default commands
+      .action(() => {
+        if (program.args && program.args.length > 0) {
+          _this.error(`Unknown command "${program.args.join(' ')}"`)
+          console.log(
+            `Run ${this.style.cyan(id + ' -h')} or ${this.style.cyan(
+              id + ' list'
+            )} for available commands`
+          )
+        } else {
+          program.help()
+        }
+      })
+
+    return program
   }
 
-  private registerCommands(program: commander.Command, commands: Command[]): void {
+  private registerCommands(commands: Command[]): void {
     for (const command of commands) {
       const nameAndArgs = `${command.id}${command.args ? ` ${command.args}` : ''}`
-      const cmd = program.command(nameAndArgs)
+      const cmd = this.program.command(nameAndArgs)
       if (command.alias) {
         cmd.alias(command.alias)
       }
       if (command.description) {
         cmd.description(command.description)
       }
-      const _this = this
-      cmd.action(async function (...args: any[]) {
+      cmd.action(async (...options: any[]) => {
         const disabled = command.disable ? await command.disable() : ''
         const prefix = `command "${command.id}" has been disabled.`
         const message =
@@ -90,16 +110,13 @@ export class Cli extends BaseClass {
             ? prefix
             : ''
         if (message) {
-          _this.warn(message).exit()
+          this.warn(message).exit()
         }
         // set 'debug' flag from parent flags
-        const parentOpts = this.parent.opts()
-        if (parentOpts.debug) {
-          this._setOptionValue('debug', parentOpts.debug)
-        }
+        const parentOpts = this.program.opts()
+        cmd._setOptionValue('debug', parentOpts.debug)
 
-        // 执行命令
-        return command.run(...args)
+        return command.run(...options)
       })
 
       if (isValidArray(command.flags)) {
@@ -112,6 +129,20 @@ export class Cli extends BaseClass {
       }
       cmd.option('-d, --debug', 'output extra debugging')
       cmd.allowUnknownOption(true)
+      cmd
+        // set debug flag in context
+        .on('option:debug', () => {
+          command.context.set('debug', true)
+        })
+        .on('--help', () => {
+          console.log('')
+          if (command.examples && command.examples.length > 0) {
+            console.log('Examples:')
+            for (const str of command.examples) {
+              console.log(`  ${str}`)
+            }
+          }
+        })
     }
   }
 

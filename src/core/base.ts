@@ -7,10 +7,11 @@ import { prompt } from 'enquirer'
 import glob = require('tiny-glob')
 import readline from 'readline'
 import cleanStack = require('clean-stack')
-import { isWindows, isString, symbols } from '../utils'
 
+import context from './context'
 import { Store } from './store'
-import { getEnv, resolveConfig, objHasProperty, defaultConfigs } from '../helpers'
+import { isWindows, isString, symbols } from '../utils'
+import { resolveConfig, objHasProperty, defaultConfigs } from '../helpers'
 
 function cleanError(err: object | string): string {
   const stack =
@@ -30,15 +31,11 @@ const safeStylized = (str: any, style: Function) => (typeof str === 'string' ? s
 // handle ctrl+c on prompt
 ;(prompt as any).on('cancel', () => process.exit())
 
-const context = new Store()
-context.set('env', getEnv())
-context.set('debug', false)
-
 export abstract class BaseClass {
   private _store?: Store
   private _configStore?: Store
   private _projectStore?: Store
-  public context = context
+  public context: Store = context
 
   get store() {
     if (!this._store) {
@@ -83,8 +80,8 @@ export abstract class BaseClass {
   }
 
   loadConfig() {
-    const config = resolveConfig(context.get('env'), this.configStore, this.projectStore)
-    context.set('config', config)
+    const config = resolveConfig(this.context.get('env'), this.configStore, this.projectStore)
+    this.context.set('config', config)
     return config
   }
 
@@ -98,7 +95,7 @@ export abstract class BaseClass {
   }
 
   debug(...messages: any[]): this {
-    if (context.get('debug')) {
+    if (this.context.get('debug')) {
       console.log(chalk.dim(`[debug]`), ...messages.map((m) => safeStylized(m, chalk.dim)))
     }
     return this

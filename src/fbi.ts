@@ -4,7 +4,6 @@ import {
   isClass,
   isValidArray,
   isString,
-  isFunction,
   pathResolve,
   getMatchVersion,
   getPathByVersion
@@ -17,11 +16,14 @@ import CommandAdd from './commands/add'
 import CommandRemove from './commands/remove'
 import CommandList from './commands/list'
 import CommandLink from './commands/link'
-import CommandUnLink from './commands/unlink'
 import CommandInfo from './commands/info'
 import CommandCreate from './commands/create'
 import CommandClean from './commands/clean'
 import PluginLogger from './plugins/logger'
+
+export type FbiOptions = {
+  factories?: any[]
+}
 
 export class Fbi extends Factory {
   id = 'fbi'
@@ -33,13 +35,12 @@ export class Fbi extends Factory {
     new CommandInfo(this),
     new CommandLink(this),
     new CommandList(this),
-    new CommandRemove(this),
-    new CommandUnLink(this)
+    new CommandRemove(this)
   ]
   templates: Template[] = []
   plugins: Plugin[] = [new PluginLogger(this)]
 
-  constructor(private _factories: any[] = []) {
+  constructor(public options?: FbiOptions) {
     super()
   }
 
@@ -61,14 +62,10 @@ export class Fbi extends Factory {
     fn = fn.default || fn
     assert(isClass(fn), `factory should be a class, recived '${typeof fn}'`)
 
-    const factoryInstance = new fn(_path)
+    const factoryInstance: Factory = new fn({ rootDir: _path })
     if (!factoryInstance) {
       this.error(`Fbi:`, `can not create factory`, _path)
       return null
-    }
-
-    if (isFunction(factoryInstance.init)) {
-      factoryInstance.init()
     }
 
     if (this.factories.find((x) => factoryInstance && x.id === factoryInstance.id)) {
@@ -84,8 +81,8 @@ export class Fbi extends Factory {
 
   public createAllFactories() {
     this.debug('createAllFactories')
-    if (isValidArray(this._factories)) {
-      this._factories.map((x) => this.createFactory(x, true))
+    if (isValidArray(this.options?.factories)) {
+      this.options?.factories?.map((x) => this.createFactory(x, true))
     }
 
     // create from store
