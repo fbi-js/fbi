@@ -6,4 +6,4 @@ export * from './core/factory'
 export * from './core/command'
 export * from './core/template'
 export * from './core/version'
-export const utils = require('./utils/')
+export * as utils from './utils/'

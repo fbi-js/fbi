@@ -30,14 +30,36 @@ export abstract class Template extends BaseClass {
   protected targetDir = process.cwd()
   protected _debugPrefix = ''
   private rootPath = ''
+  private subDirectory = false
 
   constructor() {
     super()
-    
+  }
+
+  // public methods
+  public resolveTemplate(templateId: string) {
+    const template = this.templates.find((x) => x.id === templateId)
+    if (!template) {
+      this.debug(
+        `Template (${this.id}${this.factory ? `:${this.factory.id}` : ''}):`,
+        `template "${templateId}" not found`
+      )
+    } else {
+      this.debug(
+        `Template (${this.id}${this.factory ? `:${this.factory.id}` : ''}):`,
+        `found template "${templateId}"`
+      )
+    }
+
+    return template
   }
 
   public async run(data: Record<string, any>, flags: any): Promise<any> {
-    this.prepare(data)
+    if (data?.subDirectory) {
+      this.subDirectory = data.subDirectory
+    }
+
+    await this.prepare(data)
 
     // 1. gathering: this.data
     this.debug(`${this._debugPrefix} run gathering`)
@@ -73,35 +95,31 @@ export abstract class Template extends BaseClass {
     }
   }
 
-  public resolveTemplate(templateId: string) {
-    const template = this.templates.find(x => x.id === templateId)
-    if (!template) {
-      this.debug(
-        `Template (${this.id}${this.factory ? `:${this.factory.id}` : ''}):`,
-        `template "${templateId}" not found`
-      )
-    } else {
-      this.debug(
-        `Template (${this.id}${this.factory ? `:${this.factory.id}` : ''}):`,
-        `found template "${templateId}"`
-      )
+  // processes
+  private async prepare(data?: any) {
+    this._debugPrefix = `Template "${this.id}"`
+
+    if (data && isValidObject(data)) {
+      this.data = data
     }
 
-    return template
-  }
+    if (!this.data.factory || !this.data?.factory?.path) {
+      this.error(`need path of factory`)
+      return this.exit()
+    }
 
+    this.rootPath = join(this.data.factory.path, this.path)
+  }
   protected async gathering(flags: any): Promise<any> {}
-  protected async checking(): Promise<any> {}
-  protected async writing(): Promise<any> {}
-  protected async installing(flags: any): Promise<any> {}
-  protected async ending(): Promise<any> {}
-
   private async afterGathering() {
-    const { project } = this.data
-    this.targetDir = join(process.cwd(), (project && project.name) || '')
-    this.debug(`${this._debugPrefix} rootPath: ${this.rootPath} targetDir: ${this.targetDir}`)
+    if (this.subDirectory) {
+      this.targetDir = join(this.targetDir, this.data?.project?.name || '')
+    }
+    this.debug(`${this._debugPrefix} rootPath: ${this.rootPath}; targetDir: ${this.targetDir}`)
   }
+  protected async checking(): Promise<any> {}
   private async afterChecking() {}
+  protected async writing(): Promise<any> {}
   private async afterWriting() {
     if (this.files.copy && isValidArray(this.files.copy)) {
       this.debug(`${this._debugPrefix} start copy`, this.files.copy)
@@ -109,38 +127,23 @@ export abstract class Template extends BaseClass {
     }
 
     if (isFunction(this.renderer) && this.files.render && isValidArray(this.files.render)) {
-      this.debug(`${this._debugPrefix} start render`, this.files.render)
-      await this.render(this.files.render, this.data, this.renderOptions)
+      this.debug(`${this._debugPrefix} start render`, this.files.render, this.files?.renderOptions)
+      await this.render(this.files.render, this.data, this.files?.renderOptions)
     }
   }
+  protected async installing(flags: any): Promise<any> {}
   private async afterInstalling() {}
+  protected async ending(): Promise<any> {}
   private async afterEnding() {}
 
-  private prepare(data?: any) {
-    this._debugPrefix = `Template "${this.id}"`
-
-    if (data && isValidObject(data)) {
-      this.data = data
-    }
-
-    if (!this.data.factory || !this.data.factory.path) {
-      this.error(`need path of factory`)
-      return this.exit()
-    }
-
-    this.rootPath = join(this.data.factory.path, this.path)
-  }
-
+  // utils
   private async copy(fileMaps: StringOrFileMap[]) {
     const maps: FileMap[] = this.foramtFileMaps(fileMaps)
     for (const map of maps) {
       const paths = await this.globFile(map)
       const replace = map.to.split('/').filter(Boolean)
       for (const p of paths) {
-        const rest = p
-          .split('/')
-          .filter(Boolean)
-          .slice(replace.length)
+        const rest = p.split('/').filter(Boolean).slice(replace.length)
         const src = join(this.rootPath, p)
         if (!(await this.fs.pathExists(src))) {
           this.warn(`${src} not found`)
@@ -161,7 +164,7 @@ export abstract class Template extends BaseClass {
   private async render(
     fileMaps: StringOrFileMap[],
     data: Record<string | number, any>,
-    options: [] | {}
+    options?: [] | {}
   ) {
     if (!this.renderer || !isFunction(this.renderer)) {
       return
@@ -171,10 +174,7 @@ export abstract class Template extends BaseClass {
       const paths = await this.globFile(map)
       const replace = map.to.split('/').filter(Boolean)
       for (const p of paths) {
-        const rest = p
-          .split('/')
-          .filter(Boolean)
-          .slice(replace.length)
+        const rest = p.split('/').filter(Boolean).slice(replace.length)
         const src = join(this.rootPath, p)
         const stats = await this.fs.stat(src)
         if (stats.isFile()) {

@@ -99,13 +99,11 @@ export default class CommandList extends Command {
     const index = showIdx ? this.style.bold(symbols.numbers[idx as number]) : ' '
     const title = this.style.bold(obj.id)
     const version = isCurrent && current.version ? this.style.italic(`@${current.version}`) : ''
-    const path = this.style.dim(
-      obj.rootDir
-        ? obj.rootDir.startsWith(process.cwd())
-          ? obj.rootDir.replace(process.cwd() + '/', '')
-          : obj.rootDir
-        : ''
-    )
+    const rootDir =
+      obj.options &&
+      obj.options.rootDir &&
+      obj.options.rootDir.replace(this.context.get('env.home'), '~')
+    const path = this.style.dim(rootDir)
     let txt = `\n${index} ${title}${version} ${path}`
 
     if (obj.description) {

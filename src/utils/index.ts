@@ -5,6 +5,7 @@ export * from './type'
 export * from './format'
 export * from './version'
 
+export const enquirer = require('enquirer')
 export const symbols: SymbolsType = require('enquirer/lib/symbols')
 
 export const timeMeasurement = (
@@ -32,12 +33,12 @@ export function applyMixins(
   baseCtors: any[],
   exclude: string[] = ['constructor']
 ) {
-  baseCtors.forEach(baseCtor => {
+  baseCtors.forEach((baseCtor) => {
     const instance = baseCtor.prototype || baseCtor
     const propertyNames = Object.getOwnPropertyNames(instance).filter(
       (name: string) => !exclude.includes(name)
     )
-    propertyNames.forEach(name => {
+    propertyNames.forEach((name) => {
       if (exclude.includes(name)) return
       const propDesc = Object.getOwnPropertyDescriptor(instance, name) as
         | PropertyDescriptor

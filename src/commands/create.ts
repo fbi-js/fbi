@@ -1,3 +1,4 @@
+import { sep } from 'path'
 import { Fbi } from '../fbi'
 import { Factory } from '../core/Factory'
 import { Command } from '../core/command'
@@ -7,7 +8,7 @@ import { groupBy, flatten, isValidArray } from '../utils'
 export default class CommandCreate extends Command {
   id = 'create'
   alias = ''
-  args = '[template｜factory] [project]'
+  args = '[template|factory]'
   description = `create a project via template or factory`
   flags = [
     ['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm', 'npm']
@@ -17,10 +18,9 @@ export default class CommandCreate extends Command {
     super()
   }
 
-  async run(inputTemplate: any, project: any, flags: any) {
+  async run(inputTemplate: any, flags: any) {
     this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
       inputTemplate,
-      project,
       flags
     })
     const factories = this.factory.createAllFactories()
@@ -32,19 +32,19 @@ export default class CommandCreate extends Command {
     if (usingFactory?.id) {
       this.debug(`current project using factory "${usingFactory.id}"`)
       const factory = this.factory.resolveFactory(usingFactory.id)
-      // console.log({ factory })
       if (usingFactory.template) {
         const template = factory?.resolveTemplate(usingFactory.template)
-        // console.log({ template })
         subTemplates = template?.templates
       }
     }
-    // console.log({ subTemplates })
 
+    let subDirectory = false
     if (usingFactory) {
       this.log()
       this.log(
-        `current project is using template "${usingFactory.template}" from factory "${usingFactory.id}"`
+        `current project is using template ${this.style.cyan(
+          usingFactory.template
+        )} from ${this.style.cyan(usingFactory.id)}`
       )
       this.log(`you can only use sub-templates`)
       if (!isValidArray(subTemplates)) {
@@ -52,9 +52,24 @@ export default class CommandCreate extends Command {
       }
       this.log()
     }
+    // check current dir is empty or not
+    else if (await this.fs.pathExists(process.cwd())) {
+      const { selectedAction } = (await this.prompt({
+        type: 'select',
+        name: 'selectedAction',
+        message: `Current directory is not empty. Pick an action:`,
+        hint: 'Use arrow-keys, <return> to submit',
+        choices: ['Overwrite', 'New subdirectory', 'Cancel']
+      })) as any
+      if (selectedAction === 'Cancel') {
+        this.exit()
+      }
+      if (selectedAction === 'New subdirectory') {
+        subDirectory = true
+      }
+    }
 
     // get all templates
-    // const factories = this.factory.createAllFactories()
     let templates = subTemplates || flatten(factories.map((f: Factory) => f.templates))
 
     let templateInstances
@@ -107,6 +122,8 @@ export default class CommandCreate extends Command {
       (t: Template) => t.id === selected.templateId && t.factory.id === selected.factoryId
     )
 
+    const projectName = process.cwd().split(sep).pop()
+
     if (selectedTemplate) {
       // set init data
       const factoryInfo = this.store.get(selected.factoryId)
@@ -119,8 +136,9 @@ export default class CommandCreate extends Command {
             template: selected.templateId
           },
           project: {
-            name: project
-          }
+            name: projectName
+          },
+          subDirectory
         },
         flags
       )
