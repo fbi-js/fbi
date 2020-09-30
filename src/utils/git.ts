@@ -3,10 +3,17 @@ import { isValidArray } from './type'
 
 type Argv = string | number
 
+const strip = (str: string) =>
+  str
+    .trim()
+    .replace(/\\\n[ \t]*/g, '')
+    .replace(/\\`/g, '`')
+    .replace(/\\n/g, '')
+
 const exec = async (str: string, opts: Record<string, any> = {}) => {
   const cmd = str.split(' ').filter(Boolean).join(' ')
   try {
-    const { stdout } = await execa.command(cmd, opts)
+    const { stdout } = await execa.command(cmd, { shell: true, ...opts })
     return stdout
   } catch (err) {
     throw err
@@ -28,7 +35,7 @@ const init = (opts?: object) => exec('git init', opts)
 const fetch = (argv: Argv, opts?: object) => exec(`git fetch ${argv}`, opts)
 const clone = (argv: Argv, opts?: object) => exec(`git clone ${argv}`, opts)
 const pull = (argv: Argv, opts?: object) => exec(`git pull ${argv}`, opts)
-const push = (argv: Argv, opts?: object) =>
+const push = (argv?: Argv, opts?: object) =>
   exec(`git push ${argv || ''} --quiet`, {
     ...(opts || {}),
     stdio: 'inherit'
@@ -36,8 +43,12 @@ const push = (argv: Argv, opts?: object) =>
 const add = (arr?: any, opts?: object) => exec(`git add ${pathOrAll(arr)}`, opts)
 const del = (arr?: any, opts?: object) =>
   isValidArray(arr) ? exec(`git rm ${arr.join(' ')}`, opts) : null
-const commit = (arr?: any, m?: any, opts?: object) =>
-  exec(`git commit ${pathOrAll(arr)} -m "${m || ''}"`, opts)
+const commit = (msg: string | string[], opts?: object) => {
+  const arr: string[] = Array.isArray(msg) ? msg : [msg]
+  const tmp = [...new Set(arr)].map((s) => strip(s))
+  const message = tmp.map((str: string) => `-m "${str}"`).join(' ')
+  return exec(`git commit ${message}`, opts)
+}
 const checkout = (arr?: any, opts?: object) =>
   exec(`git checkout ${Array.isArray(arr) ? pathOrAll(arr) : arr} --quiet`, opts)
 const merge = (t: Argv, argv?: Argv, opts?: object) => exec(`git merge ${argv} ${t}`, opts)
@@ -47,6 +58,10 @@ const hardReset = (n?: Argv, opts?: object) => exec(`git reset --hard ${n || 'HE
 
 const status = {
   // info
+  isClean: (opts?: object) =>
+    exec('git diff --no-ext-diff --name-only && git diff --no-ext-diff --cached --name-only', opts)
+      .then(s2a)
+      .then((str: any) => !!str.trim()),
   untracked: (opts?: object) => exec('git ls-files --others --exclude-standard', opts).then(s2a),
   modified: (opts?: object) => exec('git diff --name-only --diff-filter=M', opts).then(s2a),
   deleted: (opts?: object) => exec('git diff --name-only --diff-filter=D', opts).then(s2a),
@@ -55,7 +70,7 @@ const status = {
   unpushed: (opts?: object) =>
     exec('git cherry -v', opts)
       .then(s2a)
-      .catch(() => false),
+      .catch(() => []),
   isRebasing: (opts?: object) =>
     exec('git status', opts).then((stdout) => stdout && stdout.includes('rebase in progress')),
   conflictStrings: (opts?: object) => exec('git grep -n "<<<<<<< "', opts).then(s2a),
