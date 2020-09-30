@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.1.0](https://github.com/fbi-js/fbi/compare/v4.0.4...v4.1.0) (2020-09-30)
+
+
+### Features
+
+* some new features ([5c169d6](https://github.com/fbi-js/fbi/commit/5c169d65029cce912d4d34373bfcbbdcec14d251))
+* **create:** pick an action when current directory is not empty ([144e4ff](https://github.com/fbi-js/fbi/commit/144e4ffeea4593785ba088cd944165adc0c51161))
+
+
+### Bug Fixes
+
+* **git:** support multi-line messages in 'git commit' ([ee902c7](https://github.com/fbi-js/fbi/commit/ee902c7a8a7edc01f8896dfa58fa467ee79645d7))
+
 ### [4.0.4](https://github.com/fbi-js/fbi/compare/v4.0.3...v4.0.4) (2020-09-21)
 
 
