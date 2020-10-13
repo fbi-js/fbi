@@ -95,6 +95,25 @@ export abstract class Template extends BaseClass {
     }
   }
 
+  public installDeps(cwd = process.cwd(), packageManager?: string, lockfile = false, opts?: any) {
+    const pm = packageManager || this.context.get('config').packageManager
+
+    const cmds = [pm, 'install']
+
+    if (!lockfile) {
+      cmds.push(
+        pm === 'npm' ? '--no-package-lock' : pm === 'yarn' ? '--no-lockfile' : '--frozen-lockfile'
+      )
+    }
+
+    this.debug(`\nrunning \`${cmds.join(' ')}\` in ${cwd}`)
+
+    return this.exec(cmds[0], cmds.slice(1), {
+      ...(opts || {}),
+      cwd
+    })
+  }
+
   // processes
   private async prepare(data?: any) {
     this._debugPrefix = `Template "${this.id}"`
