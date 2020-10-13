@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.4](https://github.com/fbi-js/fbi/compare/v4.1.3...v4.1.4) (2020-10-13)
+
+
+### Bug Fixes
+
+* edge case compatibility ([06bc029](https://github.com/fbi-js/fbi/commit/06bc0294ff4ff72d9e4cbd5b2f09601da4aeb8c8))
+
 ### [4.1.3](https://github.com/fbi-js/fbi/compare/v4.1.2...v4.1.3) (2020-10-13)
 
 
