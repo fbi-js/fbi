@@ -54,7 +54,7 @@ export default class CommandList extends Command {
 
     this.padWidth =
       Math.max(
-        ...flatten(factories.map((item: Factory) => item.commands || null))
+        ...flatten(factories.map((item: Factory) => item?.commands || null))
           .filter(Boolean)
           .map(
             (command: Command) =>
