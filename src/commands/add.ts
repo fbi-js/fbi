@@ -1,7 +1,7 @@
 import { join } from 'path'
 import { Fbi } from '../fbi'
 import { Command } from '../core/command'
-import { git, isGitUrl } from '../utils'
+import { git, isGitUrl, formatName } from '../utils'
 
 export default class CommandAdd extends Command {
   id = 'add'
@@ -80,13 +80,14 @@ export default class CommandAdd extends Command {
 
     gitUrl = gitUrl.endsWith('.git') ? gitUrl : `${gitUrl}.git`
     const name = gitUrl.split('/').pop()?.replace('.git', '')
+
     if (!name) {
       this.error(`invalid url:`, gitUrl)
       return null
     }
 
     return {
-      name,
+      name: formatName(name) as string,
       url: gitUrl
     }
   }
@@ -106,7 +107,9 @@ export default class CommandAdd extends Command {
     const _name = this.style.cyan(name)
     const spinner = this.createSpinner(`Adding ${_name} from '${src}'`).start()
     try {
-      await git.clone(`${src} ${dest}`)
+      await git.clone(`${src} ${dest}`, {
+        stdout: 'inherit'
+      })
       spinner.succeed(`Added ${_name}`)
     } catch (err) {
       spinner.fail(`Failed to add ${name}`)
