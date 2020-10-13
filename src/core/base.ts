@@ -148,4 +148,23 @@ export abstract class BaseClass {
   exit(code?: number): void {
     process.exit(typeof code === undefined ? 0 : code)
   }
+
+  installDeps(cwd = process.cwd(), packageManager?: string, lockfile = false, opts?: any) {
+    const pm = packageManager || this.context.get('config').packageManager
+
+    const cmds = [pm, 'install']
+
+    if (!lockfile) {
+      // pnpm: Headless installation requires a pnpm-lock.yaml file
+      cmds.push(pm === 'npm' ? '--no-package-lock' : pm === 'yarn' ? '--no-lockfile' : '')
+    }
+
+    this.debug(`\nrunning \`${cmds.join(' ')}\` in ${cwd}`)
+
+    return this.exec(cmds[0], cmds.slice(1).filter(Boolean), {
+      stdout: 'inherit',
+      ...(opts || {}),
+      cwd
+    })
+  }
 }

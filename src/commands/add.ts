@@ -131,12 +131,7 @@ export default class CommandAdd extends Command {
   private async install(flags: Record<string, any>, targetDir: string) {
     const spinner = this.createSpinner(`Installing dependencies...`).start()
     try {
-      const packageManager = flags.packageManager || this.context.get('config').packageManager
-      const cmds = packageManager === 'yarn' ? [packageManager] : [packageManager, 'install']
-      this.debug(`\nrunning \`${cmds.join(' ')}\` in ${targetDir}`)
-      await this.exec(cmds[0], cmds.slice(1), {
-        cwd: targetDir
-      })
+      await this.installDeps(targetDir, flags.packageManager)
       spinner.succeed(`Installed dependencies`)
     } catch (err) {
       spinner.fail('Failed to install dependencies. You can install them manually.')
