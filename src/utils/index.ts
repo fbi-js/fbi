@@ -1,3 +1,6 @@
+import fs from 'fs-extra'
+
+export { fs }
 export * from './env'
 export * from './git'
 export * from './object'
@@ -115,4 +118,19 @@ interface SymbolsType {
     disabled: string
   }
   numbers: string[]
+}
+
+export function isDirEmpty(dirname: string) {
+  return fs.promises.readdir(dirname).then((files) => {
+    return files.length === 0
+  })
+}
+
+export function isDirEmptySync(dirname: string) {
+  try {
+    const result = fs.readdirSync(dirname)
+    return result && result.length === 0
+  } catch (err) {
+    return false
+  }
 }

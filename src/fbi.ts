@@ -6,12 +6,15 @@ import {
   isString,
   pathResolve,
   getMatchVersion,
-  getPathByVersion
+  getPathByVersion,
+  flatten
 } from './utils'
+
 import { Factory, FactoryInfo } from './core/factory'
 import { Command } from './core/command'
 import { Template } from './core/template'
 import { Plugin } from './core/plugin'
+
 import CommandAdd from './commands/add'
 import CommandRemove from './commands/remove'
 import CommandList from './commands/list'
@@ -44,7 +47,7 @@ export class Fbi extends Factory {
     super()
   }
 
-  public createFactory(path: string, ignoreDuplicateError = false): Factory | null {
+  public createFactory(path: string): Factory | null {
     assert(isString(path), `factory path should be string, recived '${path}'`)
     const _path = isAbsolute(path) ? path : join(process.cwd(), path)
     const filepath = pathResolve(_path)
@@ -69,20 +72,17 @@ export class Fbi extends Factory {
     }
 
     if (this.factories.find((x) => factoryInstance && x.id === factoryInstance.id)) {
-      if (!ignoreDuplicateError) {
-        this.error(`Fbi:`, `factory "${factoryInstance.id}" already exist`)
-      }
-      return null
+      this.debug(`Fbi:`, `factory "${factoryInstance.id}" already exist`)
+    } else {
+      this.factories.unshift(factoryInstance)
     }
-
-    this.factories.unshift(factoryInstance)
     return factoryInstance
   }
 
   public createAllFactories() {
     this.debug('createAllFactories')
     if (isValidArray(this.options?.factories)) {
-      this.options?.factories?.map((x) => this.createFactory(x, true))
+      this.options?.factories?.map((x) => this.createFactory(x))
     }
 
     // create from store
@@ -94,7 +94,7 @@ export class Fbi extends Factory {
           this.debug(`factory "${key}" can't resolve from ${f.path}. delete from store`)
           this.store.del(key)
         } else {
-          this.createFactory(f.path, true)
+          this.createFactory(f.path)
         }
       }
     }
@@ -136,6 +136,24 @@ export class Fbi extends Factory {
     }
 
     return globalFactories
+  }
+
+  public resolveCommand(targetId: string) {
+    if (!targetId) {
+      return null
+    }
+    return this.commands.find((cmd) => cmd.id === targetId)
+  }
+
+  public resolveTemplates(targetId?: string) {
+    if (targetId) {
+      const found = this.resolveTemplate(targetId)
+      return found ? [found] : []
+    }
+
+    const allFactories = this.createAllFactories()
+    const allTemplates = flatten(allFactories.map((f: Factory) => f.templates))
+    return targetId ? allTemplates.filter((t: Template) => t.id === targetId) : allTemplates
   }
 
   private resolveFromCache(targetId: string, targetVersion?: string) {
