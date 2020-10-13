@@ -20,7 +20,7 @@ export default class CommandAdd extends Command {
       flags
     })
     const config = this.context.get('config')
-    const rootDir = join(config.rootDirectory, config.directoryName)
+    const rootDir = join(config?.rootDirectory, config?.directoryName)
 
     for (const repo of repositories) {
       const info = this.getBaseInfo(repo, config)

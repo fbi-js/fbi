@@ -70,10 +70,12 @@ export default class CommandRemove extends Command {
 
   private async deleteFiles(factory: any) {
     // remove main dir
-    await this.fs.remove(factory.path)
+    if (factory?.path) {
+      await this.fs.remove(factory.path)
+    }
 
     // remove version dirs
-    if (factory.version?.versions) {
+    if (factory?.version?.versions) {
       for (let version of factory.version.versions) {
         await this.fs.remove(join(factory.version.baseDir, `${factory.id}__${version.short}`))
       }

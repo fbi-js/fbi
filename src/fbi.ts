@@ -101,7 +101,7 @@ export class Fbi extends Factory {
 
     // create from local
     const local = this.context.get('config.factory')
-    if (local && local.id && !this.factories.find((f) => f.id === local.id)) {
+    if (local?.id && !this.factories.find((f) => f.id === local.id)) {
       this.resolveFromLocal(local.id, local.version)
     }
 
@@ -129,9 +129,9 @@ export class Fbi extends Factory {
     const factories = this.store.get()
     for (const [_, value] of Object.entries(factories)) {
       const info: any = value
-      if (info.global) {
-        globalFactories.push(this.createFactory(info.path))
-        this.debug('Fbi<resolveGlobalFactories>:', info.id)
+      if (info?.global) {
+        globalFactories.push(this.createFactory(info?.path))
+        this.debug('Fbi<resolveGlobalFactories>:', info?.id)
       }
     }
 
@@ -142,7 +142,7 @@ export class Fbi extends Factory {
     if (!targetId) {
       return null
     }
-    return this.commands.find((cmd) => cmd.id === targetId)
+    return this.commands.find((cmd) => cmd?.id === targetId)
   }
 
   public resolveTemplates(targetId?: string) {
@@ -157,7 +157,7 @@ export class Fbi extends Factory {
   }
 
   private resolveFromCache(targetId: string, targetVersion?: string) {
-    const factory = this.factories.find((f) => f.id === targetId)
+    const factory = this.factories.find((f) => f?.id === targetId)
     if (!factory) {
       return null
     }
@@ -174,15 +174,15 @@ export class Fbi extends Factory {
     this.debug(`Factory "${targetId}" found in store`)
     // local link not support version control
     if (targetVersion && factoryInfo.type !== 'local') {
-      const matchVersion = factoryInfo.version?.versions
-        ? getMatchVersion(factoryInfo.version?.versions, targetVersion)
+      const matchVersion = factoryInfo?.version?.versions
+        ? getMatchVersion(factoryInfo.version.versions, targetVersion)
         : null
       if (!matchVersion) {
         return null
       }
 
       return this.createFactory(
-        getPathByVersion(factoryInfo.version?.baseDir as string, factoryInfo.id, matchVersion)
+        getPathByVersion(factoryInfo?.version?.baseDir as string, factoryInfo.id, matchVersion)
       )
     }
     return this.createFactory(factoryInfo.path)

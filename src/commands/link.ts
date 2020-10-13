@@ -21,9 +21,6 @@ export default class CommandLink extends Command {
     })
     const ids = (Array.isArray(factories) && factories.length > 0 && factories) || ['.']
 
-    const config = this.context.get('config')
-    const factoriesDir = join(config.rootDirectory, config.directoryName)
-
     for (const id of ids) {
       // base info
       const factory = this.factory.createFactory(id)

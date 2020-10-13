@@ -24,8 +24,8 @@ export class Cli extends BaseClass {
     if (isBuiltInCmd) {
       this.registerCommands(this.fbi.commands)
     } else {
-      const factoryId = (config.factory && config.factory.id) || ''
-      const factoryVersion = (config.factory && config.factory.version) || ''
+      const factoryId = config?.factory?.id || ''
+      const factoryVersion = config?.factory?.version || ''
       const factories: Factory[] = this.fbi.resolveGlobalFactories()
 
       if (factoryId) {
@@ -40,7 +40,7 @@ export class Cli extends BaseClass {
       }
 
       for (const factory of factories) {
-        if (factory.commands) {
+        if (factory?.commands) {
           this.registerCommands(factory.commands)
         }
       }
@@ -136,7 +136,7 @@ export class Cli extends BaseClass {
         })
         .on('--help', () => {
           console.log('')
-          if (command.examples && command.examples.length > 0) {
+          if (command.examples?.length > 0) {
             console.log('Examples:')
             for (const str of command.examples) {
               console.log(`  ${str}`)

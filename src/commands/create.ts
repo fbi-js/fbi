@@ -132,7 +132,11 @@ export default class CommandCreate extends Command {
     const projectName = cwd.split(sep).pop()
 
     // set init data
-    const factoryInfo = this.store.get(template.factory.id)
+    const factoryInfo = this.store.get(template?.factory?.id)
+    if (!factoryInfo) {
+      this.warn(`can not resolve factory info '${template?.factory?.id}'`)
+      this.exit()
+    }
     const info: Record<string, any> = await template.run(
       {
         factory: {
