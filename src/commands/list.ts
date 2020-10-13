@@ -2,7 +2,7 @@ import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 import { Factory } from '../core/factory'
 import { Template } from '../core/template'
-import { isValidArray, flatten, isFunction, isNumber, symbols } from '../utils'
+import { isValidArray, flatten, isFunction, isNumber, symbols, isGitUrl } from '../utils'
 
 const screenColumns = process.stdout.columns > 120 ? 120 : process.stdout.columns || 80
 const minPadWdith = 16
@@ -94,17 +94,21 @@ export default class CommandList extends Command {
 
   // 展示factory详细信息
   private async showDetail(obj: Factory, current: any, idx?: number) {
+    const storeInfo = this.store.get(obj.id)
     const showIdx = isNumber(idx)
     const isCurrent = current && obj.id === current.id
     const index = showIdx ? this.style.bold(symbols.numbers[idx as number]) : ' '
     const title = this.style.bold(obj.id)
     const version = isCurrent && current.version ? this.style.italic(`@${current.version}`) : ''
-    const rootDir =
-      obj.options &&
-      obj.options.rootDir &&
-      obj.options.rootDir.replace(this.context.get('env.home'), '~')
-    const path = this.style.dim(rootDir)
-    let txt = `\n${index} ${title}${version} ${path}`
+    let from = storeInfo?.from
+    if (isGitUrl(from)) {
+      const fromArr = from.split('/').slice(-2)
+      from = fromArr.join('/').replace('.git', '')
+    } else {
+      from = from.replace(this.context.get('env.home'), '~')
+    }
+    from = this.style.dim(from || '')
+    let txt = `\n${index} ${title}${version} ${from}`
 
     if (obj.description) {
       txt += '\n\n  ' + obj.description
@@ -162,7 +166,7 @@ export default class CommandList extends Command {
 
     if (this.showVersions) {
       const factory = this.store.get(obj.id)
-      if (factory.version && factory.version.versions) {
+      if (factory?.version && factory.version?.versions) {
         txt += '\n\n  Versions:'
         txt += '\n  ' + factory.version.versions.map((v: any) => v.short).join(', ')
       }
