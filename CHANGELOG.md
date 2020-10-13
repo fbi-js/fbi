@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.5](https://github.com/fbi-js/fbi/compare/v4.1.4...v4.1.5) (2020-10-13)
+
+
+### Bug Fixes
+
+* add 'installDeps' method to template class ([f1f56a8](https://github.com/fbi-js/fbi/commit/f1f56a83e38df1f0fa3649cabc9ec79756f6a7ca))
+
 ### [4.1.4](https://github.com/fbi-js/fbi/compare/v4.1.3...v4.1.4) (2020-10-13)
 
 
