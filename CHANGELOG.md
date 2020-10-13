@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.1](https://github.com/fbi-js/fbi/compare/v4.1.0...v4.1.1) (2020-10-13)
+
+
+### Bug Fixes
+
+* **command:** 'create' command optimization ([eb3e660](https://github.com/fbi-js/fbi/commit/eb3e660d391394e59902daa763bc8d9527ac22fc))
+* **command:** format input name when adding factory ([c019085](https://github.com/fbi-js/fbi/commit/c01908544b5e67cb383e79987e0cb456de7b88a4))
+* **command:** list command not showing the correct 'from path' of a factory ([b3bf4da](https://github.com/fbi-js/fbi/commit/b3bf4daf99c691c8171cdca94b3c62121b25d1e9))
+
 ## [4.1.0](https://github.com/fbi-js/fbi/compare/v4.0.4...v4.1.0) (2020-09-30)
 
 
