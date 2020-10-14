@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.7](https://github.com/fbi-js/fbi/compare/v4.1.6...v4.1.7) (2020-10-14)
+
+
+### Bug Fixes
+
+* **create:** can not find template name ([5cad77c](https://github.com/fbi-js/fbi/commit/5cad77c6c5d6f867a1274a576bbf20c89d4be5a6))
+
 ### [4.1.6](https://github.com/fbi-js/fbi/compare/v4.1.5...v4.1.6) (2020-10-13)
 
 
