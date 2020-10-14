@@ -148,7 +148,9 @@ export class Fbi extends Factory {
   public resolveTemplates(targetId?: string) {
     if (targetId) {
       const found = this.resolveTemplate(targetId)
-      return found ? [found] : []
+      if (found) {
+        return [found]
+      }
     }
 
     const allFactories = this.createAllFactories()
