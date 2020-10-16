@@ -30,7 +30,8 @@ const s2a = (stdout: any): string[] | PromiseLike<string[]> =>
     .map((b: string) => b.replace(/^[\'\"]+|[\'\"]+$/g, '').trim())
     .filter((l: string) => l.trim())
 
-const root = (opts?: object) => exec('git rev-parse --show-toplevel', opts).catch(() => null)
+const root = (opts?: object) =>
+  exec('git rev-parse --show-toplevel', opts).catch(() => process.cwd())
 const init = (opts?: object) => exec('git init', opts)
 const fetch = (argv: Argv, opts?: object) => exec(`git fetch ${argv}`, opts)
 const clone = (argv: Argv, opts?: object) => exec(`git clone ${argv}`, opts)
@@ -42,7 +43,7 @@ const push = (argv?: Argv, opts?: object) =>
   })
 const add = (arr?: any, opts?: object) => exec(`git add ${pathOrAll(arr)}`, opts)
 const del = (arr?: any, opts?: object) =>
-  isValidArray(arr) ? exec(`git rm ${arr.join(' ')}`, opts) : null
+  isValidArray(arr) ? exec(`git rm ${arr.join(' ')} --ignore-unmatch`, opts) : null
 const commit = (msg: string | string[], opts?: object) => {
   const arr: string[] = Array.isArray(msg) ? msg : [msg]
   const tmp = [...new Set(arr)].map((s) => strip(s))
