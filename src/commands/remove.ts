@@ -76,7 +76,7 @@ export default class CommandRemove extends Command {
 
     // remove version dirs
     if (factory?.version?.versions) {
-      for (let version of factory.version.versions) {
+      for (const version of factory.version.versions) {
         await this.fs.remove(join(factory.version.baseDir, `${factory.id}__${version.short}`))
       }
     }

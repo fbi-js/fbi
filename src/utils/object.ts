@@ -23,7 +23,7 @@ export const shallowClone = (obj: AnyObject) => Object.assign({}, obj)
 export const deepClone = (obj: any) => {
   const clone = Object.assign({}, obj)
   Object.keys(clone).forEach(
-    key => (clone[key] = typeof obj[key] === 'object' ? deepClone(obj[key]) : obj[key])
+    (key) => (clone[key] = typeof obj[key] === 'object' ? deepClone(obj[key]) : obj[key])
   )
   return isArray(obj) && obj.length
     ? (clone.length = obj.length) && Array.from(clone)

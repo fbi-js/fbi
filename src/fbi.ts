@@ -115,12 +115,12 @@ export class Fbi extends Factory {
       return found
     }
 
-    found = this.resolveFromGlobal(targetId, targetVersion)
+    found = this.resolveFromLocal(targetId, targetVersion)
     if (found) {
       return found
     }
 
-    return this.resolveFromLocal(targetId, targetVersion)
+    return this.resolveFromGlobal(targetId, targetVersion)
   }
 
   public resolveGlobalFactories() {

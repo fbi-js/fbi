@@ -117,7 +117,7 @@ export default class CommandList extends Command {
     // commands list
     txt += '\n'
     if (isValidArray(obj.commands)) {
-      let title = '\n  Commands:'
+      const title = '\n  Commands:'
       txt += title
       for (const cmd of obj.commands) {
         const disabled = isFunction(cmd.disable) ? await cmd.disable() : cmd.disable
@@ -134,7 +134,7 @@ export default class CommandList extends Command {
 
     // templates list
     if (isValidArray(obj.templates)) {
-      let title = '\n\n  Templates:'
+      const title = '\n\n  Templates:'
       txt += title
       for (const t of obj.templates) {
         txt += this.colWrap(
@@ -185,7 +185,7 @@ export default class CommandList extends Command {
       )
       if (isValidArray(projects)) {
         txt += '\n\n  Projects:'
-        for (let project of projects) {
+        for (const project of projects) {
           // check if project exist
           const exist = await this.fs.pathExists(project.path)
           if (exist) {
@@ -204,9 +204,9 @@ export default class CommandList extends Command {
   private lines(
     str: string,
     width: number = screenColumns - this.padWidth,
-    indent: number = 0,
-    minWidth: boolean = false,
-    wordBreak: boolean = false
+    indent = 0,
+    minWidth = false,
+    wordBreak = false
   ) {
     if (str.match(/[\n]\s+/)) return [str]
     let lines = []

@@ -8,7 +8,7 @@ export const formatDuration = (ms: number) => {
     millisecond: Math.floor(ms) % 1000
   }
   return Object.entries(time)
-    .filter(val => val[1] !== 0)
+    .filter((val) => val[1] !== 0)
     .map(([key, val]) => `${val} ${key}${val !== 1 ? 's' : ''}`)
     .join(', ')
 }
@@ -21,7 +21,7 @@ export function formatName(str: string | [], separator = '-') {
       .split(/[^0-9a-zA-Z]/)
       .filter(Boolean)
       .join(separator)
-  return Array.isArray(str) ? str.filter(Boolean).map(t => format(t)) : format(str)
+  return Array.isArray(str) ? str.filter(Boolean).map((t) => format(t)) : format(str)
 }
 
 // Example: HTMLInputElement => html-input-element
