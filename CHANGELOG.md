@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.9](https://github.com/fbi-js/fbi/compare/v4.1.8...v4.1.9) (2020-11-24)
+
+
+### Bug Fixes
+
+* **factory:** increase priority of local node_modules ([be4a4ee](https://github.com/fbi-js/fbi/commit/be4a4ee4a0ab45d1d3513f985bafbfa429f4c84e))
+
 ### [4.1.8](https://github.com/fbi-js/fbi/compare/v4.1.7...v4.1.8) (2020-10-16)
 
 
