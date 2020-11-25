@@ -198,10 +198,7 @@ export class Fbi extends Factory {
     if (!realpath) {
       return null
     }
-    const arr = realpath.split(sep)
-    const idx = arr.lastIndexOf('node_modules')
-    const dir = arr.slice(0, idx + 2).join(sep)
-    this.debug(`Factory "${targetId}" found in node_modules`)
-    return this.createFactory(dir)
+    this.debug(`Factory "${targetId}" found in local`)
+    return this.createFactory(realpath)
   }
 }

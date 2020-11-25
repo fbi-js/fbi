@@ -111,7 +111,7 @@ export abstract class BaseClass {
 
   error(...messages: any[]): this {
     const errors = messages.map((err: any) =>
-      isString(err) ? err : (err.stack && cleanError(err.stack)) || err
+      isString(err) ? err : (err?.stack && cleanError(err.stack)) || err
     )
     console.log(chalk.red(symbols.cross), ...errors.map((m) => safeStylized(m, chalk.red)))
     return this
