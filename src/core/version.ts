@@ -93,6 +93,8 @@ export class Version extends BaseClass {
     }
 
     if (await this.fs.pathExists(version.dir)) {
+      await git.checkout(version.long, { cwd: version.dir })
+      await git.hardReset(version.long, { cwd: version.dir })
       return version
     }
 
