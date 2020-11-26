@@ -150,6 +150,7 @@ export abstract class BaseClass {
   }
 
   installDeps(cwd = process.cwd(), packageManager?: string, lockfile = false, opts?: any) {
+    const npmVersion = this.context.get('env.npmVersion')
     const pm = packageManager || this.context.get('config').packageManager
 
     const cmds = [pm, 'install']
@@ -157,6 +158,10 @@ export abstract class BaseClass {
     if (!lockfile) {
       // pnpm: Headless installation requires a pnpm-lock.yaml file
       cmds.push(pm === 'npm' ? '--no-package-lock' : pm === 'yarn' ? '--no-lockfile' : '')
+    }
+
+    if (npmVersion && npmVersion[0] >= 7) {
+      cmds.push('--legacy-peer-deps')
     }
 
     this.debug(`\nrunning \`${cmds.join(' ')}\` in ${cwd}`)

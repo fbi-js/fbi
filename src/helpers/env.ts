@@ -1,4 +1,4 @@
-import { isWindows, isMacos, isLinux, hasGit, hasNpm, hasYarn, hasPnpm } from '../utils'
+import { isWindows, isMacos, isLinux, hasGit, hasNpm, hasYarn, hasPnpm, npmVersion } from '../utils'
 
 export function getEnv() {
   return {
@@ -19,7 +19,8 @@ export function getEnv() {
     zsh: process.env.ZSH,
     term: process.env.TERM_PROGRAM,
     termVersion: process.env.TERM_PROGRAM_VERSION,
-    fbiVersion: require('../../package.json').version
+    fbiVersion: require('../../package.json').version,
+    npmVersion: npmVersion()
   }
 }
 

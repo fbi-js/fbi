@@ -6,6 +6,7 @@ import { BaseClass } from './base'
 import { git, isGitRepo, groupBy, getPathByVersion, getVersionByPath } from '../utils'
 
 const types = ['tag', 'branch']
+const semverMatchOptions = { includePrerelease: true }
 
 export class Version extends BaseClass {
   private type = 'tag' // or branch
@@ -85,7 +86,7 @@ export class Version extends BaseClass {
       }
     } else {
       const versions = this.versions.map((v) => v.long)
-      const long = semver.maxSatisfying(versions, target || '*')
+      const long = semver.maxSatisfying(versions, target || '*', semverMatchOptions)
       const short = this.versions.find((v) => v.long === long)?.short
       const dir = getPathByVersion(this.baseDir, this.baseName, short)
       version = { dir, long, short }
@@ -106,7 +107,7 @@ export class Version extends BaseClass {
 
   public getLatest() {
     const versions = this.versions.map((v) => v.long)
-    const long = semver.maxSatisfying(versions, '*')
+    const long = semver.maxSatisfying(versions, '*', semverMatchOptions)
     return this.versions.find((v) => v.long === long)?.short
   }
 
@@ -124,7 +125,7 @@ export class Version extends BaseClass {
     // slim versions
     const groupVersions = groupBy(semver.sort(versions).reverse(), semver.minor)
     return Object.values(groupVersions)
-      .map((val) => semver.maxSatisfying(val, '*') || '')
+      .map((val) => semver.maxSatisfying(val, '*', semverMatchOptions) || '')
       .filter(Boolean)
       .map((val: any) => ({
         short: this.parseVersion(val),

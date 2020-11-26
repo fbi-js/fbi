@@ -47,3 +47,22 @@ export const nodeVersion = process.version
   .replace('v', '')
   .split('.')
   .map((x: any) => x * 1)
+
+export const npmVersion = () => {
+  try {
+    const version = execSync('npm --version', { encoding: 'utf8' })
+    return (
+      (version &&
+        version
+          .trim()
+          .replace(/\\\n[ \t]*/g, '')
+          .replace(/\\`/g, '`')
+          .replace(/\\n/g, '')
+          .split('.')
+          .map((x: any) => x * 1)) ||
+      null
+    )
+  } catch (err) {
+    return null
+  }
+}
