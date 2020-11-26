@@ -9,6 +9,7 @@
 .vscode
 npm-debug.log
 
+tmp
 src
 tsconfig.json
 .eslintignore

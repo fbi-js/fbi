@@ -105,7 +105,7 @@ export default class CommandList extends Command {
       const fromArr = from.split('/').slice(-2)
       from = fromArr.join('/').replace('.git', '')
     } else {
-      from = from.replace(this.context.get('env.home'), '~')
+      from = from?.replace(this.context.get('env.home'), '~')
     }
     from = this.style.dim(from || '')
     let txt = `\n${index} ${title}${version} ${from}`
