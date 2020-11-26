@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.11](https://github.com/fbi-js/fbi/compare/v4.1.10...v4.1.11) (2020-11-26)
+
+
+### Bug Fixes
+
+* fix npm v7 install error; resolve factory versions with prerelease versions ([353508e](https://github.com/fbi-js/fbi/commit/353508e1f5b488f5b2dd582d6ce1795a39a7d564))
+
 ### [4.1.10](https://github.com/fbi-js/fbi/compare/v4.1.9...v4.1.10) (2020-11-25)
 
 
