@@ -34,19 +34,17 @@ export abstract class Factory extends BaseClass {
   public description = ''
   public version: Version | null = null
   public _version = ''
-  public rootDir = ''
   public isGlobal = false
 
   constructor(public options?: FactoryOptions) {
     super()
-    this.init()
   }
 
-  protected init() {
+  public init() {
     if (!this.options?.rootDir) {
       return
     }
-    this.version = new Version(this.id, this.options.rootDir)
+    this.version = new Version(this.options.rootDir)
 
     // get version number
     try {

@@ -12,26 +12,24 @@ export class Version extends BaseClass {
   private type = 'tag' // or branch
   private enable = false
   private versions: Record<string, any>[] = []
-  // versions dir
   private baseDir = ''
+  private baseName = ''
 
-  // mainPath: main source dir
-  // baseName: factory name
-  constructor(public baseName: string = '', public mainPath: string) {
+  constructor(public rootDir: string) {
     super()
-    assert(mainPath.trim(), `mainPath should not be empty`)
+    assert(rootDir.trim(), `rootDir should not be empty`)
   }
 
-  public async init(baseDir: string, type = 'tag') {
+  public async init(type = 'tag') {
     assert(types.includes(type), `supported types: ${types.join(', ')}`)
     this.type = type
-    this.enable = isGitRepo(this.mainPath)
+    this.enable = isGitRepo(this.rootDir)
     if (!this.enable) {
       return null
     }
 
-    this.baseDir = baseDir || dirname(this.mainPath)
-    this.baseName = this.baseName || basename(this.mainPath)
+    this.baseDir = dirname(this.rootDir)
+    this.baseName = basename(this.rootDir)
     this.logStart('Factory version initializing')
     const vers = await this.getVersions()
     this.versions =
@@ -43,7 +41,9 @@ export class Version extends BaseClass {
           }))
     this.logItem(`Valid versions: ${this.versions.map((v) => v.short).join(', ')}`)
 
-    await this.cleanUp()
+    try {
+      await this.cleanUp()
+    } catch {}
 
     if (this.versions.length < 1) {
       return null
@@ -60,7 +60,7 @@ export class Version extends BaseClass {
 
   public async getVersion(target?: string) {
     if (!this.enable) {
-      this.warn(`${this.mainPath} does not support version control`)
+      this.warn(`${this.rootDir} does not support version control`)
     }
 
     let version
@@ -76,12 +76,12 @@ export class Version extends BaseClass {
           dir:
             found.short !== 'master' && found.short !== 'main'
               ? getPathByVersion(this.baseDir, this.baseName, found.short)
-              : this.mainPath
+              : this.rootDir
         }
       } else {
         version = {
           ...this.versions[0],
-          dir: this.mainPath
+          dir: this.rootDir
         }
       }
     } else {
@@ -100,7 +100,7 @@ export class Version extends BaseClass {
 
     if (!['master', 'main'].includes(version.short)) {
       this.logItem(`Initializing version '${version.short}'...`)
-      await this.fs.copy(this.mainPath, version.dir)
+      await this.fs.copy(this.rootDir, version.dir)
       await git.checkout(version.long, { cwd: version.dir })
       await git.hardReset(version.long, { cwd: version.dir })
     }
@@ -114,7 +114,7 @@ export class Version extends BaseClass {
   }
 
   private getVersions() {
-    const opts = { cwd: this.mainPath }
+    const opts = { cwd: this.rootDir }
     return this.type === 'tag' ? git.tag.list(opts) : git.branch.locals(opts)
   }
 
@@ -138,7 +138,7 @@ export class Version extends BaseClass {
   // clear unfresh versions
   private async cleanUp() {
     if (!this.enable) {
-      this.warn(`${this.mainPath} does not support version control`)
+      this.warn(`${this.rootDir} does not support version control`)
     }
     const dirs = await this.glob(getPathByVersion('', this.baseName, '*'), {
       cwd: this.baseDir

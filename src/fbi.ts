@@ -47,10 +47,10 @@ export class Fbi extends Factory {
     super()
   }
 
-  public createFactory(path: string): Factory | null {
-    assert(isString(path), `factory path should be string, recived '${path}'`)
-    const _path = isAbsolute(path) ? path : join(process.cwd(), path)
-    const filepath = pathResolve(_path)
+  public createFactory(pathOrId: string): Factory | null {
+    assert(isString(pathOrId), `factory path should be string, recived '${pathOrId}'`)
+    const rootDir = isAbsolute(pathOrId) ? pathOrId : join(process.cwd(), pathOrId)
+    const filepath = pathResolve(rootDir)
     if (!filepath) {
       return null
     }
@@ -65,15 +65,19 @@ export class Fbi extends Factory {
     fn = fn.default || fn
     assert(isClass(fn), `factory should be a class, recived '${typeof fn}'`)
 
-    const factoryInstance: Factory = new fn({ rootDir: _path })
+    const factoryInstance: Factory = new fn({ rootDir })
     if (!factoryInstance) {
-      this.error(`Fbi:`, `can not create factory`, _path)
+      this.error(`Fbi:`, `can not create factory`, rootDir)
       return null
     }
 
     if (this.factories.find((x) => factoryInstance && x.id === factoryInstance.id)) {
       this.debug(`Fbi:`, `factory "${factoryInstance.id}" already exist`)
     } else {
+      if (typeof factoryInstance.init === 'function') {
+        factoryInstance.init()
+      }
+
       this.factories.unshift(factoryInstance)
     }
     return factoryInstance
@@ -192,13 +196,21 @@ export class Fbi extends Factory {
 
   private resolveFromLocal(targetId: string, targetVersion?: string) {
     // from node_modules
-    const realpath = pathResolve(targetId, {
+    const filePath = pathResolve(targetId, {
       paths: [process.cwd()]
     })
-    if (!realpath) {
+    if (!filePath) {
       return null
     }
+
+    const idx = filePath.lastIndexOf('node_modules')
+    if (idx === -1) {
+      this.error(`Cann't resolve local factory which is not in node_modules`)
+      return null
+    }
+    const dir = filePath.slice(0, idx) + 'node_modules/' + targetId
+
     this.debug(`Factory "${targetId}" found in local`)
-    return this.createFactory(realpath)
+    return this.createFactory(dir)
   }
 }

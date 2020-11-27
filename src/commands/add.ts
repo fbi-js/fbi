@@ -1,5 +1,7 @@
+import type { Fbi } from '../fbi'
+import type { Factory } from '../core/factory'
+
 import { join } from 'path'
-import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 import { git, isGitUrl, formatName } from '../utils'
 
@@ -42,9 +44,17 @@ export default class CommandAdd extends Command {
         await this.add(info.name, info.url, targetDir)
       }
 
+      await this.install(flags || {}, targetDir)
+      const factory = this.factory.createFactory(targetDir)
+
+      if (!factory) {
+        this.error(`Factory '${info.name}' create field`)
+        return
+      }
+
       // save to store
       const data = {
-        id: info.name,
+        id: factory.id,
         type: 'git',
         from: info.url,
         path: targetDir,
@@ -53,14 +63,12 @@ export default class CommandAdd extends Command {
       this.debug('Save to store:', data)
       this.store.set(data.id, data)
 
-      await this.install(flags || {}, targetDir)
-
-      const { version, global } = await this.getVersionInfo(targetDir)
+      const { version, global } = await this.getVersionInfo(factory)
       if (version) {
-        this.store.set(`${info.name}.version`, version)
+        this.store.set(`${factory.id}.version`, version)
       }
       if (global) {
-        this.store.set(`${info.name}.global`, global)
+        this.store.set(`${factory.id}.global`, global)
       }
     }
   }
@@ -79,7 +87,8 @@ export default class CommandAdd extends Command {
     }
 
     gitUrl = gitUrl.endsWith('.git') ? gitUrl : `${gitUrl}.git`
-    const name = gitUrl.split('/').pop()?.replace('.git', '')
+    // include organization name in factory name
+    const name = gitUrl.split('/').slice(-2)?.join('/')?.replace('.git', '')
 
     if (!name) {
       this.error(`invalid url:`, gitUrl)
@@ -87,7 +96,7 @@ export default class CommandAdd extends Command {
     }
 
     return {
-      name: formatName(name) as string,
+      name,
       url: gitUrl
     }
   }
@@ -131,7 +140,9 @@ export default class CommandAdd extends Command {
   private async install(flags: Record<string, any>, targetDir: string) {
     const spinner = this.createSpinner(`Installing dependencies...`).start()
     try {
-      await this.installDeps(targetDir, flags.packageManager)
+      await this.installDeps(targetDir, flags.packageManager, false, {
+        stdout: 'ignore'
+      })
       spinner.succeed(`Installed dependencies`)
     } catch (err) {
       spinner.fail('Failed to install dependencies. You can install them manually.')
@@ -139,14 +150,13 @@ export default class CommandAdd extends Command {
     }
   }
 
-  private async getVersionInfo(dir: string) {
-    const factory = this.factory.createFactory(dir)
+  private async getVersionInfo(factory: Factory | null) {
     if (!factory) {
       return {}
     }
     const config = this.context.get('config')
     const factoriesDir = join(config.rootDirectory, config.directoryName)
-    const versionInfo = await factory.version?.init(factoriesDir)
+    const versionInfo = await factory.version?.init()
 
     return {
       version: {

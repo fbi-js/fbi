@@ -25,6 +25,7 @@ export default class CommandLink extends Command {
       // base info
       const factory = this.factory.createFactory(id)
       if (!factory) {
+        this.error(`Cann't resolve factory from '${id}'`)
         continue
       }
       const baseInfo: any = factory
