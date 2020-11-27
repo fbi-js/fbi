@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0](https://github.com/fbi-js/fbi/compare/v4.1.13...v4.2.0) (2020-11-27)
+
+
+### Bug Fixes
+
+* **factory:** split factories by organization name ([0486143](https://github.com/fbi-js/fbi/commit/04861439a417fc6699051db657178e5adbca70d3))
+
 ### [4.1.13](https://github.com/fbi-js/fbi/compare/v4.1.12...v4.1.13) (2020-11-26)
 
 
