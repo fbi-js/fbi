@@ -92,18 +92,16 @@ export class Version extends BaseClass {
       version = { dir, long, short }
     }
 
-    if (await this.fs.pathExists(version.dir)) {
-      await git.checkout(version.long, { cwd: version.dir })
+    if (!['master', 'main'].includes(version.short)) {
+      if (!(await this.fs.pathExists(version.dir))) {
+        this.logItem(`Initializing version '${version.short}'...`)
+        await this.fs.copy(this.rootDir, version.dir)
+      }
+
       await git.hardReset(version.long, { cwd: version.dir })
-      return version
+      await git.checkout(version.long, { cwd: version.dir })
     }
 
-    if (!['master', 'main'].includes(version.short)) {
-      this.logItem(`Initializing version '${version.short}'...`)
-      await this.fs.copy(this.rootDir, version.dir)
-      await git.checkout(version.long, { cwd: version.dir })
-      await git.hardReset(version.long, { cwd: version.dir })
-    }
     return version
   }
 
