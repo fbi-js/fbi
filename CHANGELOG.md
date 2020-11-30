@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.2](https://github.com/fbi-js/fbi/compare/v4.2.1...v4.2.2) (2020-11-30)
+
+
+### Bug Fixes
+
+* add 'pkg-dir' package; remove 'tslib' package ([3d22602](https://github.com/fbi-js/fbi/commit/3d226028840cf7bfa08cb91da80bb171e7975562))
+
 ### [4.2.1](https://github.com/fbi-js/fbi/compare/v4.2.0...v4.2.1) (2020-11-27)
 
 
