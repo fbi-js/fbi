@@ -4,7 +4,7 @@ import { Command } from './command'
 import { Template } from './template'
 import { Plugin } from './plugin'
 import { Version } from './version'
-import { pathResolve } from '../utils'
+import { pathResolve, pkgDir } from '../utils'
 
 type VersionInfo = {
   baseDir: string
@@ -41,9 +41,16 @@ export abstract class Factory extends BaseClass {
   }
 
   public init() {
-    if (!this.options?.rootDir) {
+    if (!this.options) {
       return
     }
+
+    this.options.rootDir = this.options.rootDir ? pkgDir.sync(this.options.rootDir) : ''
+
+    if (!this.options.rootDir) {
+      return
+    }
+
     this.version = new Version(this.options.rootDir)
 
     // get version number

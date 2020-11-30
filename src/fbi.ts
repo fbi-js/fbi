@@ -203,14 +203,15 @@ export class Fbi extends Factory {
       return null
     }
 
-    const idx = filePath.lastIndexOf('node_modules')
-    if (idx === -1) {
-      this.error(`Cann't resolve local factory which is not in node_modules`)
-      return null
-    }
-    const dir = filePath.slice(0, idx) + 'node_modules/' + targetId
+    // const idx = filePath.lastIndexOf('node_modules')
+    // console.log({ filePath, idx })
+    // if (idx === -1) {
+    //   this.error(`Cann't resolve local factory which is not in node_modules`)
+    //   return null
+    // }
+    // const dir = filePath.slice(0, idx) + 'node_modules/' + targetId
 
     this.debug(`Factory "${targetId}" found in local`)
-    return this.createFactory(dir)
+    return this.createFactory(filePath)
   }
 }

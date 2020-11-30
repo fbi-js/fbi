@@ -43,9 +43,9 @@
     "execa": "^4.1.0",
     "fs-extra": "^9.0.1",
     "ora": "^5.1.0",
+    "pkg-dir": "^5.0.0",
     "semver": "^7.3.2",
-    "tiny-glob": "^0.2.8",
-    "tslib": "^2.0.3"
+    "tiny-glob": "^0.2.8"
   },
   "devDependencies": {
     "@types/node": "*",

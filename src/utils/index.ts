@@ -1,6 +1,7 @@
 import fs from 'fs-extra'
+import pkgDir from 'pkg-dir'
 
-export { fs }
+export { fs, pkgDir }
 export * from './env'
 export * from './git'
 export * from './object'
