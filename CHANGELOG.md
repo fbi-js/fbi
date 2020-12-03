@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.3](https://github.com/fbi-js/fbi/compare/v4.2.2...v4.2.3) (2020-12-03)
+
+
+### Bug Fixes
+
+* exit on 'ctrl+c' ([18864f7](https://github.com/fbi-js/fbi/commit/18864f750a64acccca524851aa79105739a285de))
+
 ### [4.2.2](https://github.com/fbi-js/fbi/compare/v4.2.1...v4.2.2) (2020-11-30)
 
 
