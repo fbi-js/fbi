@@ -16,13 +16,14 @@ export default class CommandAdd extends Command {
     super()
   }
 
-  public async run(repositories: any, flags: any) {
+  public async run(repositories: any, flags: any): Promise<Factory[]> {
     this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
       repositories,
       flags
     })
     const config = this.context.get('config')
     const rootDir = join(config?.rootDirectory, config?.directoryName)
+    const result: Factory[] = []
 
     for (const repo of repositories) {
       const info = this.getBaseInfo(repo, config)
@@ -49,7 +50,7 @@ export default class CommandAdd extends Command {
 
       if (!factory) {
         this.error(`Factory '${info.name}' create field`)
-        return
+        continue
       }
 
       // save to store
@@ -70,7 +71,10 @@ export default class CommandAdd extends Command {
       if (global) {
         this.store.set(`${factory.id}.global`, global)
       }
+      result.push(factory)
     }
+
+    return result
   }
 
   private getBaseInfo(url: string, { organization }: any) {

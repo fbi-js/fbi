@@ -8,7 +8,7 @@ export abstract class Command extends BaseClass {
   description = ''
   examples: string[] = []
 
-  public abstract run(...args: any[]): void
+  public abstract run(...args: any[]): any
   public disable(): boolean | string | Promise<boolean | string> {
     return false
   }

@@ -99,12 +99,12 @@ export default class CommandCreate extends Command {
       const commandAdd = this.factory.resolveCommand('add')
       if (!commandAdd) {
         this.error(
-          `"${inputName}" not found in factories and templates. Can not add remote factory "${inputName}" because commandAdd not found.`
+          `"${inputName}" not found in factories and templates. Can not add remote factory "${inputName}" because command 'add' not found.`
         ).exit(1)
       }
 
-      await commandAdd?.run([inputName], flags)
-      const addedFacory = this.factory.resolveFactory(inputName)
+      const addedFacories: Factory[] = await commandAdd?.run([inputName], flags)
+      const addedFacory = addedFacories[0]
       if (addedFacory) {
         this.factories.push(addedFacory)
       }
