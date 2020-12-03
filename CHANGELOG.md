@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.4](https://github.com/fbi-js/fbi/compare/v4.2.3...v4.2.4) (2020-12-03)
+
+
+### Bug Fixes
+
+* **create:** read factory id after added ([ccd03a8](https://github.com/fbi-js/fbi/commit/ccd03a8d47faf2257f1e6b0aaa80669e04f0db8d))
+
 ### [4.2.3](https://github.com/fbi-js/fbi/compare/v4.2.2...v4.2.3) (2020-12-03)
 
 
