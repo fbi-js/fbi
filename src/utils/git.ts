@@ -147,6 +147,18 @@ const remoteExist = async (argv: Argv, opts?: object) => {
   }
 }
 
+const remoteUrl = async (opts?: object) => {
+  try {
+    const url = await exec(`git config --get remote.origin.url`, {
+      cwd: process.cwd(),
+      ...opts
+    })
+    return strip(url)
+  } catch (err) {
+    return ''
+  }
+}
+
 export const git = {
   root,
   init,
@@ -166,5 +178,6 @@ export const git = {
   stash,
   tag,
   branch,
-  remoteExist
+  remoteExist,
+  remoteUrl
 }

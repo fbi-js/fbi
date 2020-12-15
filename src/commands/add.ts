@@ -1,83 +1,50 @@
 import type { Fbi } from '../fbi'
 import type { Factory } from '../core/factory'
 
-import { join } from 'path'
+import { join, relative } from 'path'
 import { Command } from '../core/command'
-import { git, isGitUrl, formatName } from '../utils'
+import { git, isGitUrl, pathResolve, remotePkgVersion } from '../utils'
 
 export default class CommandAdd extends Command {
   id = 'add'
   alias = ''
-  args = '<repositories...>'
-  description = `add factories from remote git repositories`
-  flags = [['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm']]
+  args = '<factories...>'
+  description = `add factories from npm module or git url`
+  flags = [
+    ['-l, --local', 'Add to local node_modules', false],
+    ['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm']
+  ]
 
   constructor(public factory: Fbi) {
     super()
   }
 
-  public async run(repositories: any, flags: any): Promise<Factory[]> {
+  public async run(names: any, flags: any): Promise<Factory[]> {
     this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
-      repositories,
+      names,
       flags
     })
-    const config = this.context.get('config')
-    const rootDir = join(config?.rootDirectory, config?.directoryName)
     const result: Factory[] = []
 
-    for (const repo of repositories) {
-      const info = this.getBaseInfo(repo, config)
-      if (!info) {
-        continue
-      }
-      const targetDir = join(rootDir, info.name)
-      // 添加的仓库是否已存在
-      const exist = await this.fs.pathExists(targetDir)
-      if (exist) {
-        // 若已存在则更新模板
-        await this.update(targetDir, info.name)
-      } else {
-        const valid = await this.checkGitUrl(info.url)
-        if (!valid) {
-          continue
-        }
-        this.debug(`git clone ${info.url} ${targetDir}`)
-        await this.add(info.name, info.url, targetDir)
-      }
-
-      await this.install(flags || {}, targetDir)
-      const factory = this.factory.createFactory(targetDir)
+    for (const name of names) {
+      // 1. try npm module
+      let factory = await this.addFromNpm(name)
+      console.log({ factory })
 
       if (!factory) {
-        this.error(`Factory '${info.name}' create field`)
-        continue
+        // 2. try git repository
+        factory = await this.addFromGit(name, flags)
       }
 
-      // save to store
-      const data = {
-        id: factory.id,
-        type: 'git',
-        from: info.url,
-        path: targetDir,
-        updatedAt: Date.now()
+      if (factory) {
+        result.push(factory)
       }
-      this.debug('Save to store:', data)
-      this.store.set(data.id, data)
-
-      const { version, global } = await this.getVersionInfo(factory)
-      if (version) {
-        this.store.set(`${factory.id}.version`, version)
-      }
-      if (global) {
-        this.store.set(`${factory.id}.global`, global)
-      }
-      result.push(factory)
     }
 
     return result
   }
 
-  private getBaseInfo(url: string, { organization }: any) {
+  private getGitUrlInfo(url: string, { organization }: any) {
     let gitUrl = ''
     if (isGitUrl(url)) {
       gitUrl = url
@@ -116,29 +83,165 @@ export default class CommandAdd extends Command {
     return true
   }
 
-  private async add(name: string, src: string, dest: string) {
-    const _name = this.style.cyan(name)
-    const spinner = this.createSpinner(`Adding ${_name} from '${src}'`).start()
+  private async addFromNpm(name: string, cwd = process.cwd()): Promise<null | Factory> {
+    const factoryExist = await this.factoryExist(name, 'npm', cwd)
+    this.debug('factoryExist:', factoryExist)
+
+    if (!factoryExist) {
+      const remotePkgExist = await remotePkgVersion(name)
+      if (!remotePkgExist) {
+        return null
+      }
+
+      const relativePath = relative(process.cwd(), cwd)
+
+      const anwser = (await this.prompt({
+        type: 'confirm',
+        name: 'confirm',
+        message: `'${name}' will be installed in the ${
+          relativePath || 'current'
+        } directory, continue?`,
+        initial: true
+      })) as any
+
+      if (!anwser.confirm) {
+        this.exit()
+        return null
+      }
+    }
+
+    const styledName = this.style.cyan(name)
+    const spinner = this.createSpinner(
+      `${factoryExist ? 'Updating' : 'Installing'} ${styledName}`
+    ).start()
+
     try {
-      await git.clone(`${src} ${dest}`, {
-        stdout: 'inherit'
+      await this.exec.command(`npm install --no-package-lock ${name}`, {
+        cwd
       })
-      spinner.succeed(`Added ${_name}`)
+      spinner.succeed(`${factoryExist ? 'Updated' : 'Installed'} ${styledName}`)
+      return this.factory.resolveFromLocal(name, cwd)
     } catch (err) {
-      spinner.fail(`Failed to add ${name}`)
+      spinner.fail(`Failed to ${factoryExist ? 'update' : 'install'} ${name}`)
       this.error(err)
     }
+    return null
   }
 
-  private async update(targetDir: string, name: string) {
-    const spinner = this.createSpinner(`Already exist: ${name}. Try updating...`).start()
-    await git.hardReset('', {
-      cwd: targetDir
-    })
-    await git.pull('', {
-      cwd: targetDir
-    })
-    spinner.succeed(`Updated`)
+  private async addFromGit(name: string, flags: any): Promise<null | Factory> {
+    let targetDir
+    let isUpdate
+    let remoteUrl
+    let factoryName = name
+    const config = this.context.get('config')
+
+    let found = await this.factoryExist(name, 'git')
+    if (found) {
+      targetDir = found
+      factoryName = name
+      isUpdate = true
+    } else {
+      const info = this.getGitUrlInfo(name, config)
+      if (!info) {
+        return null
+      }
+
+      remoteUrl = info.url
+      factoryName = info.name
+
+      if (factoryName) {
+        let found2 = await this.factoryExist(factoryName, 'git')
+        if (found2) {
+          targetDir = found2
+          isUpdate = true
+        }
+      }
+    }
+
+    targetDir = targetDir || join(config?.rootDirectory, config?.directoryName, factoryName)
+    remoteUrl =
+      remoteUrl ||
+      (await git.remoteUrl({
+        cwd: targetDir
+      }))
+
+    this.debug({ remoteUrl, targetDir, isUpdate, factoryName })
+
+    const styledName = this.style.cyan(factoryName)
+    const spinner = this.createSpinner(`${isUpdate ? 'Updating' : 'Adding'} ${styledName}`).start()
+
+    if (!remoteUrl) {
+      spinner.fail(`Can not resolve git url`)
+      return null
+    }
+
+    try {
+      if (isUpdate) {
+        await git.hardReset('', {
+          cwd: targetDir
+        })
+        await git.pull('', {
+          cwd: targetDir
+        })
+      } else {
+        const urlValid = await this.checkGitUrl(remoteUrl)
+        if (!urlValid) {
+          spinner.fail(`Failed to add ${factoryName}`)
+          return null
+        }
+
+        await git.clone(`${remoteUrl} ${targetDir}`, {
+          stdout: 'inherit'
+        })
+      }
+
+      spinner.succeed(`${isUpdate ? 'Updated' : 'Added'} ${styledName}`)
+      await this.install(flags || {}, targetDir)
+
+      const factory = this.factory.createFactory(targetDir)
+      if (!factory) {
+        return null
+      }
+
+      // save to store
+      const data = {
+        id: factory.id,
+        type: 'git',
+        from: remoteUrl,
+        path: targetDir,
+        updatedAt: Date.now()
+      }
+      this.debug('Save to store:', data)
+      this.store.set(data.id, data)
+
+      const { version, global } = await this.getVersionInfo(factory)
+      if (version) {
+        this.store.set(`${factory.id}.version`, version)
+      }
+      if (global) {
+        this.store.set(`${factory.id}.global`, global)
+      }
+
+      return factory
+    } catch (err) {
+      spinner.fail(`Failed to ${isUpdate ? 'update' : 'add'} ${name}`)
+      this.error(err)
+    }
+
+    return null
+  }
+
+  private async factoryExist(name: string, type: 'npm' | 'git', cwd = process.cwd()) {
+    if (type === 'npm') {
+      return pathResolve(name, {
+        paths: [cwd]
+      })
+    } else {
+      const config = this.context.get('config')
+      const targetDir = join(config?.rootDirectory, config?.directoryName, name)
+      const exist = await this.fs.pathExists(targetDir)
+      return exist ? targetDir : ''
+    }
   }
 
   private async install(flags: Record<string, any>, targetDir: string) {

@@ -8,6 +8,7 @@ export * from './object'
 export * from './type'
 export * from './format'
 export * from './version'
+export * from './pkg'
 
 export const enquirer = require('enquirer')
 export const symbols: SymbolsType = require('enquirer/lib/symbols')

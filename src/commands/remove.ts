@@ -40,6 +40,8 @@ export default class CommandRemove extends Command {
         `Removing ${this.style.yellow.bold(factory.id)} from the store...`
       ).start()
 
+      // TODO: remove versions dir
+
       await this.deleteConfig(factory)
 
       if (factory.type !== 'local') {
