@@ -6,20 +6,21 @@ import { Command } from '../core/command'
 export default class CommandRemove extends Command {
   id = 'remove'
   alias = ''
-  args = '[factories...]'
+  args = '[factoryIds...]'
   flags = []
   description = `remove factories from the store`
+  examples = ['fbi remove', 'fbi remove @fbi-js/factory-node']
 
   constructor(public factory: Fbi) {
     super()
   }
 
-  async run(factories: any, flags: any) {
+  async run(factoryIds: any, flags: any) {
     this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
-      factories,
+      factoryIds,
       flags
     })
-    const ids = (Array.isArray(factories) && factories.length > 0 && factories) || null
+    const ids = (Array.isArray(factoryIds) && factoryIds.length > 0 && factoryIds) || null
     const targets = (ids
       ? ids.map((id: string) => {
           const result = this.store.get(id)
@@ -79,8 +80,14 @@ export default class CommandRemove extends Command {
     // remove version dirs
     if (factory?.version?.versions) {
       for (const version of factory.version.versions) {
-        await this.fs.remove(join(factory.version.baseDir, `${factory.id}__${version.short}`))
+        await this.fs.remove(
+          join(factory.version.baseDir, `${this.getFactoryName(factory.id)}__${version.short}`)
+        )
       }
     }
+  }
+
+  private getFactoryName(id: string) {
+    return id.replace('@', '')
   }
 }
