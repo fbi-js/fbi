@@ -92,34 +92,34 @@ export default class CommandList extends Command {
     }
   }
 
-  // 展示factory详细信息
-  private async showDetail(obj: Factory, current: any, idx?: number) {
-    const storeInfo = this.store.get(obj.id)
+  private async showDetail(factory: Factory, current: any, idx?: number) {
     const showIdx = isNumber(idx)
-    const isCurrent = current && obj.id === current.id
+    const isCurrent = current && factory.id === current.id
     const index = showIdx ? this.style.bold(symbols.numbers[idx as number]) : ' '
-    const title = this.style.bold(obj.id)
+    const title = this.style.bold(factory.id)
     const version = isCurrent && current.version ? this.style.italic(`@${current.version}`) : ''
-    let from = storeInfo?.from
-    if (isGitUrl(from)) {
-      const fromArr = from.split('/').slice(-2)
-      from = fromArr.join('/').replace('.git', '')
-    } else {
-      from = from?.replace(this.context.get('env.home'), '~')
-    }
-    from = this.style.dim(from || '')
-    let txt = `\n${index} ${title}${version} ${from}`
+    let from =
+      factory.options?.type === 'git'
+        ? this.store.get(factory.id)?.from
+        : `https://www.npmjs.com/package/${factory.id}`
+    const local = factory.options?.rootDir
 
-    if (obj.description) {
-      txt += '\n\n  ' + obj.description
+    let txt = `\n${index} ${title}${version}`
+    txt +=`
+  ${this.style.dim`Remote path: ${from}`}
+  ${this.style.dim`Local path:  ${local}`}
+    `
+
+    if (factory.description) {
+      txt += '\n\n  ' + factory.description
     }
 
     // commands list
     txt += '\n'
-    if (isValidArray(obj.commands)) {
+    if (isValidArray(factory.commands)) {
       const title = '\n  Commands:'
       txt += title
-      for (const cmd of obj.commands) {
+      for (const cmd of factory.commands) {
         const disabled = isFunction(cmd.disable) ? await cmd.disable() : cmd.disable
         const name = `${cmd.alias ? cmd.alias + ', ' : ''}${cmd.id}${
           cmd.args ? ` ${cmd.args}` : ''
@@ -133,10 +133,10 @@ export default class CommandList extends Command {
     }
 
     // templates list
-    if (isValidArray(obj.templates)) {
+    if (isValidArray(factory.templates)) {
       const title = '\n\n  Templates:'
       txt += title
-      for (const t of obj.templates) {
+      for (const t of factory.templates) {
         txt += this.colWrap(
           this.lines(`- ${t.id}`, this.padWidth - 1, 2, true, true),
           this.lines(t.description)
@@ -156,26 +156,26 @@ export default class CommandList extends Command {
     }
 
     // global plugin === command
-    // if (obj.command) {
+    // if (factory.command) {
     //   txt += `\n\n      type: global`
-    //   txt += `\n   version: ${obj.version}`
-    //   txt += `\n   command: ${obj.command.id}`
-    //   txt += `\n     alias: ${obj.command.alias}`
-    //   txt += `\n      from: ${obj.from}`
+    //   txt += `\n   version: ${factory.version}`
+    //   txt += `\n   command: ${factory.command.id}`
+    //   txt += `\n     alias: ${factory.command.alias}`
+    //   txt += `\n      from: ${factory.from}`
     // }
 
     if (this.showVersions) {
-      const factory = this.store.get(obj.id)
-      if (factory?.version && factory.version?.versions) {
+      const storeInfo = this.store.get(factory.id)
+      if (storeInfo?.version?.versions) {
         txt += '\n\n  Versions:'
-        txt += '\n  ' + factory.version.versions.map((v: any) => v.short).join(', ')
+        txt += '\n  ' + storeInfo.version.versions.map((v: any) => v.short).join(', ')
       }
     }
 
     if (this.showProjects) {
       const projects = this.projectStore.find(
         {
-          factory: obj.id
+          factory: factory.id
         },
         '',
         {
