@@ -6,8 +6,9 @@ export default class CommandClean extends Command {
   id = 'clean'
   alias = ''
   args = ''
-  description = `clean info in store`
+  description = `clean stale factories and projects`
   flags = []
+  examples = ['fbi clean']
 
   constructor(public factory: Fbi) {
     super()

@@ -9,6 +9,7 @@ export default class CommandLink extends Command {
   args = '[factories...]'
   flags = []
   description = `link local factories to the store`
+  examples = ['fbi link', 'fbi link local-folder']
 
   constructor(public factory: Fbi) {
     super()

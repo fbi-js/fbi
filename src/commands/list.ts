@@ -16,6 +16,8 @@ export default class CommandList extends Command {
     ['-p, --projects', 'show projects']
   ]
   description = `list factories and commands info`
+  examples = ['fbi ls', 'fbi ls @fbi-js/factory-node -p']
+
   private padWidth = 0
   private showProjects = false
   private showVersions = true

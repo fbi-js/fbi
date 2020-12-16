@@ -7,7 +7,8 @@ export default class CommandInfo extends Command {
   alias = ''
   args = ''
   flags = [['-e, --edit', 'Edit config']]
-  description = `show context info `
+  description = `get environment info, get/set context config`
+  examples = ['fbi info', 'fbi info -e']
 
   constructor(public factory: Fbi) {
     super()

@@ -14,6 +14,7 @@ export default class CommandCreate extends Command {
     ['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm', 'npm']
   ]
   factories: Factory[] = []
+  examples = ['fbi create factory-node', 'fbi create factory-node my-app -p yarn']
 
   constructor(public factory: Fbi) {
     super()
@@ -207,7 +208,14 @@ export default class CommandCreate extends Command {
     )
   }
 
-  private async getTargetDir(dir = process.cwd()) {
+  private async getTargetDir(projectName?: string, cwd = process.cwd()) {
+    if (projectName) {
+      return {
+        targetDir: cwd,
+        subDirectory: projectName
+      }
+    }
+
     const { action } = await this.prompt<{ action: string }>({
       type: 'select',
       name: 'action',
@@ -236,7 +244,7 @@ export default class CommandCreate extends Command {
           name: 'subDirectory',
           message: 'Subdirectory path'
         })
-        const targetDir = join(dir, subDirectory ?? '')
+        const targetDir = join(cwd, subDirectory ?? '')
         return {
           targetDir,
           subDirectory
@@ -250,7 +258,7 @@ export default class CommandCreate extends Command {
     }
 
     return {
-      targetDir: dir
+      targetDir: cwd
     }
   }
 

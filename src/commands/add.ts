@@ -85,9 +85,10 @@ export default class CommandAdd extends Command {
   }
 
   private async addFromNpm(name: string, flags: any): Promise<null | Factory> {
-    const cwd = isAbsolute(flags?.targetDir)
-      ? flags.targetDir
-      : join(process.cwd(), flags?.targetDir ?? '')
+    const cwd =
+      flags?.targetDir && isAbsolute(flags.targetDir)
+        ? flags.targetDir
+        : join(process.cwd(), flags?.targetDir ?? '')
     const factoryExist = await this.factoryExist(name, 'npm', cwd)
     this.debug('factoryExist:', factoryExist)
 

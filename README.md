@@ -2,54 +2,170 @@
   <a href="https://fbi-js.github.io/docs/" target="_blank" rel="noopener noreferrer"><img width="100" src="./assets/logo.png" alt="fbi logo"></a>
 </p>
 
-fbi 是一个基于MIT协议开源的命令行工作流工具。
+fbi is an workflow tool in command-line. It was designed to help developers improve productivity, unify and standardize teams workflows.
 
-## 安装
+## Usage
 
-FBI 需安装在全局，以便在任意目录可开始你的工作流。
-
-```bash
-$ npm i -g fbi
-# OR
-$ yarn global add fbi
-# OR
-$ pnpm i -g fbi
-```
-
-## 快速开始
-
-### 一、基于远程仓库添加 fbi 模板
+### Scene 1
 
 ```bash
-$ fbi add <repositories...>
+# create project
+npx fbi create [factory]
+
+# see available commands and templates
+npx fbi ls
 ```
 
-> 查看更多官方模板：[官方模板列表](/pages/4x/more.md)
-
-### 二、通过添加的模板创建项目
+### Scene 2
 
 ```bash
-$ fbi create [tempalate|factory] [project]
+# install globally
+npm i -g fbi
 
-# OR
+# add factory
+fbi add [factory]
 
-$ fbi create
-# 然后选择需要的模版
+# create project
+fbi create
+
+# see available commands and templates
+fbi ls
 ```
 
-> 使用 `$ fbi ls` 可以查看已添加和关联的仓库及模板
+## BuiltIn Commands
 
-### 三、运行任务
+- `fbi -h`: Display help for `fbi`
+- `fbi <command> -h`: Display help for `<command>`
+
+### `Add`
 
 ```bash
-$ cd my-project
+Usage: fbi add [options] <factories...>
 
-$ fbi serve
-# OR
-$ fbi s
+add factories from npm module or git url
+
+Options:
+  -y, --yes                     Yes to all questions
+  -t, --target-dir <dir>        Target dir for factory from npm
+  -p, --package-manager <name>  Specifying a package manager. e.g. pnpm/yarn/npm
+  -d, --debug                   output extra debugging
+  -h, --help                    display help for command
+
+Examples:
+  fbi add factory-node
+  fbi add @fbi-js/factory-node -t sub-dir -y
 ```
 
-> `$ fbi ls` 可查看当前目录可用的任务和模板
+## `Remove`
+
+```bash
+Usage: fbi remove [options] [factoryIds...]
+
+remove factories from the store. Also delete files.
+
+Options:
+  -d, --debug  output extra debugging
+  -h, --help   display help for command
+
+Examples:
+  fbi remove
+  fbi remove @fbi-js/factory-node
+```
+
+### `Create`
+
+```bash
+Usage: fbi create [options] [template|factory] [project]
+
+create a project via template or factory. If factory non-exist, it will install the factory first.
+
+Options:
+  -p, --package-manager <name>  Specifying a package manager. e.g. pnpm/yarn/npm (default: "npm")
+  -d, --debug                   output extra debugging
+  -h, --help                    display help for command
+
+Examples:
+  fbi create factory-node
+  fbi create factory-node my-app -p yarn
+```
+
+### `List`
+
+```bash
+Usage: fbi list|ls [options] [factories...]
+
+list factories and commands info
+
+Options:
+  -a, --all       show all factories
+  -p, --projects  show projects
+  -d, --debug     output extra debugging
+  -h, --help      display help for command
+
+Examples:
+  fbi ls
+  fbi ls @fbi-js/factory-node -p
+```
+
+### `Link`
+
+```bash
+Usage: fbi link [options] [factories...]
+
+link local factories to the store. Usful for factory development.
+
+Options:
+  -d, --debug  output extra debugging
+  -h, --help   display help for command
+
+Examples:
+  fbi link
+  fbi link local-folder
+```
+
+### `Info`
+
+```bash
+Usage: fbi info [options]
+
+get environment info, get/set context config
+
+Options:
+  -e, --edit   Edit config
+  -d, --debug  output extra debugging
+  -h, --help   display help for command
+
+Examples:
+  fbi info
+  fbi info -e
+```
+
+### `Clean`
+
+```bash
+Usage: fbi clean [options]
+
+clean stale factories and projects
+
+Options:
+  -d, --debug  output extra debugging
+  -h, --help   display help for command
+
+Examples:
+  fbi clean
+```
+
+## Factory
+
+Factory produces project templates and commands.
+
+[Official factories](https://github.com/fbi-js?q=factory-)
+
+## Contribution
+
+Please make sure to read the [Contributing Guide](./CONTRIBUTING.md) before making a pull request.
+
+Thank you to all the people who already contributed to fbi!
 
 ## License
 
