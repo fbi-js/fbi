@@ -30,7 +30,6 @@ export abstract class Template extends BaseClass {
   protected targetDir = process.cwd()
   protected _debugPrefix = ''
   private rootPath = ''
-  private subDirectory = false
 
   constructor() {
     super()
@@ -55,9 +54,7 @@ export abstract class Template extends BaseClass {
   }
 
   public async run(data: Record<string, any>, flags: any): Promise<any> {
-    if (data?.subDirectory) {
-      this.subDirectory = data.subDirectory
-    }
+    this.targetDir = join(this.targetDir, data.subDirectory || '')
 
     await this.prepare(data)
 
@@ -112,9 +109,6 @@ export abstract class Template extends BaseClass {
   }
   protected async gathering(flags: any): Promise<any> {}
   private async afterGathering() {
-    if (this.subDirectory) {
-      this.targetDir = join(this.targetDir, this.data?.project?.name || '')
-    }
     this.debug(`${this._debugPrefix} rootPath: ${this.rootPath}; targetDir: ${this.targetDir}`)
   }
   protected async checking(): Promise<any> {}

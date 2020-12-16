@@ -12,6 +12,8 @@ type VersionInfo = {
   versions: []
 }
 
+export type FactoryType = 'git' | 'npm' | 'local'
+
 export type FactoryInfo = {
   id: string
   type: string
@@ -23,6 +25,7 @@ export type FactoryInfo = {
 
 export type FactoryOptions = {
   rootDir?: string
+  type?: FactoryType
   [key: string]: any
 }
 
@@ -38,6 +41,10 @@ export abstract class Factory extends BaseClass {
 
   constructor(public options?: FactoryOptions) {
     super()
+    this.options = {
+      ...this.options,
+      type: this.options?.type || 'git'
+    }
   }
 
   public init() {
@@ -51,7 +58,9 @@ export abstract class Factory extends BaseClass {
       return
     }
 
-    this.version = new Version(this.options.rootDir)
+    if (this.options.type === 'git') {
+      this.version = new Version(this.options.rootDir)
+    }
 
     // get version number
     try {

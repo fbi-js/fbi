@@ -1,14 +1,14 @@
-import { sep } from 'path'
 import { Fbi } from '../fbi'
 import { Factory } from '../core/Factory'
 import { Command } from '../core/command'
 import { Template } from '../core/template'
-import { groupBy, flatten, isValidArray, isDirEmpty } from '../utils'
+import { basename, join, relative } from 'path'
+import { groupBy, flatten, isValidArray } from '../utils'
 
 export default class CommandCreate extends Command {
   id = 'create'
   alias = ''
-  args = '[template|factory]'
+  args = '[template|factory] [project]'
   description = `create a project via template or factory`
   flags = [
     ['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm', 'npm']
@@ -19,134 +19,126 @@ export default class CommandCreate extends Command {
     super()
   }
 
-  async run(inputName: any, flags: any) {
+  async run(factoryOrTemplateName: any, projectName: any, flags: any) {
     this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
-      inputName,
+      factoryOrTemplateName,
+      projectName,
       flags
     })
-    let template
-    let isSubTemplate = false
-    let createSubDirectory = false
+    let templates
+    let useSubTemplate = false
 
     const cwd = process.cwd()
-
-    this.factories = this.factory.createAllFactories()
-
     // if is fbi project
     const usingFactory = this.context.get('config.factory')
+    const { subDirectory, targetDir } = await this.getTargetDir(projectName)
 
-    if (usingFactory) {
-      template = await this.createViaSubTemplate(usingFactory)
-      isSubTemplate = true
+    if (factoryOrTemplateName) {
+      // search factory by name
+      const foundFactory = this.factory.resolveFactory(factoryOrTemplateName)
+      if (foundFactory) {
+        const factoryPath = foundFactory.options?.rootDir
+          ? relative(cwd, foundFactory.options.rootDir)
+          : ''
+        this.log(
+          `Using ${this.style.bold`${foundFactory.id}@${foundFactory._version}`}${
+            factoryPath ? ' from ' + factoryPath : ''
+          }...`
+        )
+        templates = foundFactory.templates
+      }
+
+      // search all templates by name
+      if (!isValidArray(templates)) {
+        templates = this.factory.resolveTemplates(factoryOrTemplateName)
+      }
+
+      if (!isValidArray(templates)) {
+        // not found, add factory
+        const factory = await this.addFromRemote(factoryOrTemplateName, {
+          ...flags,
+          targetDir,
+          yes: true
+        })
+
+        if (factory && factory.templates) {
+          templates = factory.templates
+        } else {
+          this.error(`No package named '${factoryOrTemplateName}' found in npmjs.com`)
+          this.error(`No repository named '${factoryOrTemplateName}' found in github.com`)
+        }
+      }
     } else {
-      const action = await this.checkDirEmpty(cwd)
-      createSubDirectory = action === 'subDirectory'
+      if (usingFactory) {
+        const factory = this.factory.resolveFactory(usingFactory.id)
+        const template = factory?.resolveTemplate(usingFactory.template)
+        templates = template?.templates || []
+        if (isValidArray(templates)) {
+          const { templateType } = (await this.prompt({
+            type: 'select',
+            name: 'templateType',
+            hint: 'Use arrow-keys, <return> to submit',
+            message: `Pick an action:`,
+            choices: ['Use sub templates', 'Use other templates', 'Cancel']
+          })) as any
+          useSubTemplate = templateType === 'Use sub templates'
+        }
+      }
 
-      if (inputName) {
-        template = await this.createViaTargetTemplate(inputName, flags)
-      } else {
-        const allTemplates = this.factory.resolveTemplates()
-        template = await this.selectTempate(allTemplates)
+      if (!useSubTemplate) {
+        this.factory.createAllFactories()
+        templates = this.factory.resolveTemplates()
       }
     }
+
+    if (!isValidArray(templates)) {
+      this.error('No templates available').exit()
+    }
+
+    const template = await this.selectTempate(templates as [])
 
     if (template) {
-      await this.createProject(template, createSubDirectory, flags, isSubTemplate, cwd)
+      await this.createProject({
+        template,
+        subDirectory,
+        targetDir,
+        flags,
+        useSubTemplate
+      })
     }
   }
 
-  private async createViaSubTemplate(usingFactory: any) {
-    let templates
-    if (usingFactory?.id) {
-      this.debug(`current project using factory "${usingFactory.id}"`)
-      const factory = this.factory.resolveFactory(usingFactory.id)
-      if (usingFactory.template) {
-        const template = factory?.resolveTemplate(usingFactory.template)
-        templates = template?.templates
-      }
-    }
-
-    if (usingFactory) {
-      this.log()
-      this.log(
-        `current project is using template ${this.style.cyan(
-          usingFactory.template
-        )} from ${this.style.cyan(usingFactory.id)}`
-      )
-      this.log(`you can only use sub-templates`)
-      if (!isValidArray(templates)) {
-        this.warn(`but there are no sub-templates`).exit()
-      }
-      this.log()
-    }
-
-    return this.selectTempate(templates || [])
-  }
-
-  private async createViaTargetTemplate(inputName: string, flags: any) {
-    let templates
-    // search factory by name
-    const foundFactory = this.factory.resolveFactory(inputName)
-    templates = foundFactory?.templates
-
-    if (!isValidArray(templates)) {
-      // search all templates by name
-      templates = this.factory.resolveTemplates(inputName)
-    }
-
-    if (!isValidArray(templates)) {
-      // not found, add factory
-      const commandAdd = this.factory.resolveCommand('add')
-      if (!commandAdd) {
-        this.error(
-          `"${inputName}" not found in factories and templates. Can not add remote factory "${inputName}" because command 'add' not found.`
-        ).exit(1)
-      }
-
-      const addedFacories: Factory[] = await commandAdd?.run([inputName], flags)
-      const addedFacory = addedFacories[0]
-      if (addedFacory) {
-        this.factories.push(addedFacory)
-      }
-      // use added factory's tempaltes
-      templates = addedFacory?.templates
-    }
-
-    if (!isValidArray(templates)) {
-      return this.error(`template or factory "${inputName}" not found`).exit()
-    }
-
-    return this.selectTempate(templates || [], inputName)
-  }
-
-  private async createProject(
-    template: Template,
-    subDirectory = false,
-    flags: any,
-    isSubTemplate = false,
-    cwd = process.cwd()
-  ) {
+  private async createProject({
+    template,
+    subDirectory,
+    targetDir,
+    flags,
+    useSubTemplate = false
+  }: {
+    template: Template
+    subDirectory?: string
+    targetDir: string
+    flags: any
+    useSubTemplate: boolean
+  }) {
     if (!template) {
       this.exit()
     }
-    const projectName = cwd.split(sep).pop()
 
-    // set init data
-    const factoryInfo = this.store.get(template?.factory?.id)
-    if (!factoryInfo) {
-      this.warn(`can not resolve factory info '${template?.factory?.id}'`)
-      this.exit()
-    }
+    // get init data
+    const factory = template.factory
+    const storeInfo = this.store.get(factory.id)
+
     const info: Record<string, any> = await template.run(
       {
         factory: {
-          id: factoryInfo.id,
-          path: factoryInfo.version?.latest?.dir || factoryInfo.path,
-          version: factoryInfo.version?.latest?.short,
+          id: factory.id,
+          path: storeInfo?.version?.latest?.dir || factory.options.rootDir,
+          version: storeInfo?.version?.latest?.short ?? '',
           template: template.id
         },
         project: {
-          name: projectName
+          name: basename(targetDir)
         },
         subDirectory
       },
@@ -161,7 +153,7 @@ export default class CommandCreate extends Command {
     this.debug(`Save info into project store`)
     this.projectStore.merge(
       info.path,
-      isSubTemplate
+      useSubTemplate
         ? {
             features: info.features,
             updatedAt: Date.now()
@@ -169,8 +161,8 @@ export default class CommandCreate extends Command {
         : {
             name: info.name,
             path: info.path,
-            factory: factoryInfo.id,
-            version: factoryInfo.version?.latest?.short,
+            factory: factory.id,
+            version: factory.version?.latest?.short ?? '',
             template: template.id,
             features: info.features,
             createdAt: Date.now()
@@ -178,7 +170,7 @@ export default class CommandCreate extends Command {
     )
   }
 
-  private async selectTempate(templates: Template[], inputName?: string) {
+  private async selectTempate(templates: Template[], factoryOrTemplateName?: string) {
     const _choices = groupBy(templates, 'factory.id')
     const choices = flatten(
       Object.entries(_choices).map(([key, val]: any) =>
@@ -195,7 +187,7 @@ export default class CommandCreate extends Command {
     const { selected } = (await this.prompt({
       type: 'select',
       name: 'selected',
-      message: inputName ? 'Confirm which template to use' : 'Choose a template',
+      message: factoryOrTemplateName ? 'Confirm which template to use' : 'Choose a template',
       hint: 'Use arrow-keys, <return> to submit',
       choices,
       result(templateId: any) {
@@ -215,25 +207,62 @@ export default class CommandCreate extends Command {
     )
   }
 
-  private async checkDirEmpty(dir: string) {
-    if (await isDirEmpty(dir)) {
-      return ''
-    }
-
-    const { action } = (await this.prompt({
+  private async getTargetDir(dir = process.cwd()) {
+    const { action } = await this.prompt<{ action: string }>({
       type: 'select',
       name: 'action',
-      message: `Current directory is not empty. Pick an action:`,
       hint: 'Use arrow-keys, <return> to submit',
-      choices: ['Overwrite', 'New subdirectory', 'Cancel']
-    })) as any
+      message: `Create project in:`,
+      choices: [
+        {
+          message: 'Current directory',
+          name: 'current'
+        },
+        {
+          message: 'New subdirectory',
+          name: 'subDirectory'
+        },
+        {
+          message: 'Cancel',
+          name: 'cancel'
+        }
+      ]
+    })
 
-    if (action === 'Cancel') {
-      this.exit()
+    switch (action) {
+      case 'subDirectory': {
+        const { subDirectory } = await this.prompt<{ subDirectory: string }>({
+          type: 'input',
+          name: 'subDirectory',
+          message: 'Subdirectory path'
+        })
+        const targetDir = join(dir, subDirectory ?? '')
+        return {
+          targetDir,
+          subDirectory
+        }
+      }
+      case 'cancel':
+        this.exit()
+        break
+      default:
+        break
     }
 
-    if (action === 'New subdirectory') {
-      return 'subDirectory'
+    return {
+      targetDir: dir
     }
+  }
+
+  private async addFromRemote(name: string, flags: any) {
+    const commandAdd = this.factory.resolveCommand('add')
+    if (!commandAdd) {
+      return this.error(
+        `"${name}" not found in factories and templates. Can not add remote factory "${name}" because command 'add' not found.`
+      ).exit(1)
+    }
+
+    const addedFacories: Factory[] = await commandAdd.run([name], flags)
+    return addedFacories[0]
   }
 }

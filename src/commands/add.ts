@@ -1,7 +1,7 @@
 import type { Fbi } from '../fbi'
 import type { Factory } from '../core/factory'
 
-import { join, relative } from 'path'
+import { isAbsolute, join, relative } from 'path'
 import { Command } from '../core/command'
 import { git, isGitUrl, remotePkgVersion } from '../utils'
 
@@ -85,7 +85,9 @@ export default class CommandAdd extends Command {
   }
 
   private async addFromNpm(name: string, flags: any): Promise<null | Factory> {
-    const cwd = join(process.cwd(), flags?.targetDir ?? '')
+    const cwd = isAbsolute(flags?.targetDir)
+      ? flags.targetDir
+      : join(process.cwd(), flags?.targetDir ?? '')
     const factoryExist = await this.factoryExist(name, 'npm', cwd)
     this.debug('factoryExist:', factoryExist)
 

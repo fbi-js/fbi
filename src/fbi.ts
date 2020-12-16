@@ -1,4 +1,4 @@
-import { isAbsolute, join, sep } from 'path'
+import { isAbsolute, join } from 'path'
 import assert from 'assert'
 import {
   isClass,
@@ -10,7 +10,7 @@ import {
   flatten
 } from './utils'
 
-import { Factory, FactoryInfo } from './core/factory'
+import { Factory, FactoryInfo, FactoryType } from './core/factory'
 import { Command } from './core/command'
 import { Template } from './core/template'
 import { Plugin } from './core/plugin'
@@ -47,7 +47,7 @@ export class Fbi extends Factory {
     super()
   }
 
-  public createFactory(pathOrId: string): Factory | null {
+  public createFactory(pathOrId: string, type: FactoryType = 'git'): Factory | null {
     assert(isString(pathOrId), `factory path should be string, recived '${pathOrId}'`)
     const rootDir = isAbsolute(pathOrId) ? pathOrId : join(process.cwd(), pathOrId)
     const filepath = pathResolve(rootDir)
@@ -65,7 +65,7 @@ export class Fbi extends Factory {
     fn = fn.default || fn
     assert(isClass(fn), `factory should be a class, recived '${typeof fn}'`)
 
-    const factoryInstance: Factory = new fn({ rootDir })
+    const factoryInstance: Factory = new fn({ rootDir, type })
     if (!factoryInstance) {
       this.error(`Fbi:`, `can not create factory`, rootDir)
       return null
@@ -98,7 +98,7 @@ export class Fbi extends Factory {
           this.debug(`factory "${key}" can't resolve from ${f.path}. delete from store`)
           this.store.del(key)
         } else {
-          this.createFactory(f.path)
+          this.createFactory(f.path, 'git')
         }
       }
     }
@@ -134,7 +134,7 @@ export class Fbi extends Factory {
     for (const [_, value] of Object.entries(factories)) {
       const info: any = value
       if (info?.global) {
-        globalFactories.push(this.createFactory(info?.path))
+        globalFactories.push(this.createFactory(info?.path, 'git'))
         this.debug('Fbi<resolveGlobalFactories>:', info?.id)
       }
     }
@@ -188,10 +188,11 @@ export class Fbi extends Factory {
       }
 
       return this.createFactory(
-        getPathByVersion(factoryInfo?.version?.baseDir as string, factoryInfo.id, matchVersion)
+        getPathByVersion(factoryInfo?.version?.baseDir as string, factoryInfo.id, matchVersion),
+        'local'
       )
     }
-    return this.createFactory(factoryInfo.path)
+    return this.createFactory(factoryInfo.path, 'git')
   }
 
   public resolveFromLocal(targetId: string, cwd = process.cwd()) {
@@ -204,6 +205,6 @@ export class Fbi extends Factory {
     }
 
     this.debug(`Factory "${targetId}" found in local`)
-    return this.createFactory(filePath)
+    return this.createFactory(filePath, 'npm')
   }
 }
