@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.3.0](https://github.com/fbi-js/fbi/compare/v4.2.4...v4.3.0) (2020-12-16)
+
+
+### Features
+
+* **command:** [WIP] add 'addFromNpm' ([5fc08d0](https://github.com/fbi-js/fbi/commit/5fc08d06dda3508b7f780bd717e6ae42d795ebad))
+* **command:** support creating project directly from npm package ([5629ffe](https://github.com/fbi-js/fbi/commit/5629ffe301c7b142ae50622370806aa9f2392a23))
+
+
+### Bug Fixes
+
+* **command:** show remote and local path of factory in 'list' command ([5b041e6](https://github.com/fbi-js/fbi/commit/5b041e6212453ac717956531987de310c8c14e5e))
+* **command:** versions dir not deleted ([4fdce87](https://github.com/fbi-js/fbi/commit/4fdce879aba02e1dfd30585946dba3a163b9d588))
+* support add npm packages ([0ac3a8c](https://github.com/fbi-js/fbi/commit/0ac3a8c4a93dab6db369d83de0dba40988f86c43))
+
 ### [4.2.4](https://github.com/fbi-js/fbi/compare/v4.2.3...v4.2.4) (2020-12-03)
 
 
