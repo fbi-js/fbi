@@ -3,7 +3,7 @@ import type { Factory } from '../core/factory'
 
 import { join, relative } from 'path'
 import { Command } from '../core/command'
-import { git, isGitUrl, pathResolve, remotePkgVersion } from '../utils'
+import { git, isGitUrl, remotePkgVersion } from '../utils'
 
 export default class CommandAdd extends Command {
   id = 'add'
@@ -11,9 +11,11 @@ export default class CommandAdd extends Command {
   args = '<factories...>'
   description = `add factories from npm module or git url`
   flags = [
-    ['-l, --local', 'Add to local node_modules', false],
+    ['-y, --yes', 'Yes to all questions', false],
+    ['-t, --target-dir <dir>', 'Target dir for factory from npm', ''],
     ['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm']
   ]
+  examples = ['fbi add factory-node', 'fbi add @fbi-js/factory-node -t sub-dir -y']
 
   constructor(public factory: Fbi) {
     super()
@@ -28,8 +30,7 @@ export default class CommandAdd extends Command {
 
     for (const name of names) {
       // 1. try npm module
-      let factory = await this.addFromNpm(name)
-      console.log({ factory })
+      let factory = await this.addFromNpm(name, flags)
 
       if (!factory) {
         // 2. try git repository
@@ -83,7 +84,8 @@ export default class CommandAdd extends Command {
     return true
   }
 
-  private async addFromNpm(name: string, cwd = process.cwd()): Promise<null | Factory> {
+  private async addFromNpm(name: string, flags: any): Promise<null | Factory> {
+    const cwd = join(process.cwd(), flags?.targetDir ?? '')
     const factoryExist = await this.factoryExist(name, 'npm', cwd)
     this.debug('factoryExist:', factoryExist)
 
@@ -93,32 +95,38 @@ export default class CommandAdd extends Command {
         return null
       }
 
-      const relativePath = relative(process.cwd(), cwd)
+      if (!flags.yes) {
+        const relativePath = relative(process.cwd(), cwd)
 
-      const anwser = (await this.prompt({
-        type: 'confirm',
-        name: 'confirm',
-        message: `'${name}' will be installed in the ${
-          relativePath || 'current'
-        } directory, continue?`,
-        initial: true
-      })) as any
+        const anwser = (await this.prompt({
+          type: 'confirm',
+          name: 'confirm',
+          message: `'${name}' will be installed in ${
+            relativePath ? `'${relativePath}'` : 'current'
+          } directory, continue?`,
+          initial: true
+        })) as any
 
-      if (!anwser.confirm) {
-        this.exit()
-        return null
+        if (!anwser.confirm) {
+          this.exit()
+          return null
+        }
       }
-    }
 
+      await this.fs.ensureDir(join(cwd, 'node_modules'))
+    }
     const styledName = this.style.cyan(name)
     const spinner = this.createSpinner(
       `${factoryExist ? 'Updating' : 'Installing'} ${styledName}`
     ).start()
 
     try {
-      await this.exec.command(`npm install --no-package-lock ${name}`, {
+      const cmd = `npm install --no-package-lock ${name}`
+      const opts = {
         cwd
-      })
+      }
+      this.debug({ cmd, opts })
+      await this.exec.command(cmd, opts)
       spinner.succeed(`${factoryExist ? 'Updated' : 'Installed'} ${styledName}`)
       return this.factory.resolveFromLocal(name, cwd)
     } catch (err) {
@@ -196,7 +204,7 @@ export default class CommandAdd extends Command {
       }
 
       spinner.succeed(`${isUpdate ? 'Updated' : 'Added'} ${styledName}`)
-      await this.install(flags || {}, targetDir)
+      await this.installProdDeps(flags || {}, targetDir)
 
       const factory = this.factory.createFactory(targetDir)
       if (!factory) {
@@ -232,23 +240,29 @@ export default class CommandAdd extends Command {
   }
 
   private async factoryExist(name: string, type: 'npm' | 'git', cwd = process.cwd()) {
-    if (type === 'npm') {
-      return pathResolve(name, {
-        paths: [cwd]
-      })
-    } else {
-      const config = this.context.get('config')
-      const targetDir = join(config?.rootDirectory, config?.directoryName, name)
-      const exist = await this.fs.pathExists(targetDir)
-      return exist ? targetDir : ''
-    }
+    const config = this.context.get('config')
+    const targetDir =
+      type === 'npm'
+        ? join(cwd, 'node_modules', name)
+        : join(config?.rootDirectory, config?.directoryName, name)
+    const exist = await this.fs.pathExists(targetDir)
+    return exist ? targetDir : ''
   }
 
-  private async install(flags: Record<string, any>, targetDir: string) {
+  private async installProdDeps(flags: Record<string, any>, targetDir: string) {
     const spinner = this.createSpinner(`Installing dependencies...`).start()
     try {
-      await this.installDeps(targetDir, flags.packageManager, false, {
-        stdout: 'ignore'
+      process.env.NODE_ENV = 'production'
+      const env = this.context.get('env')
+      const pm =
+        flags.packageManager || (env.hasYarn ? 'yarn' : this.context.get('config').packageManager)
+      await this.exec.command(`${pm} install`, {
+        cwd: targetDir,
+        stdout: 'ignore',
+        env: {
+          ...process.env,
+          NODE_ENV: 'production'
+        }
       })
       spinner.succeed(`Installed dependencies`)
     } catch (err) {

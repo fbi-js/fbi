@@ -100,6 +100,7 @@ export class Version extends BaseClass {
 
       await git.hardReset(version.long, { cwd: version.dir })
       await git.checkout(version.long, { cwd: version.dir })
+      await this.installProdDeps(version.dir)
     }
 
     return version
@@ -150,6 +151,23 @@ export class Version extends BaseClass {
         await this.fs.remove(target)
         this.logItem(`Removed inValid version: ${target}`)
       }
+    }
+  }
+
+  private async installProdDeps(targetDir: string) {
+    try {
+      const env = this.context.get('env')
+      const pm = env.hasYarn ? 'yarn' : this.context.get('config').packageManager
+      await this.exec.command(`${pm} install`, {
+        cwd: targetDir,
+        stdout: 'ignore',
+        env: {
+          ...process.env,
+          NODE_ENV: 'production'
+        }
+      })
+    } catch (err) {
+      this.error(err)
     }
   }
 }

@@ -160,7 +160,7 @@ export abstract class BaseClass {
       cmds.push(pm === 'npm' ? '--no-package-lock' : pm === 'yarn' ? '--no-lockfile' : '')
     }
 
-    if (npmVersion && npmVersion[0] >= 7) {
+    if (pm === 'npm' && npmVersion && npmVersion[0] >= 7) {
       cmds.push('--legacy-peer-deps')
     }
 
