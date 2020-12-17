@@ -111,6 +111,8 @@ export abstract class Template extends BaseClass {
         this.error(`Cann't find the path of factory. Please update the factory.`)
         return this.exit()
       }
+
+      this.rootPath = join(factoryDir, this.path)
     }
   }
   protected async gathering(flags: any): Promise<any> {}
