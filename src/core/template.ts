@@ -1,5 +1,6 @@
-import { join } from 'path'
+import { isAbsolute, join } from 'path'
 import { BaseClass } from './base'
+import { Factory } from './factory'
 import { isValidArray, isFunction, isString, ensureArray, isValidObject } from '../utils'
 
 type FileMap = {
@@ -22,6 +23,7 @@ export abstract class Template extends BaseClass {
   [key: string]: any
   public abstract id = ''
   public description = ''
+  // absolute path to template dir
   public path = ''
   public templates: Template[] = []
   protected renderer?: Function
@@ -31,7 +33,7 @@ export abstract class Template extends BaseClass {
   protected _debugPrefix = ''
   private rootPath = ''
 
-  constructor() {
+  constructor(public factory: Factory) {
     super()
   }
 
@@ -40,12 +42,12 @@ export abstract class Template extends BaseClass {
     const template = this.templates.find((x) => x.id === templateId)
     if (!template) {
       this.debug(
-        `Template (${this.id}${this.factory ? `:${this.factory.id}` : ''}):`,
+        `Template (${this.id}${this.factory?.id || ''}):`,
         `template "${templateId}" not found`
       )
     } else {
       this.debug(
-        `Template (${this.id}${this.factory ? `:${this.factory.id}` : ''}):`,
+        `Template (${this.id}${this.factory?.id || ''}):`,
         `found template "${templateId}"`
       )
     }
@@ -100,12 +102,16 @@ export abstract class Template extends BaseClass {
       this.data = data
     }
 
-    if (!this.data.factory || !this.data?.factory?.path) {
-      this.error(`need path of factory`)
-      return this.exit()
-    }
+    if (isAbsolute(this.path)) {
+      this.rootPath = this.path
+    } else {
+      const factoryDir = this.data?.factory?.path || this.factory.baseDir
 
-    this.rootPath = join(this.data.factory.path, this.path)
+      if (!factoryDir) {
+        this.error(`Cann't find the path of factory. Please update the factory.`)
+        return this.exit()
+      }
+    }
   }
   protected async gathering(flags: any): Promise<any> {}
   private async afterGathering() {

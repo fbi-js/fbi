@@ -28,66 +28,80 @@ export default class CommandCreate extends Command {
     })
     let templates
     let useSubTemplate = false
+    let targetTemplate
+    let subDirectory
+    let targetDir
 
     const cwd = process.cwd()
-    // if is fbi project
     const usingFactory = this.context.get('config.factory')
-    const { subDirectory, targetDir } = await this.getTargetDir(projectName)
+    if (usingFactory) {
+      const factory = this.factory.resolveFactory(usingFactory.id)
+      const template = factory?.resolveTemplate(usingFactory.template)
+      const subTemplates = template?.templates
 
-    if (factoryOrTemplateName) {
-      // search factory by name
-      const foundFactory = this.factory.resolveFactory(factoryOrTemplateName)
-      if (foundFactory) {
-        const factoryPath = foundFactory.options?.rootDir
-          ? relative(cwd, foundFactory.options.rootDir)
-          : ''
-        this.log(
-          `Using ${this.style.bold`${foundFactory.id}@${foundFactory._version}`}${
-            factoryPath ? ' from ' + factoryPath : ''
-          }...`
-        )
-        templates = foundFactory.templates
-      }
+      if (factoryOrTemplateName) {
+        const hitSubTemplate = subTemplates?.find((x) => x.id === factoryOrTemplateName)
 
-      // search all templates by name
-      if (!isValidArray(templates)) {
-        templates = this.factory.resolveTemplates(factoryOrTemplateName)
-      }
+        if (hitSubTemplate) {
+          targetTemplate = hitSubTemplate
+          useSubTemplate = true
+        }
+      } else if (isValidArray(subTemplates)) {
+        const { templateType } = (await this.prompt({
+          type: 'select',
+          name: 'templateType',
+          hint: 'Use arrow-keys, <return> to submit',
+          message: `Pick an action:`,
+          choices: ['Use sub templates', 'Use other templates', 'Cancel']
+        })) as any
 
-      if (!isValidArray(templates)) {
-        // not found, add factory
-        const factory = await this.addFromRemote(factoryOrTemplateName, {
-          ...flags,
-          targetDir,
-          yes: true
-        })
-
-        if (factory && factory.templates) {
-          templates = factory.templates
-        } else {
-          this.error(`No package named '${factoryOrTemplateName}' found in npmjs.com`)
-          this.error(`No repository named '${factoryOrTemplateName}' found in github.com`)
+        if (templateType === 'Cancel') {
+          this.exit()
+        } else if (templateType === 'Use sub templates') {
+          templates = subTemplates
+          useSubTemplate = true
         }
       }
-    } else {
-      if (usingFactory) {
-        const factory = this.factory.resolveFactory(usingFactory.id)
-        const template = factory?.resolveTemplate(usingFactory.template)
-        templates = template?.templates || []
-        if (isValidArray(templates)) {
-          const { templateType } = (await this.prompt({
-            type: 'select',
-            name: 'templateType',
-            hint: 'Use arrow-keys, <return> to submit',
-            message: `Pick an action:`,
-            choices: ['Use sub templates', 'Use other templates', 'Cancel']
-          })) as any
-          useSubTemplate = templateType === 'Use sub templates'
-        }
-      }
+    }
 
-      if (!useSubTemplate) {
-        this.factory.createAllFactories()
+    if (!targetTemplate && !isValidArray(templates)) {
+      if (factoryOrTemplateName) {
+        // search factory by name
+        const foundFactory = this.factory.resolveFactory(factoryOrTemplateName)
+        if (foundFactory) {
+          const factoryPath = foundFactory.baseDir ? relative(cwd, foundFactory.baseDir) : ''
+          this.log(
+            `Using ${this.style.bold`${foundFactory.id}${
+              foundFactory._version ? '@' + foundFactory._version : ''
+            }`}${factoryPath ? ' from ' + factoryPath : ''}...`
+          )
+          templates = foundFactory.templates
+        }
+
+        // search all templates by name
+        if (!isValidArray(templates)) {
+          templates = this.factory.resolveTemplates(factoryOrTemplateName)
+        }
+
+        if (!isValidArray(templates)) {
+          // not found, add factory
+          const target = await this.getTargetDir(projectName)
+          subDirectory = target.subDirectory
+          targetDir = target.targetDir
+          const factory = await this.addFromRemote(factoryOrTemplateName, {
+            ...flags,
+            targetDir,
+            yes: true
+          })
+
+          if (factory && factory.templates) {
+            templates = factory.templates
+          } else {
+            this.error(`No package named '${factoryOrTemplateName}' found in npmjs.com`)
+            this.error(`No repository named '${factoryOrTemplateName}' found in github.com`)
+          }
+        }
+      } else {
         templates = this.factory.resolveTemplates()
       }
     }
@@ -96,11 +110,24 @@ export default class CommandCreate extends Command {
       this.error('No templates available').exit()
     }
 
-    const template = await this.selectTempate(templates as [])
+    if (!targetTemplate) {
+      targetTemplate = await this.selectTempate(templates as [])
+    }
 
-    if (template) {
+    if (targetTemplate) {
+      if (!targetDir) {
+        if (useSubTemplate) {
+          targetDir = cwd
+          subDirectory = ''
+        } else {
+          const target = await this.getTargetDir(projectName)
+          subDirectory = target.subDirectory
+          targetDir = target.targetDir
+        }
+      }
+
       await this.createProject({
-        template,
+        template: targetTemplate,
         subDirectory,
         targetDir,
         flags,
@@ -134,7 +161,12 @@ export default class CommandCreate extends Command {
       {
         factory: {
           id: factory.id,
-          path: storeInfo?.version?.latest?.dir || factory.options.rootDir,
+          path:
+            storeInfo?.version?.latest?.dir ||
+            storeInfo?.path ||
+            factory.baseDir ||
+            factory.options?.rootDir ||
+            join(process.cwd(), subDirectory || '', 'node_modules', factory.id),
           version: storeInfo?.version?.latest?.short ?? '',
           template: template.id
         },
@@ -163,7 +195,7 @@ export default class CommandCreate extends Command {
             name: info.name,
             path: info.path,
             factory: factory.id,
-            version: factory.version?.latest?.short ?? '',
+            version: info.factory?.version,
             template: template.id,
             features: info.features,
             createdAt: Date.now()

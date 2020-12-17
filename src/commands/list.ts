@@ -96,15 +96,15 @@ export default class CommandList extends Command {
 
   private async showDetail(factory: Factory, current: any, idx?: number) {
     const showIdx = isNumber(idx)
-    const isCurrent = current && factory.id === current.id
+    const isCurrent = factory.id === current?.id
     const index = showIdx ? this.style.bold(symbols.numbers[idx as number]) : ' '
     const title = this.style.bold(factory.id)
     const version = isCurrent && current.version ? this.style.italic(`@${current.version}`) : ''
     let from =
-      factory.options?.type === 'git'
-        ? this.store.get(factory.id)?.from
-        : `https://www.npmjs.com/package/${factory.id}`
-    const local = factory.options?.rootDir
+      factory.type === 'npm'
+        ? `https://www.npmjs.com/package/${factory.id}`
+        : this.store.get(factory.id)?.from
+    const local = factory.type === 'local' ? '' : factory.baseDir
 
     let txt = `\n${index} ${title}${version}
   ${this.style.dim`From: ${from}`}`
@@ -141,10 +141,9 @@ export default class CommandList extends Command {
       const title = '\n\n  Templates:'
       txt += title
       for (const t of factory.templates) {
-        txt += this.colWrap(
-          this.lines(`- ${t.id}`, this.padWidth - 1, 2, true, true),
-          this.lines(t.description)
-        )
+        const name = `  - ${t.id}`.padEnd(this.padWidth + 2, ' ')
+        const nameStr = current?.template === t.id ? this.style.green(name) : name
+        txt += this.colWrap([nameStr], this.lines(t.description))
 
         if (isValidArray(t.templates)) {
           for (const subt of t.templates) {

@@ -7,7 +7,8 @@ import {
   pathResolve,
   getMatchVersion,
   getPathByVersion,
-  flatten
+  flatten,
+  pkgDir
 } from './utils'
 
 import { Factory, FactoryInfo, FactoryType } from './core/factory'
@@ -48,39 +49,42 @@ export class Fbi extends Factory {
   }
 
   public createFactory(pathOrId: string, type: FactoryType = 'git'): Factory | null {
+    this.debug(`createFactory ${pathOrId} ${type}`)
     assert(isString(pathOrId), `factory path should be string, recived '${pathOrId}'`)
-    const rootDir = isAbsolute(pathOrId) ? pathOrId : join(process.cwd(), pathOrId)
-    const filepath = pathResolve(rootDir)
-    if (!filepath) {
+
+    const targetDir = join(isAbsolute(pathOrId) ? '' : process.cwd(), pathOrId)
+    const mainFilePath = pathResolve(targetDir)
+    if (!mainFilePath) {
+      this.error(`Fbi:`, `can not create factory from`, targetDir)
       return null
     }
 
     let fn
     try {
-      fn = require(filepath)
+      fn = require(mainFilePath)
     } catch (err) {
       this.error(err)
       return null
     }
-    fn = fn.default || fn
+
+    fn = fn?.default || fn
     assert(isClass(fn), `factory should be a class, recived '${typeof fn}'`)
 
-    const factoryInstance: Factory = new fn({ rootDir, type })
-    if (!factoryInstance) {
-      this.error(`Fbi:`, `can not create factory`, rootDir)
+    const factory: Factory = new fn()
+    if (!factory) {
+      this.error(`Fbi:`, `can not create factory from`, targetDir)
       return null
     }
 
-    if (this.factories.find((x) => factoryInstance && x.id === factoryInstance.id)) {
-      this.debug(`Fbi:`, `factory "${factoryInstance.id}" already exist`)
-    } else {
-      if (typeof factoryInstance.init === 'function') {
-        factoryInstance.init()
+    if (!this.resolveFromCache(factory.id)) {
+      if (typeof factory.init === 'function') {
+        factory.init(pkgDir.sync(mainFilePath), type)
       }
 
-      this.factories.unshift(factoryInstance)
+      this.factories.unshift(factory)
     }
-    return factoryInstance
+
+    return factory
   }
 
   public createAllFactories() {
@@ -90,15 +94,14 @@ export class Fbi extends Factory {
     }
 
     // create from store
-    const factories = this.store.get()
+    const factories: Record<string, FactoryInfo> = this.store.get()
     if (factories) {
-      for (const [key, val] of Object.entries(factories)) {
-        const f: any = val
-        if (!f || !f.path || !pathResolve(f.path)) {
-          this.debug(`factory "${key}" can't resolve from ${f.path}. delete from store`)
-          this.store.del(key)
+      for (const [id, info] of Object.entries(factories)) {
+        if (!info?.path || !pathResolve(info.path)) {
+          this.debug(`factory "${id}" can't resolve from ${info.path}. delete from store`)
+          this.store.del(id)
         } else {
-          this.createFactory(f.path, 'git')
+          this.createFactory(info.path, info.type)
         }
       }
     }
@@ -114,7 +117,7 @@ export class Fbi extends Factory {
 
   public resolveFactory(targetId: string, targetVersion?: string, cwd = process.cwd()) {
     this.debug('Fbi<resolveFactory>:', targetId, targetVersion)
-    let found = this.resolveFromCache(targetId, targetVersion)
+    let found = this.resolveFromCache(targetId)
     if (found) {
       return found
     }
@@ -129,12 +132,14 @@ export class Fbi extends Factory {
 
   public resolveGlobalFactories() {
     // resolve global factories
-    const globalFactories: any[] = []
-    const factories = this.store.get()
-    for (const [_, value] of Object.entries(factories)) {
-      const info: any = value
+    const globalFactories: Factory[] = []
+    const factories: FactoryInfo[] = this.store.get()
+    for (const [_, info] of Object.entries(factories)) {
       if (info?.global) {
-        globalFactories.push(this.createFactory(info?.path, 'git'))
+        const factory = this.createFactory(info.path, info.type)
+        if (factory) {
+          globalFactories.push(factory)
+        }
         this.debug('Fbi<resolveGlobalFactories>:', info?.id)
       }
     }
@@ -162,7 +167,7 @@ export class Fbi extends Factory {
     return targetId ? allTemplates.filter((t: Template) => t.id === targetId) : allTemplates
   }
 
-  public resolveFromCache(targetId: string, targetVersion?: string) {
+  public resolveFromCache(targetId: string) {
     const factory = this.factories.find((f) => f?.id === targetId)
     if (!factory) {
       return null
@@ -192,7 +197,7 @@ export class Fbi extends Factory {
         'local'
       )
     }
-    return this.createFactory(factoryInfo.path, 'git')
+    return this.createFactory(factoryInfo.path, factoryInfo.type)
   }
 
   public resolveFromLocal(targetId: string, cwd = process.cwd()) {

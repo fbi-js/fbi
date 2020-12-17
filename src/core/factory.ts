@@ -4,7 +4,6 @@ import { Command } from './command'
 import { Template } from './template'
 import { Plugin } from './plugin'
 import { Version } from './version'
-import { pathResolve, pkgDir } from '../utils'
 
 type VersionInfo = {
   baseDir: string
@@ -16,11 +15,12 @@ export type FactoryType = 'git' | 'npm' | 'local'
 
 export type FactoryInfo = {
   id: string
-  type: string
+  type: FactoryType
   from: string
   path: string
   updatedAt: number
   version?: VersionInfo
+  global?: boolean
 }
 
 export type FactoryOptions = {
@@ -38,36 +38,38 @@ export abstract class Factory extends BaseClass {
   public version: Version | null = null
   public _version = ''
   public isGlobal = false
+  public baseDir = ''
+  public type: FactoryType = 'npm'
 
   constructor(public options?: FactoryOptions) {
     super()
-    this.options = {
-      ...this.options,
-      type: this.options?.type || 'git'
+
+    if (options) {
+      if (options.baseDir) {
+        this.baseDir = options.baseDir
+      }
+      if (options.type) {
+        this.type = options.type
+      }
     }
   }
 
-  public init() {
-    if (!this.options) {
+  public init(baseDir?: string, type?: FactoryType) {
+    this.baseDir = this.baseDir || baseDir || ''
+    this.type = this.type || type || 'npm'
+
+    if (!this.baseDir) {
       return
     }
 
-    this.options.rootDir = this.options.rootDir ? pkgDir.sync(this.options.rootDir) : ''
-
-    if (!this.options.rootDir) {
-      return
+    if (this.type === 'git') {
+      this.version = new Version(this.baseDir)
     }
 
-    if (this.options.type === 'git') {
-      this.version = new Version(this.options.rootDir)
-    }
-
-    // get version number
     try {
-      const pkgPath = pathResolve(join(this.options.rootDir, 'package.json'))
-      const { version } = require(pkgPath)
-      if (version) {
-        this._version = version
+      const pkg = require(join(this.baseDir, 'package.json'))
+      if (pkg?.version) {
+        this._version = pkg.version
       }
     } catch (err) {}
   }
