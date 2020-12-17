@@ -106,11 +106,13 @@ export default class CommandList extends Command {
         : `https://www.npmjs.com/package/${factory.id}`
     const local = factory.options?.rootDir
 
-    let txt = `\n${index} ${title}${version}`
-    txt +=`
-  ${this.style.dim`Remote path: ${from}`}
-  ${this.style.dim`Local path:  ${local}`}
-    `
+    let txt = `\n${index} ${title}${version}
+  ${this.style.dim`From: ${from}`}`
+
+    if (local) {
+      txt += `
+  ${this.style.dim`Local: ${local}`}`
+    }
 
     if (factory.description) {
       txt += '\n\n  ' + factory.description
