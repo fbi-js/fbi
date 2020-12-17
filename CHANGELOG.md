@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.3.2](https://github.com/fbi-js/fbi/compare/v4.3.1...v4.3.2) (2020-12-17)
+
+
+### Bug Fixes
+
+* **template:** rootPath is empty when path is relative ([6a69b7e](https://github.com/fbi-js/fbi/commit/6a69b7e35244f4b035ff1d8685be429a5d8cbd62))
+
 ### [4.3.1](https://github.com/fbi-js/fbi/compare/v4.3.0...v4.3.1) (2020-12-17)
 
 
