@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.3.1](https://github.com/fbi-js/fbi/compare/v4.3.0...v4.3.1) (2020-12-17)
+
+
+### Bug Fixes
+
+* resolve baseDir in factory init method; factory extend bug ([29245e3](https://github.com/fbi-js/fbi/commit/29245e38b2c632c3caa910ce097fc913255cfd90))
+* **command:** hide local path on 'list' when factory is local link ([f81c8f0](https://github.com/fbi-js/fbi/commit/f81c8f0c9e6be539ac2bb24bffcfededf2a97a98))
+
 ## [4.3.0](https://github.com/fbi-js/fbi/compare/v4.2.4...v4.3.0) (2020-12-16)
 
 
