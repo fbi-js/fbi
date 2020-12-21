@@ -56,7 +56,7 @@ export abstract class Factory extends BaseClass {
 
   public init(baseDir?: string, type?: FactoryType) {
     this.baseDir = this.baseDir || baseDir || ''
-    this.type = this.type || type || 'npm'
+    this.type = type ?? this.type
 
     if (!this.baseDir) {
       return
