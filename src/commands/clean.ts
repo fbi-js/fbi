@@ -6,24 +6,29 @@ export default class CommandClean extends Command {
   id = 'clean'
   alias = ''
   args = ''
-  description = `clean stale factories and projects`
+  description = 'clean stale factories and projects'
   flags = []
   examples = ['fbi clean']
 
-  constructor(public factory: Fbi) {
+  constructor (public factory: Fbi) {
     super()
   }
 
-  public async run(flags: any) {
-    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
-      flags
-    })
+  public async run (flags: any) {
+    this.debug(
+      `Running command "${this.id}" from factory "${this.factory.id}" with options:`,
+      {
+        flags
+      }
+    )
     await this.removeUnavailableFactories()
     await this.removeUnavailableProjects()
   }
 
-  private async removeUnavailableFactories() {
-    const spinner = this.createSpinner(`collecting non-available factories...`).start()
+  private async removeUnavailableFactories () {
+    const spinner = this.createSpinner(
+      'collecting non-available factories...'
+    ).start()
     const factories = this.store.get()
     const nonexist = (
       await Promise.all(
@@ -39,7 +44,7 @@ export default class CommandClean extends Command {
     ).filter(Boolean)
 
     if (nonexist.length < 1) {
-      spinner.succeed(`all factories are available`)
+      spinner.succeed('all factories are available')
       return
     }
 
@@ -55,8 +60,10 @@ export default class CommandClean extends Command {
     await this.deleteAction(selected, 'factories')
   }
 
-  private async removeUnavailableProjects() {
-    const spinner = this.createSpinner(`collecting non-available projects...`).start()
+  private async removeUnavailableProjects () {
+    const spinner = this.createSpinner(
+      'collecting non-available projects...'
+    ).start()
     const items = this.projectStore.get()
     const nonexist = (
       await Promise.all(
@@ -74,7 +81,7 @@ export default class CommandClean extends Command {
     ).filter(Boolean)
 
     if (nonexist.length < 1) {
-      spinner.succeed(`all projects are available`)
+      spinner.succeed('all projects are available')
       return
     }
 
@@ -90,35 +97,38 @@ export default class CommandClean extends Command {
     await this.deleteAction(selected, 'projects')
   }
 
-  private async selectDeletion(arr: Record<string, any>[]) {
+  private async selectDeletion (arr: Record<string, any>[]) {
     const { selected } = (await this.prompt({
       type: 'multiselect',
       name: 'selected',
-      message: `Select items for deletion from store`,
+      message: 'Select items for deletion from store',
       hint: '(Use <space> to select, <return> to submit)',
       choices: arr.map((x: any) => ({
         name: x.id,
         value: x.path,
         hint: x.path
       })),
-      result(names: any) {
-        return this.map(names)
+      result (names: any) {
+        return (this as any).map(names)
       }
     })) as any
 
     return isValidObject(selected) ? selected : null
   }
 
-  private async deleteAction(selected: Record<string, string>, name: string) {
+  private async deleteAction (selected: Record<string, string>, name: string) {
     const spinner = this.createSpinner(`Cleaning ${name}...`).start()
     await Promise.all(
       Object[name === 'projects' ? 'values' : 'keys'](selected).map(
-        async (key: any) => await this[name === 'projects' ? 'projectStore' : 'store'].del(key)
+        async (key: any) =>
+          await this[name === 'projects' ? 'projectStore' : 'store'].del(key)
       )
     )
       .then((ret: any[]) => {
         if (ret.length > 0) {
-          spinner.succeed(`Removed non-available ${name}: ${Object.keys(selected).join(', ')}`)
+          spinner.succeed(
+            `Removed non-available ${name}: ${Object.keys(selected).join(', ')}`
+          )
         } else {
           spinner.stop()
         }

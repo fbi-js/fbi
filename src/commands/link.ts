@@ -8,19 +8,24 @@ export default class CommandLink extends Command {
   alias = ''
   args = '[factories...]'
   flags = []
-  description = `link local factories to the store`
+  description = 'link local factories to the store'
   examples = ['fbi link', 'fbi link local-folder']
 
-  constructor(public factory: Fbi) {
+  constructor (public factory: Fbi) {
     super()
   }
 
-  async run(factories: any, flags: any) {
-    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
-      factories,
-      flags
-    })
-    const ids = (Array.isArray(factories) && factories.length > 0 && factories) || ['.']
+  async run (factories: any, flags: any) {
+    this.debug(
+      `Running command "${this.id}" from factory "${this.factory.id}" with options:`,
+      {
+        factories,
+        flags
+      }
+    )
+    const ids = (Array.isArray(factories) &&
+      factories.length > 0 &&
+      factories) || ['.']
 
     for (const id of ids) {
       // base info
@@ -38,14 +43,20 @@ export default class CommandLink extends Command {
           }
         : null
       if (!baseInfo) {
-        this.error(`Unable to load ${this.style.yellow(id)}. Please check if the resource exists`)
+        this.error(
+          `Unable to load ${this.style.yellow(
+            id
+          )}. Please check if the resource exists`
+        )
         continue
       }
 
       this.debug(JSON.stringify({ baseInfo }))
 
       const linkSpinner = this.createSpinner(
-        `Linking ${this.style.yellow.bold(baseInfo.id)} from ${this.style.blue(baseInfo.from)}...`
+        `Linking ${this.style.yellow.bold(baseInfo.id)} from ${this.style.blue(
+          baseInfo.from
+        )}...`
       ).start()
 
       // save in store
@@ -58,7 +69,9 @@ export default class CommandLink extends Command {
 
       this.debug('Save to store, done')
 
-      linkSpinner.succeed(`${this.style.yellow(baseInfo.id)} successfully linked`)
+      linkSpinner.succeed(
+        `${this.style.yellow(baseInfo.id)} successfully linked`
+      )
     }
   }
 }

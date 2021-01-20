@@ -1,6 +1,15 @@
-import { isWindows, isMacos, isLinux, hasGit, hasNpm, hasYarn, hasPnpm, npmVersion } from '../utils'
+import {
+  isWindows,
+  isMacos,
+  isLinux,
+  hasGit,
+  hasNpm,
+  hasYarn,
+  hasPnpm,
+  npmVersion
+} from '../utils'
 
-export function getEnv() {
+export function getEnv () {
   return {
     isWindows,
     isMacos,
@@ -9,8 +18,12 @@ export function getEnv() {
     hasNpm: hasNpm(),
     hasYarn: hasYarn(),
     hasPnpm: hasPnpm(),
-    usingNvm: process.env.NVM_DIR && process.execPath.includes(process.env.NVM_DIR),
-    home: (process.platform === 'win32' && process.env.USERPROFILE) || process.env.HOME || '/',
+    usingNvm:
+      process.env.NVM_DIR && process.execPath.includes(process.env.NVM_DIR),
+    home:
+      (process.platform === 'win32' && process.env.USERPROFILE) ||
+      process.env.HOME ||
+      '/',
     tmp: process.env.TMPDIR,
     pwd: process.env.PWD,
     oldPwd: process.env.OLDPWD,
@@ -24,6 +37,6 @@ export function getEnv() {
   }
 }
 
-export function changeTitle(title: string) {
+export function changeTitle (title: string) {
   process.title = title
 }

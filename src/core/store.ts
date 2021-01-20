@@ -14,7 +14,7 @@ import {
 export class Store {
   private data: Record<string, any> = {}
 
-  constructor(readonly filepath?: string) {
+  constructor (readonly filepath?: string) {
     if (filepath) {
       assert(
         isAbsolute(filepath),
@@ -28,7 +28,7 @@ export class Store {
     }
   }
 
-  private init() {
+  private init () {
     if (this.filepath) {
       const oldData = fs.readJsonSync(this.filepath, { throws: false })
       if (oldData) {
@@ -39,7 +39,7 @@ export class Store {
     }
   }
 
-  get(key?: string, where?: Record<string | number, any>) {
+  get (key?: string, where?: Record<string | number, any>) {
     if (!key) {
       return this.data
     }
@@ -47,31 +47,39 @@ export class Store {
     const data = getObjectValue(this.data, key)
     if (isArray(data) && isValidObject(where)) {
       return data.filter((item: Record<string | number, any>) =>
-        Object.entries(where as any).some(([k, v]: any) => item[k] && item[k] === v)
+        Object.entries(where as any).some(
+          ([k, v]: any) => item[k] && item[k] === v
+        )
       )
     }
 
     return data
   }
 
-  find(where: Record<string | number, any>, key?: string, order?: Record<string, any>) {
+  find (
+    where: Record<string | number, any>,
+    key?: string,
+    order?: Record<string, any>
+  ) {
     const data = key ? getObjectValue(this.data, key) : this.data
 
     const result: Record<string, any>[] = Object.values(
       data
     ).filter((item: Record<string | number, any>) =>
-      Object.entries(where as any).some(([k, v]: any) => item[k] && item[k] === v)
+      Object.entries(where as any).some(
+        ([k, v]: any) => item[k] && item[k] === v
+      )
     )
 
     return order ? orderBy(result, order.props, order.orders) : result
   }
 
-  set(key: string, value: any) {
+  set (key: string, value: any) {
     setObjectValue(this.data, key, value)
     return this.sync()
   }
 
-  merge(obj: string | any, val?: any) {
+  merge (obj: string | any, val?: any) {
     if (isObject(obj)) {
       this.data = merge(this.data, obj as any)
     } else if (typeof obj === 'string' && val) {
@@ -79,7 +87,8 @@ export class Store {
       setObjectValue(
         this.data,
         obj,
-        (isArray(oldValue) && isArray(val)) || (isObject(oldValue) && isObject(val))
+        (isArray(oldValue) && isArray(val)) ||
+          (isObject(oldValue) && isObject(val))
           ? merge(oldValue, val)
           : val
       )
@@ -91,12 +100,14 @@ export class Store {
   // this.data: {a:{ arr: [{x:1, y:2}, {x:2, y:3}, {x:3, y:1}]}}
   // del('a.arr', {x:1})
   // del('a.arr', {x:1, y:2})
-  del(key: string, where?: Record<string | number, any>) {
+  del (key: string, where?: Record<string | number, any>) {
     if (isValidObject(where)) {
       const arr = getObjectValue(this.data, key)
       if (isArray(arr)) {
         const newArr = arr.filter((item: Record<string | number, any>) =>
-          Object.entries(where as any).some(([k, v]: any) => item[k] === undefined || item[k] !== v)
+          Object.entries(where as any).some(
+            ([k, v]: any) => item[k] === undefined || item[k] !== v
+          )
         )
         setObjectValue(this.data, key, newArr)
       }
@@ -107,12 +118,12 @@ export class Store {
     return this.sync()
   }
 
-  clear() {
+  clear () {
     this.data = {}
     return this.sync()
   }
 
-  sync() {
+  sync () {
     // clean up
     for (const [key, val] of Object.entries(this.data)) {
       if (val === null || val === undefined) {

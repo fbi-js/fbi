@@ -2,9 +2,10 @@ import { Fbi } from '../fbi'
 import { Command } from '../core/command'
 import { Factory } from '../core/factory'
 import { Template } from '../core/template'
-import { isValidArray, flatten, isFunction, isNumber, symbols, isGitUrl } from '../utils'
+import { isValidArray, flatten, isFunction, isNumber, symbols } from '../utils'
 
-const screenColumns = process.stdout.columns > 120 ? 120 : process.stdout.columns || 80
+const screenColumns =
+  process.stdout.columns > 120 ? 120 : process.stdout.columns || 80
 const minPadWdith = 16
 
 export default class CommandList extends Command {
@@ -15,22 +16,26 @@ export default class CommandList extends Command {
     ['-a, --all', 'show all factories'],
     ['-p, --projects', 'show projects']
   ]
-  description = `list factories and commands info`
+
+  description = 'list factories and commands info'
   examples = ['fbi ls', 'fbi ls @fbi-js/factory-node -p']
 
   private padWidth = 0
   private showProjects = false
   private showVersions = true
 
-  constructor(public factory: Fbi) {
+  constructor (public factory: Fbi) {
     super()
   }
 
-  async run(targetFactories: any, flags: any) {
-    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
-      targetFactories,
-      flags
-    })
+  async run (targetFactories: any, flags: any) {
+    this.debug(
+      `Running command "${this.id}" from factory "${this.factory.id}" with options:`,
+      {
+        targetFactories,
+        flags
+      }
+    )
     this.showProjects = flags.projects
 
     const hasTarget = isValidArray(targetFactories)
@@ -48,9 +53,9 @@ export default class CommandList extends Command {
       } else {
         // show using & global
         factories = this.factory.resolveGlobalFactories()
-        factories = ([this.factory.resolveFactory(current.id, current.version)].filter(
-          Boolean
-        ) as Factory[]).concat(factories)
+        factories = ([
+          this.factory.resolveFactory(current.id, current.version)
+        ].filter(Boolean) as Factory[]).concat(factories)
       }
     }
 
@@ -72,35 +77,60 @@ export default class CommandList extends Command {
 
     const showIndex = factories.length > 1
     for (const [idx, factory] of factories.entries()) {
-      this.log(await this.showDetail(factory, current, showIndex ? idx : undefined))
+      this.log(
+        await this.showDetail(factory, current, showIndex ? idx : undefined)
+      )
     }
 
     if (factories.length < 1) {
       // no factories
       this.log('No factories available')
-      this.log(`Check official factories here: http://github.com/fbi-js`)
-      this.log(`Use ${this.style.cyan('fbi add [factories...]')} to add remote factories`)
-      this.log(`Use ${this.style.cyan('fbi link [factories...]')} to link local factories`)
+      this.log('Check official factories here: http://github.com/fbi-js')
+      this.log(
+        `Use ${this.style.cyan(
+          'fbi add [factories...]'
+        )} to add remote factories`
+      )
+      this.log(
+        `Use ${this.style.cyan(
+          'fbi link [factories...]'
+        )} to link local factories`
+      )
     } else {
       this.log()
       if (showAll) {
         this.log(`Use ${this.style.cyan('fbi create')} to create a project`)
-        this.log(`Use ${this.style.cyan('fbi add [factories...]')} to add remote factories`)
-        this.log(`Use ${this.style.cyan('fbi link [factories...]')} to link local factories`)
+        this.log(
+          `Use ${this.style.cyan(
+            'fbi add [factories...]'
+          )} to add remote factories`
+        )
+        this.log(
+          `Use ${this.style.cyan(
+            'fbi link [factories...]'
+          )} to link local factories`
+        )
       } else if (current) {
-        this.log(`  Use ${this.style.cyan('fbi <command>')} to execute a command`)
+        this.log(
+          `  Use ${this.style.cyan('fbi <command>')} to execute a command`
+        )
         this.log(`  Use ${this.style.cyan('fbi create')} to use a sub template`)
       }
     }
   }
 
-  private async showDetail(factory: Factory, current: any, idx?: number) {
+  private async showDetail (factory: Factory, current: any, idx?: number) {
     const showIdx = isNumber(idx)
     const isCurrent = factory.id === current?.id
-    const index = showIdx ? this.style.bold(symbols.numbers[idx as number]) : ' '
+    const index = showIdx
+      ? this.style.bold(symbols.numbers[idx as number])
+      : ' '
     const title = this.style.bold(factory.id)
-    const version = isCurrent && current.version ? this.style.italic(`@${current.version}`) : ''
-    let from =
+    const version =
+      isCurrent && current.version
+        ? this.style.italic(`@${current.version}`)
+        : ''
+    const from =
       factory.type === 'npm'
         ? `https://www.npmjs.com/package/${factory.id}`
         : this.store.get(factory.id)?.from
@@ -124,16 +154,23 @@ export default class CommandList extends Command {
       const title = '\n  Commands:'
       txt += title
       for (const cmd of factory.commands) {
-        const disabled = isFunction(cmd.disable) ? await cmd.disable() : cmd.disable
+        const disabled = isFunction(cmd.disable)
+          ? await cmd.disable()
+          : cmd.disable
         const name = `${cmd.alias ? cmd.alias + ', ' : ''}${cmd.id}${
           cmd.args ? ` ${cmd.args}` : ''
         }${disabled ? ' (disabled)' : ''}`.padEnd(this.padWidth, ' ')
         const nameStr =
-          '  ' + (disabled ? this.style.dim(name) : isCurrent ? this.style.green(name) : name)
+          '  ' +
+          (disabled
+            ? this.style.dim(name)
+            : isCurrent
+              ? this.style.green(name)
+              : name)
         txt += this.colWrap([nameStr], this.lines(cmd.description))
       }
     } else {
-      txt += this.style.dim(`\n  No commands available`)
+      txt += this.style.dim('\n  No commands available')
     }
 
     // templates list
@@ -142,7 +179,8 @@ export default class CommandList extends Command {
       txt += title
       for (const t of factory.templates) {
         const name = `  - ${t.id}`.padEnd(this.padWidth + 2, ' ')
-        const nameStr = current?.template === t.id ? this.style.green(name) : name
+        const nameStr =
+          current?.template === t.id ? this.style.green(name) : name
         txt += this.colWrap([nameStr], this.lines(t.description))
 
         if (isValidArray(t.templates)) {
@@ -155,7 +193,7 @@ export default class CommandList extends Command {
         }
       }
     } else {
-      txt += this.style.dim(`\n  No templates available`)
+      txt += this.style.dim('\n  No templates available')
     }
 
     // global plugin === command
@@ -171,7 +209,9 @@ export default class CommandList extends Command {
       const storeInfo = this.store.get(factory.id)
       if (storeInfo?.version?.versions) {
         txt += '\n\n  Versions:'
-        txt += '\n  ' + storeInfo.version.versions.map((v: any) => v.short).join(', ')
+        txt +=
+          '\n  ' +
+          storeInfo.version.versions.map((v: any) => v.short).join(', ')
       }
     }
 
@@ -204,7 +244,7 @@ export default class CommandList extends Command {
     return txt
   }
 
-  private lines(
+  private lines (
     str: string,
     width: number = screenColumns - this.padWidth,
     indent = 0,
@@ -217,7 +257,12 @@ export default class CommandList extends Command {
 
     const regex = wordBreak
       ? new RegExp(`.{${width}}`, 'g')
-      : new RegExp('.{1,' + (width - 1) + '}([\\s\u200B]|$)|[^\\s\u200B]+?([\\s\u200B]|$)', 'g')
+      : new RegExp(
+        '.{1,' +
+            (width - 1) +
+            '}([\\s\u200B]|$)|[^\\s\u200B]+?([\\s\u200B]|$)',
+        'g'
+      )
     lines = str.match(regex) || []
 
     if (wordBreak) {
@@ -225,11 +270,12 @@ export default class CommandList extends Command {
     }
 
     return (lines as string[]).map(
-      (l: string) => indentStr + (minWidth ? l.padEnd(width + 1, ' ') : l.trimRight())
+      (l: string) =>
+        indentStr + (minWidth ? l.padEnd(width + 1, ' ') : l.trimRight())
     )
   }
 
-  private colWrap(left: string[], right: string[], padWidth = 4) {
+  private colWrap (left: string[], right: string[], padWidth = 4) {
     let txt = ''
     const leftMaxWidth = Math.max(...left.map((s: string) => s.length))
     const pad = leftMaxWidth + padWidth

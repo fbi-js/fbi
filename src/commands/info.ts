@@ -7,18 +7,21 @@ export default class CommandInfo extends Command {
   alias = ''
   args = ''
   flags = [['-e, --edit', 'Edit config']]
-  description = `get environment info, get/set context config`
+  description = 'get environment info, get/set context config'
   examples = ['fbi info', 'fbi info -e']
 
-  constructor(public factory: Fbi) {
+  constructor (public factory: Fbi) {
     super()
   }
 
-  async run(flags: any) {
+  async run (flags: any) {
     this.clear()
-    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
-      flags
-    })
+    this.debug(
+      `Running command "${this.id}" from factory "${this.factory.id}" with options:`,
+      {
+        flags
+      }
+    )
 
     const config = this.loadConfig()
     let globalConfig = {}

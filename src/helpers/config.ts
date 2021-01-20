@@ -12,14 +12,19 @@ export const nonEditableKeys = [
   '_factory'
 ]
 
-const home = (process.platform === 'win32' && process.env.USERPROFILE) || process.env.HOME || '/'
+const home =
+  (process.platform === 'win32' && process.env.USERPROFILE) ||
+  process.env.HOME ||
+  '/'
 
 export const defaultConfigs = {
   rootDirectory: join(home, '.fbi'),
   directoryName: 'factories'
 }
 
-function resolveLocalConfig(config: Record<string | number, any>): Record<string | number, any> {
+function resolveLocalConfig (
+  config: Record<string | number, any>
+): Record<string | number, any> {
   let pkgConfig = {}
   let fileConfig = {}
   const pwd = process.cwd()
@@ -28,7 +33,10 @@ function resolveLocalConfig(config: Record<string | number, any>): Record<string
 
   if (fs.pathExistsSync(pkgPath)) {
     const pkg = require(pkgPath)
-    if (pkg[config.packageKey] && isValidArray(Object.keys(pkg[config.packageKey]))) {
+    if (
+      pkg[config.packageKey] &&
+      isValidArray(Object.keys(pkg[config.packageKey]))
+    ) {
       pkgConfig = pkg[config.packageKey]
     }
   }
@@ -42,37 +50,40 @@ function resolveLocalConfig(config: Record<string | number, any>): Record<string
   return merge(pkgConfig, fileConfig)
 }
 
-function resolveFactoryConfig(
-  config: Record<string | number, any>,
-  factory: Record<string | number, any>,
-  projectStore: Store
-): Record<string | number, any> {
-  const factoryInfo = projectStore.get(factory.id)
+// function resolveFactoryConfig (
+//   config: Record<string | number, any>,
+//   factory: Record<string | number, any>,
+//   projectStore: Store
+// ): Record<string | number, any> {
+//   const factoryInfo = projectStore.get(factory.id)
 
-  if (!factoryInfo) {
-    return {}
-  }
+//   if (!factoryInfo) {
+//     return {}
+//   }
 
-  // const project = store.get(`${factory.id}.projects`, { path: process.cwd() })
-  // const extraInfo = (project && project[0]) || {}
-  const project = projectStore.get(process.cwd()) || {}
+//   // const project = store.get(`${factory.id}.projects`, { path: process.cwd() })
+//   // const extraInfo = (project && project[0]) || {}
+//   const project = projectStore.get(process.cwd()) || {}
 
-  try {
-    const factoryConfig = require(join(factoryInfo.path, config.localConfigFile))
+//   try {
+//     const factoryConfig = require(join(
+//       factoryInfo.path,
+//       config.localConfigFile
+//     ))
 
-    return {
-      ...factoryConfig,
-      ...project
-    }
-  } catch (err) {
-    return {}
-  }
-}
+//     return {
+//       ...factoryConfig,
+//       ...project
+//     }
+//   } catch (err) {
+//     return {}
+//   }
+// }
 
-export function resolveConfig(
+export function resolveConfig (
   env: any,
   configStore: Store,
-  projectStore: Store
+  _projectStore: Store
 ): Record<string | number, any> {
   const config: Record<string | number, any> = {
     ...defaultConfigs,
@@ -80,7 +91,13 @@ export function resolveConfig(
     packageFile: 'package.json',
     packageKey: 'fbi',
     organization: 'https://github.com/fbi-js',
-    packageManager: env.hasNpm ? 'npm' : env.hasYarn ? 'yarn' : env.hasPnpm ? 'pnpm' : ''
+    packageManager: env.hasNpm
+      ? 'npm'
+      : env.hasYarn
+        ? 'yarn'
+        : env.hasPnpm
+          ? 'pnpm'
+          : ''
   }
   const globalConfig = configStore.get()
   const baseConfig = merge(config, globalConfig)

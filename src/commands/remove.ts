@@ -8,19 +8,23 @@ export default class CommandRemove extends Command {
   alias = ''
   args = '[factoryIds...]'
   flags = []
-  description = `remove factories from the store`
+  description = 'remove factories from the store'
   examples = ['fbi remove', 'fbi remove @fbi-js/factory-node']
 
-  constructor(public factory: Fbi) {
+  constructor (public factory: Fbi) {
     super()
   }
 
-  async run(factoryIds: any, flags: any) {
-    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
-      factoryIds,
-      flags
-    })
-    const ids = (Array.isArray(factoryIds) && factoryIds.length > 0 && factoryIds) || null
+  async run (factoryIds: any, flags: any) {
+    this.debug(
+      `Running command "${this.id}" from factory "${this.factory.id}" with options:`,
+      {
+        factoryIds,
+        flags
+      }
+    )
+    const ids =
+      (Array.isArray(factoryIds) && factoryIds.length > 0 && factoryIds) || null
     const targets = (ids
       ? ids.map((id: string) => {
           const result = this.store.get(id)
@@ -52,7 +56,7 @@ export default class CommandRemove extends Command {
     }
   }
 
-  private async selectFactory() {
+  private async selectFactory () {
     const factories = Object.values(this.store.get())
     const { selected } = (await this.prompt({
       type: 'multiselect',
@@ -67,11 +71,11 @@ export default class CommandRemove extends Command {
     return factories.filter((f: any) => selected.includes(f.id))
   }
 
-  private async deleteConfig(factory: any) {
+  private async deleteConfig (factory: any) {
     this.store.del(factory.id)
   }
 
-  private async deleteFiles(factory: any) {
+  private async deleteFiles (factory: any) {
     // remove main dir
     if (factory?.path) {
       await this.fs.remove(factory.path)
@@ -81,13 +85,16 @@ export default class CommandRemove extends Command {
     if (factory?.version?.versions) {
       for (const version of factory.version.versions) {
         await this.fs.remove(
-          join(factory.version.baseDir, `${this.getFactoryName(factory.id)}__${version.short}`)
+          join(
+            factory.version.baseDir,
+            `${this.getFactoryName(factory.id)}__${version.short}`
+          )
         )
       }
     }
   }
 
-  private getFactoryName(id: string) {
+  private getFactoryName (id: string) {
     return id.replace('@', '')
   }
 }

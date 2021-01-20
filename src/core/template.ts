@@ -1,7 +1,13 @@
 import { isAbsolute, join } from 'path'
 import { BaseClass } from './base'
 import { Factory } from './factory'
-import { isValidArray, isFunction, isString, ensureArray, isValidObject } from '../utils'
+import {
+  isValidArray,
+  isFunction,
+  isString,
+  ensureArray,
+  isValidObject
+} from '../utils'
 
 type FileMap = {
   from: string
@@ -33,12 +39,12 @@ export abstract class Template extends BaseClass {
   protected _debugPrefix = ''
   private rootPath = ''
 
-  constructor(public factory: Factory) {
+  constructor (public factory: Factory) {
     super()
   }
 
   // public methods
-  public resolveTemplate(templateId: string) {
+  public resolveTemplate (templateId: string) {
     const template = this.templates.find((x) => x.id === templateId)
     if (!template) {
       this.debug(
@@ -55,7 +61,7 @@ export abstract class Template extends BaseClass {
     return template
   }
 
-  public async run(data: Record<string, any>, flags: any): Promise<any> {
+  public async run (data: Record<string, any>, flags: any): Promise<any> {
     this.targetDir = join(this.targetDir, data.subDirectory || '')
 
     await this.prepare(data)
@@ -95,7 +101,7 @@ export abstract class Template extends BaseClass {
   }
 
   // processes
-  private async prepare(data?: any) {
+  private async prepare (data?: any) {
     this._debugPrefix = `Template "${this.id}"`
 
     if (data && isValidObject(data)) {
@@ -108,38 +114,53 @@ export abstract class Template extends BaseClass {
       const factoryDir = this.data?.factory?.path || this.factory.baseDir
 
       if (!factoryDir) {
-        this.error(`Cann't find the path of factory. Please update the factory.`)
+        this.error(
+          "Cann't find the path of factory. Please update the factory."
+        )
         return this.exit()
       }
 
       this.rootPath = join(factoryDir, this.path)
     }
   }
-  protected async gathering(flags: any): Promise<any> {}
-  private async afterGathering() {
-    this.debug(`${this._debugPrefix} rootPath: ${this.rootPath}; targetDir: ${this.targetDir}`)
+
+  protected async gathering (_flags: any): Promise<any> {}
+  private async afterGathering () {
+    this.debug(
+      `${this._debugPrefix} rootPath: ${this.rootPath}; targetDir: ${this.targetDir}`
+    )
   }
-  protected async checking(): Promise<any> {}
-  private async afterChecking() {}
-  protected async writing(): Promise<any> {}
-  private async afterWriting() {
+
+  protected async checking (): Promise<any> {}
+  private async afterChecking () {}
+  protected async writing (): Promise<any> {}
+  private async afterWriting () {
     if (this.files.copy && isValidArray(this.files.copy)) {
       this.debug(`${this._debugPrefix} start copy`, this.files.copy)
       await this.copy(this.files.copy)
     }
 
-    if (isFunction(this.renderer) && this.files.render && isValidArray(this.files.render)) {
-      this.debug(`${this._debugPrefix} start render`, this.files.render, this.files?.renderOptions)
+    if (
+      isFunction(this.renderer) &&
+      this.files.render &&
+      isValidArray(this.files.render)
+    ) {
+      this.debug(
+        `${this._debugPrefix} start render`,
+        this.files.render,
+        this.files?.renderOptions
+      )
       await this.render(this.files.render, this.data, this.files?.renderOptions)
     }
   }
-  protected async installing(flags: any): Promise<any> {}
-  private async afterInstalling() {}
-  protected async ending(): Promise<any> {}
-  private async afterEnding() {}
+
+  protected async installing (_flags: any): Promise<any> {}
+  private async afterInstalling () {}
+  protected async ending (): Promise<any> {}
+  private async afterEnding () {}
 
   // utils
-  private async copy(fileMaps: StringOrFileMap[]) {
+  private async copy (fileMaps: StringOrFileMap[]) {
     const maps: FileMap[] = this.foramtFileMaps(fileMaps)
     for (const map of maps) {
       const paths = await this.globFile(map)
@@ -163,7 +184,7 @@ export abstract class Template extends BaseClass {
     }
   }
 
-  private async render(
+  private async render (
     fileMaps: StringOrFileMap[],
     data: Record<string | number, any>,
     options?: [] | {}
@@ -183,7 +204,7 @@ export abstract class Template extends BaseClass {
           const content = await this.fs.readFile(src, 'utf8')
           const opts = Array.isArray(options) ? options : [options]
           const rendered = await this.renderer(
-            content.trim() + `\n`,
+            content.trim() + '\n',
             { ...data, ...(map.data || {}) },
             ...opts
           )
@@ -195,7 +216,7 @@ export abstract class Template extends BaseClass {
     }
   }
 
-  private foramtFileMaps(fileMaps: any[]): FileMap[] {
+  private foramtFileMaps (fileMaps: any[]): FileMap[] {
     return ensureArray(fileMaps)
       .map((m: any) =>
         isString(m)
@@ -203,17 +224,23 @@ export abstract class Template extends BaseClass {
               from: m,
               to: m
                 .split('/')
-                .filter((x: string) => !!x && !x.includes('*') && !x.includes('!'))
+                .filter(
+                  (x: string) => !!x && !x.includes('*') && !x.includes('!')
+                )
                 .join('/')
             }
           : isFunction(m)
-          ? m()
-          : m
+            ? m()
+            : m
       )
       .filter((m: any) => Boolean(m) && m.from && m.to)
   }
 
-  private async globFile({ from, options, cwd = '' }: Record<string, any>): Promise<string[]> {
+  private async globFile ({
+    from,
+    options,
+    cwd = ''
+  }: Record<string, any>): Promise<string[]> {
     const patterns = ensureArray(from)
     let ret: string[] = []
     for (let p of patterns) {

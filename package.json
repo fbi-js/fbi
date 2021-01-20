@@ -14,8 +14,9 @@
   "scripts": {
     "build": "rm -rf lib && tsc",
     "watch": "npm run build && tsc --watch",
-    "lint": "eslint . --fix",
-    "clean": "rm -rf lib && rm -rf node_modules"
+    "lint": "eslint --ext ts src",
+    "clean": "rm -rf lib && rm -rf node_modules",
+    "format": "prettier --write \"src/**/*.{ts,js,json}\" && eslint --ext ts src --fix"
   },
   "keywords": [
     "fbi",
@@ -41,19 +42,31 @@
     "commander": "6.2.1",
     "enquirer": "^2.3.6",
     "execa": "^5.0.0",
-    "fs-extra": "^9.0.1",
-    "ora": "^5.1.0",
+    "fs-extra": "^9.1.0",
+    "ora": "^5.2.0",
     "pkg-dir": "^5.0.0",
     "semver": "^7.3.4",
     "tiny-glob": "^0.2.8"
   },
   "devDependencies": {
+    "@fbi-js/eslint-config-typescript": "^1.2.0",
+    "@fbi-js/tsconfig": "^1.2.0",
     "@types/node": "*",
     "@types/semver": "^7",
-    "@typescript-eslint/eslint-plugin": "^4",
-    "@typescript-eslint/parser": "^4",
     "eslint": "^7",
-    "eslint-config-prettier": "^6",
+    "prettier": "^2.2.1",
     "typescript": "^4"
+  },
+  "eslintConfig": {
+    "extends": ["@fbi-js/typescript"]
+  },
+  "prettier": {
+    "semi": false,
+    "tabWidth": 2,
+    "endOfLine": "lf",
+    "printWidth": 80,
+    "singleQuote": true,
+    "trailingComma": "none",
+    "arrowParens": "always"
   }
 }

@@ -13,7 +13,7 @@ export const formatDuration = (ms: number) => {
     .join(', ')
 }
 
-export function formatName(str: string | [], separator = '-') {
+export function formatName (str: string | [], separator = '-') {
   const format = (s: string) =>
     s
       .trim()
@@ -21,11 +21,13 @@ export function formatName(str: string | [], separator = '-') {
       .split(/[^0-9a-zA-Z]/)
       .filter(Boolean)
       .join(separator)
-  return Array.isArray(str) ? str.filter(Boolean).map((t) => format(t)) : format(str)
+  return Array.isArray(str)
+    ? str.filter(Boolean).map((t) => format(t))
+    : format(str)
 }
 
 // Example: HTMLInputElement => html-input-element
-export function camelToKebab(str: string) {
+export function camelToKebab (str: string) {
   return str
     .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
     .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1-$2')

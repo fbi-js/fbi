@@ -41,7 +41,7 @@ export abstract class Factory extends BaseClass {
   public baseDir = ''
   public type: FactoryType = 'npm'
 
-  constructor(public options?: FactoryOptions) {
+  constructor (public options?: FactoryOptions) {
     super()
 
     if (options) {
@@ -54,7 +54,7 @@ export abstract class Factory extends BaseClass {
     }
   }
 
-  public init(baseDir?: string, type?: FactoryType) {
+  public init (baseDir?: string, type?: FactoryType) {
     this.baseDir = this.baseDir || baseDir || ''
     this.type = type ?? this.type
 
@@ -74,7 +74,7 @@ export abstract class Factory extends BaseClass {
     } catch (err) {}
   }
 
-  public resolveTemplate(templateId: string) {
+  public resolveTemplate (templateId: string) {
     const template = this.templates.find((x) => x.id === templateId)
     if (!template) {
       this.debug(`Factory (${this.id}):`, `template "${templateId}" not found`)

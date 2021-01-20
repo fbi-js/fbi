@@ -11,13 +11,13 @@ export class Cli extends BaseClass {
   fbi: Fbi
   program: commander.Command
 
-  constructor() {
+  constructor () {
     super()
     this.fbi = new Fbi()
     this.program = this.createProgram(this.fbi.id)
   }
 
-  public async run() {
+  public async run () {
     const isBuiltInCmd = this.isBuiltInCommand()
     const config = this.loadConfig()
 
@@ -32,7 +32,9 @@ export class Cli extends BaseClass {
         const factory = this.fbi.resolveFactory(factoryId, factoryVersion)
         if (!factory) {
           this.error(
-            `factory "${factoryId}${factoryVersion ? `@${factoryVersion}` : ''}" not found`
+            `factory "${factoryId}${
+              factoryVersion ? `@${factoryVersion}` : ''
+            }" not found`
           )
         } else {
           factories.unshift(factory)
@@ -51,25 +53,35 @@ export class Cli extends BaseClass {
       this.context.set('debug', true)
     })
 
-    await this.program.parseAsync(process.argv).catch((err) => (err ? this.error(err).exit() : ''))
+    await this.program
+      .parseAsync(process.argv)
+      .catch((err) => (err ? this.error(err).exit() : ''))
   }
 
-  private createProgram(id: string): commander.Command {
+  private createProgram (id: string): commander.Command {
     const program = createCommand()
     const _this = this
     program
       .storeOptionsAsProperties(false)
       .passCommandToAction(false)
       .name(id)
-      .version(`${id} ${pkg.version}`, '-v, --version', 'output the current version')
+      .version(
+        `${id} ${pkg.version}`,
+        '-v, --version',
+        'output the current version'
+      )
       .usage('[command] ...')
       .description(pkg.description)
       .option('-d, --debug', 'output extra debugging')
       .on('--help', () => {
         console.log('')
-        console.log(`Run ${this.style.cyan(id + ' list')} for available commands`)
         console.log(
-          `Run ${this.style.cyan(id + ' <command> -h')} for detailed usage of given command`
+          `Run ${this.style.cyan(id + ' list')} for available commands`
+        )
+        console.log(
+          `Run ${this.style.cyan(
+            id + ' <command> -h'
+          )} for detailed usage of given command`
         )
       })
       .command('help', { hidden: true }) // hide 'help' command
@@ -90,9 +102,11 @@ export class Cli extends BaseClass {
     return program
   }
 
-  private registerCommands(commands: Command[]): void {
+  private registerCommands (commands: Command[]): void {
     for (const command of commands) {
-      const nameAndArgs = `${command.id}${command.args ? ` ${command.args}` : ''}`
+      const nameAndArgs = `${command.id}${
+        command.args ? ` ${command.args}` : ''
+      }`
       const cmd = this.program.command(nameAndArgs)
       if (command.alias) {
         cmd.alias(command.alias)
@@ -107,8 +121,8 @@ export class Cli extends BaseClass {
           typeof disabled === 'string' && disabled.trim()
             ? `${prefix} ${disabled.trim()}`
             : disabled
-            ? prefix
-            : ''
+              ? prefix
+              : ''
         if (message) {
           this.warn(message).exit()
         }
@@ -146,7 +160,7 @@ export class Cli extends BaseClass {
     }
   }
 
-  private isBuiltInCommand(argv = process.argv): boolean {
+  private isBuiltInCommand (argv = process.argv): boolean {
     const id = argv.slice(2)[0]
     if (!id || id.startsWith('-')) {
       return true

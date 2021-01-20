@@ -1,7 +1,7 @@
 import { getEnv } from '../helpers/env'
 import { Store } from './store'
 
-function getContext() {
+function getContext () {
   if ((global as any).fbiContext) {
     return (global as any).fbiContext
   }

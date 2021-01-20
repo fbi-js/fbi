@@ -9,7 +9,7 @@ export abstract class Command extends BaseClass {
   examples: string[] = []
 
   public abstract run(...args: any[]): any
-  public disable(): boolean | string | Promise<boolean | string> {
+  public disable (): boolean | string | Promise<boolean | string> {
     return false
   }
 }

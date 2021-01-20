@@ -33,7 +33,7 @@ export const timeMeasurement = (
   return str
 }
 
-export function applyMixins(
+export function applyMixins (
   derivedCtor: any,
   baseCtors: any[],
   exclude: string[] = ['constructor']
@@ -55,7 +55,7 @@ export function applyMixins(
   return derivedCtor
 }
 
-export function pathResolve(path: string, options: Record<string, any> = {}) {
+export function pathResolve (path: string, options: Record<string, any> = {}) {
   try {
     return require.resolve(path, options)
   } catch (e) {
@@ -122,13 +122,13 @@ interface SymbolsType {
   numbers: string[]
 }
 
-export function isDirEmpty(dirname: string) {
+export function isDirEmpty (dirname: string) {
   return fs.promises.readdir(dirname).then((files) => {
     return files.length === 0
   })
 }
 
-export function isDirEmptySync(dirname: string) {
+export function isDirEmptySync (dirname: string) {
   try {
     const result = fs.readdirSync(dirname)
     return result && result.length === 0

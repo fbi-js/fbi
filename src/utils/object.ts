@@ -3,10 +3,14 @@ import { isObject, isArray, isFunction, isString, isUndef } from './type'
 type AnyObject = Record<string | number, any>
 
 export const capitalize = ([first, ...rest]: any, lowerRest = false) =>
-  first.toUpperCase() + (lowerRest ? rest.join('').toLowerCase() : rest.join(''))
+  first.toUpperCase() +
+  (lowerRest ? rest.join('').toLowerCase() : rest.join(''))
 
 export const flatten = (arr: any[], depth = 1): any[] =>
-  arr.reduce((a, v) => a.concat(depth > 1 && isArray(v) ? flatten(v, depth - 1) : v), [])
+  arr.reduce(
+    (a, v) => a.concat(depth > 1 && isArray(v) ? flatten(v, depth - 1) : v),
+    []
+  )
 
 export const uniqueElements = (...arrs: any[]) => {
   const ret = [...arrs].reduce((prev, curr) => {
@@ -23,7 +27,9 @@ export const shallowClone = (obj: AnyObject) => Object.assign({}, obj)
 export const deepClone = (obj: any) => {
   const clone = Object.assign({}, obj)
   Object.keys(clone).forEach(
-    (key) => (clone[key] = typeof obj[key] === 'object' ? deepClone(obj[key]) : obj[key])
+    (key) =>
+      (clone[key] =
+        typeof obj[key] === 'object' ? deepClone(obj[key]) : obj[key])
   )
   return isArray(obj) && obj.length
     ? (clone.length = obj.length) && Array.from(clone)
@@ -45,22 +51,30 @@ export const merge = (...objs: AnyObject[] | [][]) => {
 
   // merge
   return isObj
-    ? [...objs].reduce((ret: Record<string, any>, curr: Record<string, any>) => {
-        if (isObject(curr)) {
-          Object.keys(curr).reduce((a, k: string): any => {
-            if (ret.hasOwnProperty(k)) {
-              ret[k] = isObject(curr[k])
-                ? merge(ret[k], curr[k])
-                : isArray(curr[k])
-                ? uniqueElements(ret[k], curr[k])
-                : curr[k]
-            } else {
-              ret[k] = isObject(curr[k]) || isArray(curr[k]) ? deepClone(curr[k]) : curr[k]
-            }
-          }, {})
-        }
-        return ret
-      }, {})
+    ? [...objs].reduce(
+        (ret: Record<string, any>, curr: Record<string, any>) => {
+          if (isObject(curr)) {
+            // eslint-disable-next-line array-callback-return
+            Object.keys(curr).reduce((_a, k: string): any => {
+              // eslint-disable-next-line no-prototype-builtins
+              if (ret.hasOwnProperty(k)) {
+                ret[k] = isObject(curr[k])
+                  ? merge(ret[k], curr[k])
+                  : isArray(curr[k])
+                  ? uniqueElements(ret[k], curr[k])
+                  : curr[k]
+              } else {
+                ret[k] =
+                  isObject(curr[k]) || isArray(curr[k])
+                    ? deepClone(curr[k])
+                    : curr[k]
+              }
+            }, {})
+          }
+          return ret
+        },
+        {}
+      )
     : uniqueElements((objs[0] as []).concat(...(objs as []).slice(1)))
 }
 
@@ -101,7 +115,12 @@ export const getObjectValue = (obj: AnyObject, props?: string) => {
 
 // Example: setObjectValue({}, 'a.b.c', [1,2,3])
 // Example: setObjectValue({a:{b:{c:1}}}, 'a.b.c', [1,2,3])
-export const setObjectValue = (obj: AnyObject, props: string, val: any, clone = false) => {
+export const setObjectValue = (
+  obj: AnyObject,
+  props: string,
+  val: any,
+  clone = false
+) => {
   if (!obj) {
     return null
   }
@@ -112,7 +131,7 @@ export const setObjectValue = (obj: AnyObject, props: string, val: any, clone = 
     return null
   }
   const tmp = clone ? deepClone(obj) : obj
-  array.slice(0).reduce((acc, curr, i, arr) => {
+  array.slice(0).reduce((acc, curr, i) => {
     if (i === len - 1) acc[curr] = val
     else if (!acc[curr]) acc[curr] = {}
 
@@ -145,11 +164,18 @@ export const getShortestItem = (...vals: any[]) =>
 
 export const ensureArray = (val: unknown) => (Array.isArray(val) ? val : [val])
 
-export const orderBy = (arr: Record<string, any>[], props: string[], orders?: string[]) =>
+export const orderBy = (
+  arr: Record<string, any>[],
+  props: string[],
+  orders?: string[]
+) =>
   [...arr].sort((a, b) =>
     props.reduce((acc, prop, i) => {
       if (acc === 0) {
-        const [p1, p2] = orders && orders[i] === 'desc' ? [b[prop], a[prop]] : [a[prop], b[prop]]
+        const [p1, p2] =
+          orders && orders[i] === 'desc'
+            ? [b[prop], a[prop]]
+            : [a[prop], b[prop]]
         acc = p1 > p2 ? 1 : p1 < p2 ? -1 : 0
       }
       return acc

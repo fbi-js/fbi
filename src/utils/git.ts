@@ -12,12 +12,8 @@ const strip = (str: string) =>
 
 const exec = async (str: string, opts: Record<string, any> = {}) => {
   const cmd = str.split(' ').filter(Boolean).join(' ')
-  try {
-    const { stdout } = await execa.command(cmd, { shell: true, ...opts })
-    return stdout
-  } catch (err) {
-    throw err
-  }
+  const { stdout } = await execa.command(cmd, { shell: true, ...opts })
+  return stdout
 }
 
 const pathOrAll = (arr: any) => (isValidArray(arr) ? arr.join(' ') : '.')
@@ -41,9 +37,12 @@ const push = (argv?: Argv, opts?: object) =>
     ...(opts || {}),
     stdio: 'inherit'
   })
-const add = (arr?: any, opts?: object) => exec(`git add ${pathOrAll(arr)}`, opts)
+const add = (arr?: any, opts?: object) =>
+  exec(`git add ${pathOrAll(arr)}`, opts)
 const del = (arr?: any, opts?: object) =>
-  isValidArray(arr) ? exec(`git rm ${arr.join(' ')} --ignore-unmatch`, opts) : null
+  isValidArray(arr)
+    ? exec(`git rm ${arr.join(' ')} --ignore-unmatch`, opts)
+    : null
 const commit = (msg: string | string[], opts?: object) => {
   const arr: string[] = Array.isArray(msg) ? msg : [msg]
   const tmp = [...new Set(arr)].map((s) => strip(s))
@@ -51,33 +50,51 @@ const commit = (msg: string | string[], opts?: object) => {
   return exec(`git commit ${message}`, opts)
 }
 const checkout = (arr?: any, opts?: object) =>
-  exec(`git checkout ${Array.isArray(arr) ? pathOrAll(arr) : arr} --quiet`, opts)
-const merge = (t: Argv, argv?: Argv, opts?: object) => exec(`git merge ${argv} ${t}`, opts)
+  exec(
+    `git checkout ${Array.isArray(arr) ? pathOrAll(arr) : arr} --quiet`,
+    opts
+  )
+const merge = (t: Argv, argv?: Argv, opts?: object) =>
+  exec(`git merge ${argv} ${t}`, opts)
 const clear = (opts?: object) => exec('git gc', opts)
 const clean = (opts?: object) => exec('git clean -f -d', opts)
-const hardReset = (n?: Argv, opts?: object) => exec(`git reset --hard ${n || 'HEAD'}`, opts)
+const hardReset = (n?: Argv, opts?: object) =>
+  exec(`git reset --hard ${n || 'HEAD'}`, opts)
 
 const status = {
   // info
   isClean: (opts?: object) =>
-    exec('git diff --no-ext-diff --name-only && git diff --no-ext-diff --cached --name-only', opts)
+    exec(
+      'git diff --no-ext-diff --name-only && git diff --no-ext-diff --cached --name-only',
+      opts
+    )
       .then(s2a)
       .then((str: any) => !!str.trim()),
-  untracked: (opts?: object) => exec('git ls-files --others --exclude-standard', opts).then(s2a),
-  modified: (opts?: object) => exec('git diff --name-only --diff-filter=M', opts).then(s2a),
-  deleted: (opts?: object) => exec('git diff --name-only --diff-filter=D', opts).then(s2a),
-  conflicts: (opts?: object) => exec('git diff --name-only --diff-filter=U', opts).then(s2a),
-  staged: (opts?: object) => exec('git diff --name-only --cached', opts).then(s2a),
+  untracked: (opts?: object) =>
+    exec('git ls-files --others --exclude-standard', opts).then(s2a),
+  modified: (opts?: object) =>
+    exec('git diff --name-only --diff-filter=M', opts).then(s2a),
+  deleted: (opts?: object) =>
+    exec('git diff --name-only --diff-filter=D', opts).then(s2a),
+  conflicts: (opts?: object) =>
+    exec('git diff --name-only --diff-filter=U', opts).then(s2a),
+  staged: (opts?: object) =>
+    exec('git diff --name-only --cached', opts).then(s2a),
   unpushed: (opts?: object) =>
     exec('git cherry -v', opts)
       .then(s2a)
       .catch(() => []),
   isRebasing: (opts?: object) =>
-    exec('git status', opts).then((stdout) => stdout && stdout.includes('rebase in progress')),
-  conflictStrings: (opts?: object) => exec('git grep -n "<<<<<<< "', opts).then(s2a),
-  conflictFiles: (opts?: object) => exec('git grep --name-only "<<<<<<< "', opts).then(s2a),
+    exec('git status', opts).then(
+      (stdout) => stdout && stdout.includes('rebase in progress')
+    ),
+  conflictStrings: (opts?: object) =>
+    exec('git grep -n "<<<<<<< "', opts).then(s2a),
+  conflictFiles: (opts?: object) =>
+    exec('git grep --name-only "<<<<<<< "', opts).then(s2a),
   changes: (opts?: object) => exec('git status --porcelain', opts).then(s2a),
-  needPull: (opts?: object) => exec('git fetch --dry-run', opts).then((res) => !!res),
+  needPull: (opts?: object) =>
+    exec('git fetch --dry-run', opts).then((res) => !!res),
 
   // action
   show: (opts?: object) =>
@@ -100,7 +117,8 @@ const stash = {
 const tag = {
   // info
   list: (opts?: object) => exec('git tag', opts).then(s2a),
-  latest: (opts?: object) => exec('git describe --abbrev=0', opts).catch((_) => ''),
+  latest: (opts?: object) =>
+    exec('git describe --abbrev=0', opts).catch((_) => ''),
 
   // action
   add: (n: Argv, opts?: object) => exec(`git tag -a ${n}`, opts),
@@ -115,7 +133,8 @@ const branch = {
       ...(opts || {}),
       stdio: 'pipe'
     }),
-  locals: (opts?: object) => exec('git branch -vv --format="%(refname:short)"', opts).then(s2a),
+  locals: (opts?: object) =>
+    exec('git branch -vv --format="%(refname:short)"', opts).then(s2a),
   remotes: (opts?: object) =>
     exec('git branch -vvr --format="%(refname:lstrip=3)"', opts)
       .then(s2a)
@@ -126,21 +145,28 @@ const branch = {
       opts
     ).then(s2a),
   upstream: (n: Argv, opts?: object) =>
-    exec(`git rev-parse --abbrev-ref ${n || 'HEAD'}@{upstream}`, opts).catch(() => false),
-  needMerge: (n1: Argv, n2: Argv, opts?: object) => exec(`git rev-list -1 ${n1} --not ${n2}`, opts),
+    exec(`git rev-parse --abbrev-ref ${n || 'HEAD'}@{upstream}`, opts).catch(
+      () => false
+    ),
+  needMerge: (n1: Argv, n2: Argv, opts?: object) =>
+    exec(`git rev-list -1 ${n1} --not ${n2}`, opts),
 
   // action
   add: (n: Argv, from: Argv, opts?: object) =>
     exec(`git checkout -b ${n} ${from || ''} --quiet`, opts),
   del: (n: Argv, force: boolean, opts?: object) =>
     exec(`git branch -${force ? 'D' : 'd'} ${n}`, opts),
-  delRemote: (n: Argv, opts?: object) => exec(`git push origin --delete ${n}`, opts),
+  delRemote: (n: Argv, opts?: object) =>
+    exec(`git push origin --delete ${n}`, opts),
   checkout: (n: Argv, opts?: object) => exec(`git checkout ${n} --quiet`, opts)
 }
 
 const remoteExist = async (argv: Argv, opts?: object) => {
   try {
-    await exec(`git ls-remote --exit-code -h ${argv}`, { stdio: 'ignore', ...opts })
+    await exec(`git ls-remote --exit-code -h ${argv}`, {
+      stdio: 'ignore',
+      ...opts
+    })
     return true
   } catch (err) {
     return false
@@ -149,7 +175,7 @@ const remoteExist = async (argv: Argv, opts?: object) => {
 
 const remoteUrl = async (opts?: object) => {
   try {
-    const url = await exec(`git config --get remote.origin.url`, {
+    const url = await exec('git config --get remote.origin.url', {
       cwd: process.cwd(),
       ...opts
     })

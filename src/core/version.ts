@@ -3,7 +3,13 @@ import { join, dirname, basename } from 'path'
 import assert from 'assert'
 
 import { BaseClass } from './base'
-import { git, isGitRepo, groupBy, getPathByVersion, getVersionByPath } from '../utils'
+import {
+  git,
+  isGitRepo,
+  groupBy,
+  getPathByVersion,
+  getVersionByPath
+} from '../utils'
 
 const types = ['tag', 'branch']
 const semverMatchOptions = { includePrerelease: true }
@@ -15,12 +21,12 @@ export class Version extends BaseClass {
   private baseDir = ''
   private baseName = ''
 
-  constructor(public rootDir: string) {
+  constructor (public rootDir: string) {
     super()
-    assert(rootDir.trim(), `rootDir should not be empty`)
+    assert(rootDir.trim(), 'rootDir should not be empty')
   }
 
-  public async init(type = 'tag') {
+  public async init (type = 'tag') {
     assert(types.includes(type), `supported types: ${types.join(', ')}`)
     this.type = type
     this.enable = isGitRepo(this.rootDir)
@@ -36,10 +42,12 @@ export class Version extends BaseClass {
       this.type === 'tag'
         ? this.parseVersions(vers)
         : vers.map((v) => ({
-            short: v,
-            long: v
-          }))
-    this.logItem(`Valid versions: ${this.versions.map((v) => v.short).join(', ')}`)
+          short: v,
+          long: v
+        }))
+    this.logItem(
+      `Valid versions: ${this.versions.map((v) => v.short).join(', ')}`
+    )
 
     try {
       await this.cleanUp()
@@ -58,7 +66,7 @@ export class Version extends BaseClass {
     }
   }
 
-  public async getVersion(target?: string) {
+  public async getVersion (target?: string) {
     if (!this.enable) {
       this.warn(`${this.rootDir} does not support version control`)
     }
@@ -66,7 +74,9 @@ export class Version extends BaseClass {
     let version
     if (this.type === 'branch') {
       if (target) {
-        const found = this.versions.find((v) => v.short === target || v.long === target)
+        const found = this.versions.find(
+          (v) => v.short === target || v.long === target
+        )
         if (!found) {
           return null
         }
@@ -86,7 +96,11 @@ export class Version extends BaseClass {
       }
     } else {
       const versions = this.versions.map((v) => v.long)
-      const long = semver.maxSatisfying(versions, target || '*', semverMatchOptions)
+      const long = semver.maxSatisfying(
+        versions,
+        target || '*',
+        semverMatchOptions
+      )
       const short = this.versions.find((v) => v.long === long)?.short
       const dir = getPathByVersion(this.baseDir, this.baseName, short)
       version = { dir, long, short }
@@ -106,23 +120,23 @@ export class Version extends BaseClass {
     return version
   }
 
-  public getLatest() {
+  public getLatest () {
     const versions = this.versions.map((v) => v.long)
     const long = semver.maxSatisfying(versions, '*', semverMatchOptions)
     return this.versions.find((v) => v.long === long)?.short
   }
 
-  private getVersions() {
+  private getVersions () {
     const opts = { cwd: this.rootDir }
     return this.type === 'tag' ? git.tag.list(opts) : git.branch.locals(opts)
   }
 
-  private parseVersion(version: string): string {
+  private parseVersion (version: string): string {
     const parsed = semver.parse(version)
     return parsed ? parsed.major + '.' + parsed.minor : '*'
   }
 
-  private parseVersions(versions: string[]) {
+  private parseVersions (versions: string[]) {
     // slim versions
     const groupVersions = groupBy(semver.sort(versions).reverse(), semver.minor)
     return Object.values(groupVersions)
@@ -135,7 +149,7 @@ export class Version extends BaseClass {
   }
 
   // clear unfresh versions
-  private async cleanUp() {
+  private async cleanUp () {
     if (!this.enable) {
       this.warn(`${this.rootDir} does not support version control`)
     }
@@ -154,10 +168,12 @@ export class Version extends BaseClass {
     }
   }
 
-  private async installProdDeps(targetDir: string) {
+  private async installProdDeps (targetDir: string) {
     try {
       const env = this.context.get('env')
-      const pm = env.hasYarn ? 'yarn' : this.context.get('config').packageManager
+      const pm = env.hasYarn
+        ? 'yarn'
+        : this.context.get('config').packageManager
       await this.exec.command(`${pm} install`, {
         cwd: targetDir,
         stdout: 'ignore',

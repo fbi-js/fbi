@@ -1,14 +1,17 @@
+// eslint-disable-next-line eqeqeq
 export const isUndef = (val: any) => val == null || val == undefined
 export const isArray = (val: unknown) => Array.isArray(val)
 export const isString = (val: unknown) => typeof val === 'string'
 export const isBoolean = (val: unknown) => typeof val === 'boolean'
 export const isNumber = (val: unknown) => typeof val === 'number'
 export const isFunction = (val: unknown) => typeof val === 'function'
-export const isObject = (val: any) => Boolean(val) && val.constructor.name === 'Object'
+export const isObject = (val: any) =>
+  Boolean(val) && val.constructor.name === 'Object'
 export const isAsyncFunction = (val: any) =>
   isFunction(val) && val.constructor.name === 'AsyncFunction'
 export const isClass = (val: any) => {
-  const isCtorClass = val.constructor && val.constructor.toString().substring(0, 5) === 'class'
+  const isCtorClass =
+    val.constructor && val.constructor.toString().substring(0, 5) === 'class'
   if (isUndef(val.prototype)) {
     return isCtorClass
   }
@@ -39,4 +42,7 @@ export const isEmpty = (val: any) =>
 export const isValidArray = (val: any) => isArray(val) && !isEmpty(val)
 export const isValidObject = (val: any) => isObject(val) && !isEmpty(val)
 export const isGitUrl = (string: string) =>
-  /(?:git|ssh|https?|git@[-\w.]+):(\/\/)?(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/.test(string)
+  // eslint-disable-next-line no-useless-escape
+  /(?:git|ssh|https?|git@[-\w.]+):(\/\/)?(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/.test(
+    string
+  )

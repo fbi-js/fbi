@@ -1,5 +1,5 @@
 import { Fbi } from '../fbi'
-import { Factory } from '../core/Factory'
+import { Factory } from '../core/factory'
 import { Command } from '../core/command'
 import { Template } from '../core/template'
 import { basename, join, relative } from 'path'
@@ -9,23 +9,34 @@ export default class CommandCreate extends Command {
   id = 'create'
   alias = ''
   args = '[template|factory] [project]'
-  description = `create a project via template or factory`
+  description = 'create a project via template or factory'
   flags = [
-    ['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm', 'npm']
+    [
+      '-p, --package-manager <name>',
+      'Specifying a package manager. e.g. pnpm/yarn/npm',
+      'npm'
+    ]
   ]
-  factories: Factory[] = []
-  examples = ['fbi create factory-node', 'fbi create factory-node my-app -p yarn']
 
-  constructor(public factory: Fbi) {
+  factories: Factory[] = []
+  examples = [
+    'fbi create factory-node',
+    'fbi create factory-node my-app -p yarn'
+  ]
+
+  constructor (public factory: Fbi) {
     super()
   }
 
-  async run(factoryOrTemplateName: any, projectName: any, flags: any) {
-    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
-      factoryOrTemplateName,
-      projectName,
-      flags
-    })
+  async run (factoryOrTemplateName: any, projectName: any, flags: any) {
+    this.debug(
+      `Running command "${this.id}" from factory "${this.factory.id}" with options:`,
+      {
+        factoryOrTemplateName,
+        projectName,
+        flags
+      }
+    )
     let templates
     let useSubTemplate = false
     let targetTemplate
@@ -40,7 +51,9 @@ export default class CommandCreate extends Command {
       const subTemplates = template?.templates
 
       if (factoryOrTemplateName) {
-        const hitSubTemplate = subTemplates?.find((x) => x.id === factoryOrTemplateName)
+        const hitSubTemplate = subTemplates?.find(
+          (x) => x.id === factoryOrTemplateName
+        )
 
         if (hitSubTemplate) {
           targetTemplate = hitSubTemplate
@@ -51,7 +64,7 @@ export default class CommandCreate extends Command {
           type: 'select',
           name: 'templateType',
           hint: 'Use arrow-keys, <return> to submit',
-          message: `Pick an action:`,
+          message: 'Pick an action:',
           choices: ['Use sub templates', 'Use other templates', 'Cancel']
         })) as any
 
@@ -69,7 +82,9 @@ export default class CommandCreate extends Command {
         // search factory by name
         const foundFactory = this.factory.resolveFactory(factoryOrTemplateName)
         if (foundFactory) {
-          const factoryPath = foundFactory.baseDir ? relative(cwd, foundFactory.baseDir) : ''
+          const factoryPath = foundFactory.baseDir
+            ? relative(cwd, foundFactory.baseDir)
+            : ''
           this.log(
             `Using ${this.style.bold`${foundFactory.id}${
               foundFactory._version ? '@' + foundFactory._version : ''
@@ -97,8 +112,12 @@ export default class CommandCreate extends Command {
           if (factory && factory.templates) {
             templates = factory.templates
           } else {
-            this.error(`No package named '${factoryOrTemplateName}' found in npmjs.com`)
-            this.error(`No repository named '${factoryOrTemplateName}' found in github.com`)
+            this.error(
+              `No package named '${factoryOrTemplateName}' found in npmjs.com`
+            )
+            this.error(
+              `No repository named '${factoryOrTemplateName}' found in github.com`
+            )
           }
         }
       } else {
@@ -136,7 +155,7 @@ export default class CommandCreate extends Command {
     }
   }
 
-  private async createProject({
+  private async createProject ({
     template,
     subDirectory,
     targetDir,
@@ -183,7 +202,7 @@ export default class CommandCreate extends Command {
     }
 
     // update store
-    this.debug(`Save info into project store`)
+    this.debug('Save info into project store')
     this.projectStore.merge(
       info.path,
       useSubTemplate
@@ -203,7 +222,10 @@ export default class CommandCreate extends Command {
     )
   }
 
-  private async selectTempate(templates: Template[], factoryOrTemplateName?: string) {
+  private async selectTempate (
+    templates: Template[],
+    factoryOrTemplateName?: string
+  ) {
     const _choices = groupBy(templates, 'factory.id')
     const choices = flatten(
       Object.entries(_choices).map(([key, val]: any) =>
@@ -220,13 +242,15 @@ export default class CommandCreate extends Command {
     const { selected } = (await this.prompt({
       type: 'select',
       name: 'selected',
-      message: factoryOrTemplateName ? 'Confirm which template to use' : 'Choose a template',
+      message: factoryOrTemplateName
+        ? 'Confirm which template to use'
+        : 'Choose a template',
       hint: 'Use arrow-keys, <return> to submit',
       choices,
-      result(templateId: any) {
+      result (templateId: any) {
         return {
           templateId,
-          factoryId: this.focused.value
+          factoryId: (this as any).focused.value
         } as any
       }
     })) as any
@@ -236,11 +260,12 @@ export default class CommandCreate extends Command {
     }
 
     return templates?.find(
-      (t: Template) => t.id === selected.templateId && t.factory.id === selected.factoryId
+      (t: Template) =>
+        t.id === selected.templateId && t.factory.id === selected.factoryId
     )
   }
 
-  private async getTargetDir(projectName?: string, cwd = process.cwd()) {
+  private async getTargetDir (projectName?: string, cwd = process.cwd()) {
     if (projectName) {
       return {
         targetDir: cwd,
@@ -252,7 +277,7 @@ export default class CommandCreate extends Command {
       type: 'select',
       name: 'action',
       hint: 'Use arrow-keys, <return> to submit',
-      message: `Create project in:`,
+      message: 'Create project in:',
       choices: [
         {
           message: 'Current directory',
@@ -294,7 +319,7 @@ export default class CommandCreate extends Command {
     }
   }
 
-  private async addFromRemote(name: string, flags: any) {
+  private async addFromRemote (name: string, flags: any) {
     const commandAdd = this.factory.resolveCommand('add')
     if (!commandAdd) {
       return this.error(
