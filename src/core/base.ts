@@ -4,32 +4,43 @@ import execa from 'execa'
 import fs from 'fs-extra'
 import chalk from 'chalk'
 import { prompt } from 'enquirer'
-import glob = require('tiny-glob')
 import readline from 'readline'
-import cleanStack = require('clean-stack')
 
 import context from './context'
 import { Store } from './store'
 import { isWindows, isString, symbols } from '../utils'
 import { resolveConfig, objHasProperty, defaultConfigs } from '../helpers'
+import glob = require('tiny-glob')
+import cleanStack = require('clean-stack')
 
-function cleanError(err: object | string): string {
+function cleanError (err: object | string): string {
   const stack =
     typeof err === 'string'
       ? err
-      : typeof err === 'object' && objHasProperty(err, 'stack') && typeof err.stack === 'string'
-      ? err.stack
-      : ''
+      : typeof err === 'object' &&
+        objHasProperty(err, 'stack') &&
+        typeof err.stack === 'string'
+        ? err.stack
+        : ''
 
   return cleanStack(stack, {
     pretty: true
   })
 }
 
-const safeStylized = (str: any, style: Function) => (typeof str === 'string' ? style(str) : str)
+const safeStylized = (str: any, style: Function) =>
+  typeof str === 'string' ? style(str) : str
 
 // handle ctrl+c on prompt
 ;(prompt as any).on('cancel', () => process.exit())
+
+interface InstallOptions {
+  cwd?: string
+  packageManager?: string
+  lockfile?: boolean
+  opts?: Record<string, any>
+  names?: string[]
+}
 
 export abstract class BaseClass {
   private _store?: Store
@@ -37,71 +48,84 @@ export abstract class BaseClass {
   private _projectStore?: Store
   public context: Store = context
 
-  get store() {
+  get store () {
     if (!this._store) {
-      this._store = new Store(join(defaultConfigs.rootDirectory, 'factories.json'))
+      this._store = new Store(
+        join(defaultConfigs.rootDirectory, 'factories.json')
+      )
     }
     return this._store
   }
 
-  get projectStore() {
+  get projectStore () {
     if (!this._projectStore) {
-      this._projectStore = new Store(join(defaultConfigs.rootDirectory, 'projects.json'))
+      this._projectStore = new Store(
+        join(defaultConfigs.rootDirectory, 'projects.json')
+      )
     }
     return this._projectStore
   }
 
-  get configStore() {
+  get configStore () {
     if (!this._configStore) {
-      this._configStore = new Store(join(defaultConfigs.rootDirectory, 'configs.json'))
+      this._configStore = new Store(
+        join(defaultConfigs.rootDirectory, 'configs.json')
+      )
     }
     return this._configStore
   }
 
-  get fs() {
+  get fs () {
     return fs
   }
 
-  get glob() {
+  get glob () {
     return glob
   }
 
-  get style(): chalk.Chalk {
+  get style (): chalk.Chalk {
     // @ts-ignore
     return chalk
   }
 
-  get prompt() {
+  get prompt () {
     return prompt
   }
 
-  get exec() {
+  get exec () {
     return execa
   }
 
-  loadConfig() {
-    const config = resolveConfig(this.context.get('env'), this.configStore, this.projectStore)
+  loadConfig () {
+    const config = resolveConfig(
+      this.context.get('env'),
+      this.configStore,
+      this.projectStore
+    )
     this.context.set('config', config)
     return config
   }
 
-  createSpinner(str: string) {
+  createSpinner (str: string) {
     return (str && ora(str)) || ora()
   }
 
-  log(...messages: any[]): this {
+  log (...messages: any[]): this {
     console.log(...messages)
     return this
   }
 
-  debug(...messages: any[]): this {
+  debug (...messages: any[]): this {
     if (this.context.get('debug')) {
-      console.log(chalk.dim(`[debug]`), ...messages.map((m) => safeStylized(m, chalk.dim)))
+      console.log(
+        chalk.dim('[debug]'),
+        ...messages.map((m) => safeStylized(m, chalk.dim))
+      )
     }
     return this
   }
 
-  warn(...messages: any[]): this {
+  warn (...messages: any[]): this {
     console.log(
       chalk.yellow(symbols.warning),
       ...messages.map((m) => safeStylized(m, chalk.yellow))
@@ -109,32 +133,35 @@ export abstract class BaseClass {
     return this
   }
 
-  error(...messages: any[]): this {
+  error (...messages: any[]): this {
     const errors = messages.map((err: any) =>
       isString(err) ? err : (err?.stack && cleanError(err.stack)) || err
     )
-    console.log(chalk.red(symbols.cross), ...errors.map((m) => safeStylized(m, chalk.red)))
+    console.log(
+      chalk.red(symbols.cross),
+      ...errors.map((m) => safeStylized(m, chalk.red))
+    )
     return this
   }
 
-  logStart(...messages: any[]): this {
+  logStart (...messages: any[]): this {
     return this.log(symbols.pointerSmall, ...messages)
   }
 
-  logEnd(...messages: any[]): this {
+  logEnd (...messages: any[]): this {
     return this.log(symbols.check, ...messages)
   }
 
-  logItem(...messages: any[]): this {
+  logItem (...messages: any[]): this {
     return this.log(symbols.bulletWhite, ...messages)
   }
 
-  clearConsole(): this {
+  clearConsole (): this {
     process.stdout.write(isWindows ? '\x1B[2J\x1B[0f' : '\x1B[2J\x1B[3J\x1B[H')
     return this
   }
 
-  clear() {
+  clear () {
     if (console.clear) {
       console.clear()
     } else if (process.stdout.isTTY) {
@@ -145,23 +172,53 @@ export abstract class BaseClass {
     }
   }
 
-  exit(code?: number): void {
+  exit (code?: number): void {
     process.exit(typeof code === undefined ? 0 : code)
   }
 
-  installDeps(cwd = process.cwd(), packageManager?: string, lockfile = false, opts?: any) {
+  installDeps (
+    cwd = process.cwd(),
+    packageManager?: string,
+    lockfile = false,
+    opts?: any
+  ) {
+    return this.installPkgs({
+      cwd,
+      packageManager,
+      lockfile,
+      opts
+    })
+  }
+
+  installPkgs ({
+    cwd = process.cwd(),
+    lockfile = false,
+    opts = {},
+    names = [],
+    packageManager
+  }: InstallOptions) {
     const npmVersion = this.context.get('env.npmVersion')
     const pm = packageManager || this.context.get('config').packageManager
 
-    const cmds = [pm, 'install']
+    let cmds = [pm, 'install']
 
     if (!lockfile) {
       // pnpm: Headless installation requires a pnpm-lock.yaml file
-      cmds.push(pm === 'npm' ? '--no-package-lock' : pm === 'yarn' ? '--no-lockfile' : '')
+      cmds.push(
+        pm === 'npm'
+          ? '--no-package-lock'
+          : pm === 'yarn'
+            ? '--no-lockfile'
+            : ''
+      )
     }
 
     if (pm === 'npm' && npmVersion && npmVersion[0] >= 7) {
       cmds.push('--legacy-peer-deps')
+    }
+
+    if (Array.isArray(names)) {
+      cmds = cmds.concat(names)
     }
 
     this.debug(`\nrunning \`${cmds.join(' ')}\` in ${cwd}`)

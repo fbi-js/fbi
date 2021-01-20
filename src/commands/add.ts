@@ -1,5 +1,5 @@
-import type { Fbi } from '../fbi'
-import type { Factory } from '../core/factory'
+import { Fbi } from '../fbi'
+import { Factory } from '../core/factory'
 
 import { isAbsolute, join, relative } from 'path'
 import { Command } from '../core/command'
@@ -9,23 +9,33 @@ export default class CommandAdd extends Command {
   id = 'add'
   alias = ''
   args = '<factories...>'
-  description = `add factories from npm module or git url`
+  description = 'add factories from npm module or git url'
   flags = [
     ['-y, --yes', 'Yes to all questions', false],
     ['-t, --target-dir <dir>', 'Target dir for factory from npm', ''],
-    ['-p, --package-manager <name>', 'Specifying a package manager. e.g. pnpm/yarn/npm']
+    [
+      '-p, --package-manager <name>',
+      'Specifying a package manager. e.g. pnpm/yarn/npm'
+    ]
   ]
-  examples = ['fbi add factory-node', 'fbi add @fbi-js/factory-node -t sub-dir -y']
 
-  constructor(public factory: Fbi) {
+  examples = [
+    'fbi add factory-node',
+    'fbi add @fbi-js/factory-node -t sub-dir -y'
+  ]
+
+  constructor (public factory: Fbi) {
     super()
   }
 
-  public async run(names: any, flags: any): Promise<Factory[]> {
-    this.debug(`Running command "${this.id}" from factory "${this.factory.id}" with options:`, {
-      names,
-      flags
-    })
+  public async run (names: any, flags: any): Promise<Factory[]> {
+    this.debug(
+      `Running command "${this.id}" from factory "${this.factory.id}" with options:`,
+      {
+        names,
+        flags
+      }
+    )
     const result: Factory[] = []
 
     for (const name of names) {
@@ -45,12 +55,12 @@ export default class CommandAdd extends Command {
     return result
   }
 
-  private getGitUrlInfo(url: string, { organization }: any) {
+  private getGitUrlInfo (url: string, { organization }: any) {
     let gitUrl = ''
     if (isGitUrl(url)) {
       gitUrl = url
     } else {
-      const repoReplaced = url.replace(/(^\/*)|(\/*$)/g, '')
+      const repoReplaced = url.replace(/@|(^\/*)|(\/*$)/g, '')
       if (repoReplaced.split('/').length > 1) {
         gitUrl = `https://github.com/${repoReplaced}`
       } else {
@@ -63,7 +73,7 @@ export default class CommandAdd extends Command {
     const name = gitUrl.split('/').slice(-2)?.join('/')?.replace('.git', '')
 
     if (!name) {
-      this.error(`invalid url:`, gitUrl)
+      this.error('invalid url:', gitUrl)
       return null
     }
 
@@ -73,7 +83,7 @@ export default class CommandAdd extends Command {
     }
   }
 
-  private async checkGitUrl(url: string) {
+  private async checkGitUrl (url: string) {
     const spinner = this.createSpinner(`Checking remote url '${url}'`).start()
     const remoteExist = await git.remoteExist(url)
     if (!remoteExist) {
@@ -84,7 +94,7 @@ export default class CommandAdd extends Command {
     return true
   }
 
-  private async addFromNpm(name: string, flags: any): Promise<null | Factory> {
+  private async addFromNpm (name: string, flags: any): Promise<null | Factory> {
     const cwd =
       flags?.targetDir && isAbsolute(flags.targetDir)
         ? flags.targetDir
@@ -124,12 +134,10 @@ export default class CommandAdd extends Command {
     ).start()
 
     try {
-      const cmd = `npm install --no-package-lock ${name}`
-      const opts = {
+      await this.installPkgs({
+        names: [name],
         cwd
-      }
-      this.debug({ cmd, opts })
-      await this.exec.command(cmd, opts)
+      })
       spinner.succeed(`${factoryExist ? 'Updated' : 'Installed'} ${styledName}`)
       return this.factory.resolveFromLocal(name, cwd)
     } catch (err) {
@@ -139,14 +147,14 @@ export default class CommandAdd extends Command {
     return null
   }
 
-  private async addFromGit(name: string, flags: any): Promise<null | Factory> {
+  private async addFromGit (name: string, flags: any): Promise<null | Factory> {
     let targetDir
     let isUpdate
     let remoteUrl
     let factoryName = name
     const config = this.context.get('config')
 
-    let found = await this.factoryExist(name, 'git')
+    const found = await this.factoryExist(name, 'git')
     if (found) {
       targetDir = found
       factoryName = name
@@ -161,7 +169,7 @@ export default class CommandAdd extends Command {
       factoryName = info.name
 
       if (factoryName) {
-        let found2 = await this.factoryExist(factoryName, 'git')
+        const found2 = await this.factoryExist(factoryName, 'git')
         if (found2) {
           targetDir = found2
           isUpdate = true
@@ -169,7 +177,9 @@ export default class CommandAdd extends Command {
       }
     }
 
-    targetDir = targetDir || join(config?.rootDirectory, config?.directoryName, factoryName)
+    targetDir =
+      targetDir ||
+      join(config?.rootDirectory, config?.directoryName, factoryName)
     remoteUrl =
       remoteUrl ||
       (await git.remoteUrl({
@@ -179,10 +189,12 @@ export default class CommandAdd extends Command {
     this.debug({ remoteUrl, targetDir, isUpdate, factoryName })
 
     const styledName = this.style.cyan(factoryName)
-    const spinner = this.createSpinner(`${isUpdate ? 'Updating' : 'Adding'} ${styledName}`).start()
+    const spinner = this.createSpinner(
+      `${isUpdate ? 'Updating' : 'Adding'} ${styledName}`
+    ).start()
 
     if (!remoteUrl) {
-      spinner.fail(`Can not resolve git url`)
+      spinner.fail('Can not resolve git url')
       return null
     }
 
@@ -242,7 +254,11 @@ export default class CommandAdd extends Command {
     return null
   }
 
-  private async factoryExist(name: string, type: 'npm' | 'git', cwd = process.cwd()) {
+  private async factoryExist (
+    name: string,
+    type: 'npm' | 'git',
+    cwd = process.cwd()
+  ) {
     const config = this.context.get('config')
     const targetDir =
       type === 'npm'
@@ -252,13 +268,14 @@ export default class CommandAdd extends Command {
     return exist ? targetDir : ''
   }
 
-  private async installProdDeps(flags: Record<string, any>, targetDir: string) {
-    const spinner = this.createSpinner(`Installing dependencies...`).start()
+  private async installProdDeps (flags: Record<string, any>, targetDir: string) {
+    const spinner = this.createSpinner('Installing dependencies...').start()
     try {
       process.env.NODE_ENV = 'production'
       const env = this.context.get('env')
       const pm =
-        flags.packageManager || (env.hasYarn ? 'yarn' : this.context.get('config').packageManager)
+        flags.packageManager ||
+        (env.hasYarn ? 'yarn' : this.context.get('config').packageManager)
       await this.exec.command(`${pm} install`, {
         cwd: targetDir,
         stdout: 'ignore',
@@ -267,14 +284,16 @@ export default class CommandAdd extends Command {
           NODE_ENV: 'production'
         }
       })
-      spinner.succeed(`Installed dependencies`)
+      spinner.succeed('Installed dependencies')
     } catch (err) {
-      spinner.fail('Failed to install dependencies. You can install them manually.')
+      spinner.fail(
+        'Failed to install dependencies. You can install them manually.'
+      )
       this.error(err)
     }
   }
 
-  private async getVersionInfo(factory: Factory | null) {
+  private async getVersionInfo (factory: Factory | null) {
     if (!factory) {
       return {}
     }
