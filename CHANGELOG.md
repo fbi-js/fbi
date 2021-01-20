@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.3.4](https://github.com/fbi-js/fbi/compare/v4.3.3...v4.3.4) (2021-01-20)
+
+
+### Bug Fixes
+
+* **add:** compatible with npm v7 ([552cce6](https://github.com/fbi-js/fbi/commit/552cce60696256dc842de3799cbfdd40065cc385))
+
 ### [4.3.3](https://github.com/fbi-js/fbi/compare/v4.3.2...v4.3.3) (2020-12-21)
 
 
