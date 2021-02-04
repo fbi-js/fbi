@@ -92,7 +92,7 @@ export abstract class BaseClass {
     return prompt
   }
 
-  get exec () {
+  get exec (): any {
     return execa
   }
 

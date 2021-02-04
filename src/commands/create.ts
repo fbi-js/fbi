@@ -5,6 +5,14 @@ import { Template } from '../core/template'
 import { basename, join, relative } from 'path'
 import { groupBy, flatten, isValidArray } from '../utils'
 
+interface createProjectArgs {
+  template: Template
+  subDirectory?: string
+  targetDir: string
+  flags: any
+  useSubTemplate: boolean
+}
+
 export default class CommandCreate extends Command {
   id = 'create'
   alias = ''
@@ -24,11 +32,11 @@ export default class CommandCreate extends Command {
     'fbi create factory-node my-app -p yarn'
   ]
 
-  constructor (public factory: Fbi) {
+  constructor(public factory: Fbi) {
     super()
   }
 
-  async run (factoryOrTemplateName: any, projectName: any, flags: any) {
+  async run(factoryOrTemplateName: any, projectName: any, flags: any) {
     this.debug(
       `Running command "${this.id}" from factory "${this.factory.id}" with options:`,
       {
@@ -45,6 +53,9 @@ export default class CommandCreate extends Command {
 
     const cwd = process.cwd()
     const usingFactory = this.context.get('config.factory')
+    this.debug(`usingFactory: ${usingFactory}`)
+    this.debug(`targetTemplate: ${targetTemplate}`)
+
     if (usingFactory) {
       const factory = this.factory.resolveFactory(usingFactory.id)
       const template = factory?.resolveTemplate(usingFactory.template)
@@ -60,13 +71,13 @@ export default class CommandCreate extends Command {
           useSubTemplate = true
         }
       } else if (isValidArray(subTemplates)) {
-        const { templateType } = (await this.prompt({
+        const { templateType } = await this.prompt<{ templateType: string }>({
           type: 'select',
           name: 'templateType',
           hint: 'Use arrow-keys, <return> to submit',
           message: 'Pick an action:',
           choices: ['Use sub templates', 'Use other templates', 'Cancel']
-        })) as any
+        })
 
         if (templateType === 'Cancel') {
           this.exit()
@@ -155,19 +166,15 @@ export default class CommandCreate extends Command {
     }
   }
 
-  private async createProject ({
-    template,
-    subDirectory,
-    targetDir,
-    flags,
-    useSubTemplate = false
-  }: {
-    template: Template
-    subDirectory?: string
-    targetDir: string
-    flags: any
-    useSubTemplate: boolean
-  }) {
+  private async createProject(args: createProjectArgs) {
+    this.debug('createProjectArgs', args)
+    const {
+      template,
+      subDirectory,
+      targetDir,
+      flags,
+      useSubTemplate = false
+    } = args
     if (!template) {
       this.exit()
     }
@@ -175,27 +182,27 @@ export default class CommandCreate extends Command {
     // get init data
     const factory = template.factory
     const storeInfo = this.store.get(factory.id)
-
-    const info: Record<string, any> = await template.run(
-      {
-        factory: {
-          id: factory.id,
-          path:
-            storeInfo?.version?.latest?.dir ||
-            storeInfo?.path ||
-            factory.baseDir ||
-            factory.options?.rootDir ||
-            join(process.cwd(), subDirectory || '', 'node_modules', factory.id),
-          version: storeInfo?.version?.latest?.short ?? '',
-          template: template.id
-        },
-        project: {
-          name: basename(targetDir)
-        },
-        subDirectory
+    this.debug('storeInfo', storeInfo)
+    const templateOptions = {
+      factory: {
+        id: factory.id,
+        path:
+          storeInfo?.version?.latest?.dir ||
+          storeInfo?.path ||
+          factory.baseDir ||
+          factory.options?.rootDir ||
+          join(process.cwd(), subDirectory || '', 'node_modules', factory.id),
+        version: storeInfo?.version?.latest?.short ?? '',
+        template: template.id
       },
-      flags
-    )
+      project: {
+        name: basename(targetDir)
+      },
+      subDirectory
+    }
+
+    // render template
+    const info: Record<string, any> = await template.run(templateOptions, flags)
 
     if (!info || !info.path) {
       return
@@ -222,11 +229,14 @@ export default class CommandCreate extends Command {
     )
   }
 
-  private async selectTempate (
+  private async selectTempate(
     templates: Template[],
     factoryOrTemplateName?: string
   ) {
+    // console.log('selectTempate', templates)
+    this.debug(`factoryOrTemplateName: ${factoryOrTemplateName}`)
     const _choices = groupBy(templates, 'factory.id')
+
     const choices = flatten(
       Object.entries(_choices).map(([key, val]: any) =>
         [{ role: 'separator', message: `\n※ ${key}:` }].concat(
@@ -239,7 +249,7 @@ export default class CommandCreate extends Command {
       )
     )
 
-    const { selected } = (await this.prompt({
+    const { selected } = await this.prompt<{ selected: any }>({
       type: 'select',
       name: 'selected',
       message: factoryOrTemplateName
@@ -247,25 +257,28 @@ export default class CommandCreate extends Command {
         : 'Choose a template',
       hint: 'Use arrow-keys, <return> to submit',
       choices,
-      result (templateId: any) {
+      result(templateId: any) {
         return {
           templateId,
           factoryId: (this as any).focused.value
         } as any
       }
-    })) as any
+    })
 
     if (!selected) {
       return null
     }
+    this.debug('selected', selected)
 
-    return templates?.find(
+    const selectedTemplate = templates?.find(
       (t: Template) =>
         t.id === selected.templateId && t.factory.id === selected.factoryId
     )
+    this.debug('selectedTemplate', selectedTemplate)
+    return selectedTemplate
   }
 
-  private async getTargetDir (projectName?: string, cwd = process.cwd()) {
+  private async getTargetDir(projectName?: string, cwd = process.cwd()) {
     if (projectName) {
       return {
         targetDir: cwd,
@@ -273,53 +286,28 @@ export default class CommandCreate extends Command {
       }
     }
 
-    const { action } = await this.prompt<{ action: string }>({
-      type: 'select',
-      name: 'action',
-      hint: 'Use arrow-keys, <return> to submit',
-      message: 'Create project in:',
-      choices: [
-        {
-          message: 'Current directory',
-          name: 'current'
-        },
-        {
-          message: 'New subdirectory',
-          name: 'subDirectory'
-        },
-        {
-          message: 'Cancel',
-          name: 'cancel'
-        }
-      ]
-    })
+    console.log(`\n${this.style.green('fbi will create a project !')}\n`)
 
-    switch (action) {
-      case 'subDirectory': {
-        const { subDirectory } = await this.prompt<{ subDirectory: string }>({
-          type: 'input',
-          name: 'subDirectory',
-          message: 'Subdirectory path'
-        })
-        const targetDir = join(cwd, subDirectory ?? '')
-        return {
-          targetDir,
-          subDirectory
+    const { subDirectory } = await this.prompt<{ subDirectory: string }>([
+      {
+        type: 'input',
+        name: 'subDirectory',
+        message: 'Please enter a directory name!',
+        initial () {
+          return 'my-app'
         }
       }
-      case 'cancel':
-        this.exit()
-        break
-      default:
-        break
+    ])
+
+    const targetDir = join(cwd, subDirectory ?? '')
+    return {
+      targetDir,
+      subDirectory
     }
 
-    return {
-      targetDir: cwd
-    }
   }
 
-  private async addFromRemote (name: string, flags: any) {
+  private async addFromRemote(name: string, flags: any) {
     const commandAdd = this.factory.resolveCommand('add')
     if (!commandAdd) {
       return this.error(
