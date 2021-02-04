@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.4.1](https://github.com/fbi-js/fbi/compare/v4.4.0...v4.4.1) (2021-02-04)
+
+
+### Features
+
+* 去除ejs依赖 ([69bfc03](https://github.com/fbi-js/fbi/commit/69bfc0394194f8e45b80882b7006bb52e9118d00))
+
+
+### Bug Fixes
+
+* 修复render类型定义无法扩展的问题 ([fca3075](https://github.com/fbi-js/fbi/commit/fca30752c20176819666b665c107dde16d5cab83))
+
 ## [4.4.0](https://github.com/fbi-js/fbi/compare/v4.3.4...v4.4.0) (2021-02-04)
 
 
