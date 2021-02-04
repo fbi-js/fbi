@@ -51,10 +51,8 @@
   "devDependencies": {
     "@fbi-js/eslint-config-typescript": "^1.2.0",
     "@fbi-js/tsconfig": "^1.2.0",
-    "@types/ejs": "^3.0.5",
     "@types/node": "*",
     "@types/semver": "^7",
-    "ejs": "^3.1.5",
     "eslint": "^7",
     "prettier": "^2.2.1",
     "typescript": "^4"

@@ -1,5 +1,4 @@
 import { isAbsolute, join } from 'path'
-import * as ejs from 'ejs'
 import { BaseClass } from './base'
 import { Factory } from './factory'
 import { isValidObject } from '../utils'
@@ -27,7 +26,7 @@ export abstract class Template extends BaseClass {
   // absolute path to template dir
   public path = ''
   public templates: Template[] = []
-  protected renderer = ejs.render
+  protected renderer = () => {}
   protected data: Record<string | number, any> = {}
   protected files: Files = {}
   protected targetDir = process.cwd()
