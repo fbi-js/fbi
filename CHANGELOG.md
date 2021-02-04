@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.4.0](https://github.com/fbi-js/fbi/compare/v4.3.4...v4.4.0) (2021-02-04)
+
+
+### Features
+
+* 优化template创建逻辑 ([ca6cf1c](https://github.com/fbi-js/fbi/commit/ca6cf1ca0af56a5686b9e788d10ba1ab741943ed))
+
 ### [4.3.4](https://github.com/fbi-js/fbi/compare/v4.3.3...v4.3.4) (2021-01-20)
 
 
