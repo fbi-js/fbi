@@ -26,7 +26,7 @@ export abstract class Template extends BaseClass {
   // absolute path to template dir
   public path = ''
   public templates: Template[] = []
-  protected renderer = () => {}
+  protected renderer?: Function
   protected data: Record<string | number, any> = {}
   protected files: Files = {}
   protected targetDir = process.cwd()
