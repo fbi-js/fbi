@@ -106,7 +106,7 @@ export abstract class BaseClass {
     return config
   }
 
-  createSpinner (str: string) {
+  createSpinner (str?: string) {
     return (str && ora(str)) || ora()
   }
 

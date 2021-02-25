@@ -237,12 +237,12 @@ export default class CommandAdd extends Command {
       this.debug('Save to store:', data)
       this.store.set(data.id, data)
 
-      const { version, global } = await this.getVersionInfo(factory)
-      if (version) {
-        this.store.set(`${factory.id}.version`, version)
-      }
-      if (global) {
-        this.store.set(`${factory.id}.global`, global)
+      // const { version, global } = await this.getVersionInfo(factory)
+      // if (version) {
+      //   this.store.set(`${factory.id}.version`, version)
+      // }
+      if (factory.isGlobal) {
+        this.store.set(`${factory.id}.global`, factory.isGlobal)
       }
 
       return factory
@@ -269,13 +269,14 @@ export default class CommandAdd extends Command {
   }
 
   private async installProdDeps (flags: Record<string, any>, targetDir: string) {
-    const spinner = this.createSpinner('Installing dependencies...').start()
+    let spinner = this.createSpinner()
     try {
       process.env.NODE_ENV = 'production'
       const env = this.context.get('env')
-      const pm =
-        flags.packageManager ||
-        (env.hasYarn ? 'yarn' : this.context.get('config').packageManager)
+      const config = this.context.get('config')
+      const pm = flags.packageManager || (env.hasYarn ? 'yarn' : config.packageManager)
+      console.log(`fbi start install dependencies in ${this.style.cyan(targetDir)}`)
+      spinner.start(`${this.style.cyan(`${pm} install`)}`)
       await this.exec.command(`${pm} install`, {
         cwd: targetDir,
         stdout: 'ignore',
@@ -286,9 +287,7 @@ export default class CommandAdd extends Command {
       })
       spinner.succeed('Installed dependencies')
     } catch (err) {
-      spinner.fail(
-        'Failed to install dependencies. You can install them manually.'
-      )
+      spinner.fail(`Failed to install dependencies, You can install them manually, install dependencies path: ${targetDir}`)
       this.error(err)
     }
   }
