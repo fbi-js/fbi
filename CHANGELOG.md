@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.6.0](https://github.com/fbi-js/fbi/compare/v4.5.0...v4.6.0) (2021-02-26)
+
+
+### Features
+
+* **template:** add write file function ([b53898a](https://github.com/fbi-js/fbi/commit/b53898ad6545578629d3d5c98847fc6c538e3d73))
+* remove fbi add version logic ([c54aedc](https://github.com/fbi-js/fbi/commit/c54aedc3483887e1fd3263ab2bf3b31fbf862d18))
+
 ## [4.5.0](https://github.com/fbi-js/fbi/compare/v4.4.1...v4.5.0) (2021-02-25)
 
 

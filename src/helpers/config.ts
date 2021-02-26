@@ -91,10 +91,10 @@ export function resolveConfig (
     packageFile: 'package.json',
     packageKey: 'fbi',
     organization: 'https://github.com/fbi-js',
-    packageManager: env.hasNpm
-      ? 'npm'
-      : env.hasYarn
-        ? 'yarn'
+    packageManager: env.hasYarn
+      ? 'yarn'
+      : env.hasNpm
+        ? 'npm'
         : env.hasPnpm
           ? 'pnpm'
           : ''
