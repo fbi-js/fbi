@@ -36,10 +36,12 @@
     "url": "https://github.com/fbi-js/fbi/issues"
   },
   "dependencies": {
+    "@types/ejs": "^3.0.6",
     "@types/fs-extra": "^9.0.5",
     "chalk": "^4.1.0",
     "clean-stack": "^3.0.1",
     "commander": "6.2.1",
+    "ejs": "^3.1.6",
     "enquirer": "^2.3.6",
     "execa": "^5.0.0",
     "fs-extra": "^9.1.0",

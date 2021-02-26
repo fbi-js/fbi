@@ -21,8 +21,7 @@ export default class CommandCreate extends Command {
   flags = [
     [
       '-p, --package-manager <name>',
-      'Specifying a package manager. e.g. pnpm/yarn/npm',
-      'npm'
+      'Specifying a package manager. e.g. pnpm/yarn/npm'
     ]
   ]
 
@@ -278,21 +277,21 @@ export default class CommandCreate extends Command {
     return selectedTemplate
   }
 
-  private async getTargetDir(projectName?: string, cwd = process.cwd()) {
+  private async getTargetDir(projectName?: string) {
+    const cwd = process.cwd()
     if (projectName) {
       return {
         targetDir: cwd,
         subDirectory: projectName
       }
     }
-
     console.log(`\n${this.style.green('fbi will create a project !')}\n`)
 
     const { subDirectory } = await this.prompt<{ subDirectory: string }>([
       {
         type: 'input',
         name: 'subDirectory',
-        message: 'Please enter a directory name!',
+        message: 'Please enter a valid project name!',
         initial () {
           return 'my-app'
         }

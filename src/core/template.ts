@@ -1,3 +1,4 @@
+import * as ejs from 'ejs'
 import { isAbsolute, join } from 'path'
 import { BaseClass } from './base'
 import { Factory } from './factory'
@@ -26,7 +27,6 @@ export abstract class Template extends BaseClass {
   // absolute path to template dir
   public path = ''
   public templates: Template[] = []
-  protected renderer?: Function
   protected data: Record<string | number, any> = {}
   protected files: Files = {}
   protected targetDir = process.cwd()
@@ -256,4 +256,76 @@ export abstract class Template extends BaseClass {
   //   }
   //   return [...new Set(ret)]
   // }
+
+  /**
+   * from -> /factory-web/templates/${template}/src-ts/routes/index.ts.ejs
+   * to -> ${this.targetDir}/src-ts/routes/index.ts
+   * @param srcPath file entry path
+   */
+  private getOutputPath(srcPath: string) {
+    const { template } = this.data.factory
+    const formatPath = srcPath
+      .replace(/(.*)(templates)(.*)/, '$3')
+      .replace(`/${template}`, '')
+      .replace(/(.*)(.ejs)$/, '$1')
+    const outputPath = `${this.targetDir}${formatPath}`
+    return outputPath
+  }
+
+  /**
+   * copy or render file from srcPath to outputPath, .ejs file will be render by ejs
+   * @param srcPath file entry path
+   * @param outputPath file output path
+   */
+  private async writeFile(srcPath: string, outputPath: string) {
+    const isEjsFile = /(.*)(.ejs)$/.test(srcPath)
+    if (!isEjsFile) {
+      this.fs.copy(srcPath, outputPath, {})
+    } else {
+      const content = await this.fs.readFile(srcPath, 'utf8')
+      const rendered = await ejs.render(
+        content.trim() + '\n',
+        {
+          ...this.data
+        },
+        {
+          async: true
+        }
+      )
+      await this.fs.outputFile(outputPath, rendered, {})
+    }
+
+    console.log(this.style.grey(`write file: ${outputPath}`))
+    this.debug('writing file', {
+      srcPath,
+      outputPath
+    })
+  }
+
+  /**
+   * copy or render files
+   * @param files file path list
+   */
+  public async writingFiles(files: string[]) {
+    for (const srcPath of files) {
+      const isExist = await this.fs.pathExists(srcPath)
+      const outputPath = this.getOutputPath(srcPath)
+      const stats = await this.fs.stat(srcPath)
+      if (isExist) {
+        if (stats.isFile()) {
+          try {
+            await this.writeFile(srcPath, outputPath)
+          } catch (error) {
+            this.debug('write file error:', {
+              srcPath,
+              outputPath,
+              error
+            })
+          }
+        } else {
+          await this.fs.ensureDir(outputPath)
+        }
+      }
+    }
+  }
 }
