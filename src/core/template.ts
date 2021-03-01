@@ -280,7 +280,7 @@ export abstract class Template extends BaseClass {
   private async writeFile(srcPath: string, outputPath: string) {
     const isEjsFile = /(.*)(.ejs)$/.test(srcPath)
     if (!isEjsFile) {
-      this.fs.copy(srcPath, outputPath, {})
+      await this.fs.copy(srcPath, outputPath, {})
     } else {
       const content = await this.fs.readFile(srcPath, 'utf8')
       const rendered = await ejs.render(
