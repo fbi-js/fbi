@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.7.0](https://github.com/fbi-js/fbi/compare/v4.6.1...v4.7.0) (2021-03-02)
+
+
+### Features
+
+* add ignore config ([e7dcfd0](https://github.com/fbi-js/fbi/commit/e7dcfd0cf2192b666a8a51c732bded17c304c58a))
+
 ### [4.6.1](https://github.com/fbi-js/fbi/compare/v4.6.0...v4.6.1) (2021-03-01)
 
 
