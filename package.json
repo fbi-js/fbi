@@ -1,7 +1,7 @@
 {
   "name": "fbi",
   "description": "A workflow tool in the command line",
-  "version": "4.6.0",
+  "version": "4.7.0",
   "author": "shaw @neikvon",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -45,6 +45,7 @@
     "enquirer": "^2.3.6",
     "execa": "^5.0.0",
     "fs-extra": "^9.1.0",
+    "globrex": "^0.1.2",
     "ora": "^5.2.0",
     "pkg-dir": "^5.0.0",
     "semver": "^7.3.4",

@@ -4,20 +4,11 @@ import { BaseClass } from './base'
 import { Factory } from './factory'
 import { isValidObject } from '../utils'
 
-type FileMap = {
-  from: string
-  to: string
-  options?: Record<string, unknown>
-  data?: Record<string, unknown>
-  cwd?: string
-}
+const globrex = require('globrex');
 
-type StringOrFileMap = string | FileMap
-
-type Files = {
-  copy?: StringOrFileMap[]
-  render?: StringOrFileMap[]
-  renderOptions?: [] | Record<string, unknown>
+type GlobRule = {
+  glob?: string
+  ignores?: any[]
 }
 
 export abstract class Template extends BaseClass {
@@ -28,13 +19,20 @@ export abstract class Template extends BaseClass {
   public path = ''
   public templates: Template[] = []
   protected data: Record<string | number, any> = {}
-  protected files: Files = {}
+  protected rule: GlobRule = {
+    glob: '/**/*',
+    ignores: []
+  }
   protected targetDir = process.cwd()
   protected _debugPrefix = ''
   private rootPath = ''
 
   constructor (public factory: Factory) {
     super()
+  }
+
+  get globPath() {
+    return `${this.path}/${this.rule.glob}`
   }
 
   // public methods
@@ -156,110 +154,9 @@ export abstract class Template extends BaseClass {
     // after end
   }
 
-  // utils - to do delete
-  // private async copy (fileMaps: StringOrFileMap[]) {
-  //   const maps: FileMap[] = this.foramtFileMaps(fileMaps)
-  //   for (const map of maps) {
-  //     const paths = await this.globFile(map)
-  //     const replace = map.to.split('/').filter(Boolean)
-  //     for (const p of paths) {
-  //       const rest = p.split('/').filter(Boolean).slice(replace.length)
-  //       const src = join(this.rootPath, p)
-  //       if (!(await this.fs.pathExists(src))) {
-  //         this.warn(`${src} not found`)
-  //         continue
-  //       }
-  //       const dest = join(this.targetDir, replace.join('/'), rest.join('/'))
-  //       this.debug(
-  //         'copy:',
-  //         src.replace(this.rootPath + '/', ''),
-  //         '=>',
-  //         dest.replace(this.targetDir + '/', '')
-  //       )
-  //       await this.fs.copy(src, dest, map.options || {})
-  //     }
-  //   }
-  // }
-
-  // private async render (
-  //   fileMaps: StringOrFileMap[],
-  //   data: Record<string | number, any>,
-  //   options?: [] | Record<string, unknown>
-  // ) {
-  //   if (!this.renderer || !isFunction(this.renderer)) {
-  //     return
-  //   }
-  //   const maps = this.foramtFileMaps(fileMaps)
-  //   for (const map of maps) {
-  //     const paths = await this.globFile(map)
-  //     const replace = map.to.split('/').filter(Boolean)
-  //     for (const p of paths) {
-  //       const rest = p.split('/').filter(Boolean).slice(replace.length)
-  //       const src = join(this.rootPath, p)
-  //       const stats = await this.fs.stat(src)
-  //       if (stats.isFile()) {
-  //         const content = await this.fs.readFile(src, 'utf8')
-  //         const opts = Array.isArray(options) ? options : [options]
-  //         const rendered = await this.renderer(
-  //           content.trim() + '\n',
-  //           { ...data, ...(map.data || {}) },
-  //           ...opts
-  //         )
-  //         const dest = join(this.targetDir, replace.join('/'), rest.join('/'))
-  //         // this.debug('render:', p, '=>', dest.replace(this.targetDir + '/', ''))
-  //         await this.fs.outputFile(dest, rendered, map.options || {})
-  //       }
-  //     }
-  //   }
-  // }
-
-  // private foramtFileMaps (fileMaps: any[]): FileMap[] {
-  //   return ensureArray(fileMaps)
-  //     .map((m: any) =>
-  //       isString(m)
-  //         ? {
-  //             from: m,
-  //             to: m
-  //               .split('/')
-  //               .filter(
-  //                 (x: string) => !!x && !x.includes('*') && !x.includes('!')
-  //               )
-  //               .join('/')
-  //           }
-  //         : isFunction(m)
-  //           ? m()
-  //           : m
-  //     )
-  //     .filter((m: any) => Boolean(m) && m.from && m.to)
-  // }
-
-  // private async globFile ({
-  //   from,
-  //   options,
-  //   cwd = ''
-  // }: Record<string, any>): Promise<string[]> {
-  //   const patterns = ensureArray(from)
-  //   let ret: string[] = []
-  //   for (let p of patterns) {
-  //     if (p.startsWith('./')) {
-  //       p = p.slice(2)
-  //     }
-  //     const trimp = p.trim()
-  //     if (trimp) {
-  //       const r = await this.glob(trimp, {
-  //         cwd: join(this.rootPath, cwd || ''),
-  //         dot: true,
-  //         ...(options || {})
-  //       })
-  //       ret = ret.concat(r)
-  //     }
-  //   }
-  //   return [...new Set(ret)]
-  // }
-
+  // public methods
   /**
-   * from -> /factory-web/templates/${template}/src-ts/routes/index.ts.ejs
-   * to -> ${this.targetDir}/src-ts/routes/index.ts
+   * output -> ${this.targetDir}/src/routes/index.ts
    * @param srcPath file entry path
    */
   private getOutputPath(srcPath: string) {
@@ -273,14 +170,36 @@ export abstract class Template extends BaseClass {
   }
 
   /**
+   * determine the srcPath file is ignored
+   * @param srcPath file entry path
+   */
+  private isIgnoreFile(srcPath: string, outputPath: string) {
+    let isIgnoreFile = false
+    this.rule.ignores?.forEach(ignoreRule => {
+      const filePath = join(this.path, ignoreRule)
+      const { regex } = globrex(filePath)
+      const isIgnore = regex.test(srcPath)
+      if (isIgnore) {
+        isIgnoreFile = true
+        console.log(this.style.grey(`ignore file: ${outputPath}`))
+      }
+    })
+    return isIgnoreFile
+  }
+
+  /**
    * copy or render file from srcPath to outputPath, .ejs file will be render by ejs
    * @param srcPath file entry path
    * @param outputPath file output path
    */
   private async writeFile(srcPath: string, outputPath: string) {
     const isEjsFile = /(.*)(.ejs)$/.test(srcPath)
+    if (this.isIgnoreFile(srcPath, outputPath)) {
+      return
+    }
+
     if (!isEjsFile) {
-      this.fs.copy(srcPath, outputPath, {})
+      await this.fs.copy(srcPath, outputPath, {})
     } else {
       const content = await this.fs.readFile(srcPath, 'utf8')
       const rendered = await ejs.render(
