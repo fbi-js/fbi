@@ -242,7 +242,10 @@ export abstract class Template extends BaseClass {
             })
           }
         } else {
-          await this.fs.ensureDir(outputPath)
+          if (!this.isIgnoreFile(srcPath, outputPath)) {
+            console.log(this.style.grey(`write file: ${outputPath}`))
+            await this.fs.ensureDir(outputPath)
+          }
         }
       }
     }
