@@ -1,6 +1,22 @@
-# Configuration
+# Contribute Guide
 
-## Default
+## Dev
+
+```bash
+npm i
+npm link
+
+# watch mode
+fbi w
+
+# build
+fbi b
+```
+
+## Configuration
+
+### Default
+
 ```js
 {
   task_param_prefix: '-', // 识别命令行参数的标识，如：fbi b -p, fbi s -3000 （其中p, 3000为参数）
@@ -31,7 +47,8 @@
 
 默认配置均可更改，任何时候都以` paths.config `指定的配置文件优先。
 
-## 本地配置：fbi/config.js
+### 本地配置：fbi/config.js
+
 ```js
 {
   template: 'webpack2', // 模板名称，fbi通过该配置项识别模板
@@ -59,14 +76,16 @@
 
 如：` ctx.options.server.root `
 
-## 最精简的本地配置
+### 最精简的本地配置
+
 ```js
 {
   template: 'webpack2'
 }
 ```
 
-## fbi使用的配置项有
+### fbi使用的配置项有
+
 ```
 task_param_prefix
 paths
@@ -80,4 +99,5 @@ template
 templateDescription
 alias
 ```
+
 更改fbi使用到的配置项的结构和值类型，可能会导致出错。

@@ -9,7 +9,7 @@ module.exports = {
     b: 'build',
     w: 'watch'
   },
-  dist: './dst/',
+  dist: './lib/',
   rollup: {
     entry: [
       'cli.js',

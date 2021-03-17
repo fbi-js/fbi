@@ -28,6 +28,13 @@ export function colors() {
   Object.keys(util.inspect.colors).map(color => {
     returnValue[color] = text => colorize(color, text)
   })
+  // fix: compatible with node 10-14
+  if (!returnValue.grey) {
+    returnValue.grey = returnValue.gray
+  }
+  if (!returnValue.gray) {
+    returnValue.gray = returnValue.grey
+  }
   return returnValue
 }
 
