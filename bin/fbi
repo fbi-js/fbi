@@ -1,5 +1,35 @@
 #!/usr/bin/env node
 'use strict'
+const util = require('util')
 
+checkNodeVersion()
 var Cli = require('../lib/cli')
 new Cli(process.argv.slice(2))
+
+function checkNodeVersion () {
+  var pkg = require('../package.json')
+
+  var targets = [6, 9]
+  var version = process.versions.node.match(/(.*)\./)[1]
+  var versions = version.split('.').map(str => str * 1)
+
+  if (
+    versions[0] < targets[0] ||
+    (versions[0] === targets[0] && versions[1] < targets[1])
+  ) {
+    console.log(
+      style(
+        'red',
+        `Error: fbi ${pkg.version} requires Node.js v${targets.join(
+          '.'
+        )} or higher (you have v${version}).`
+      )
+    )
+    process.exit(1)
+  }
+}
+
+function style (color, text) {
+  const codes = util.inspect.colors[color]
+  return `\x1b[${codes[0]}m${text}\x1b[${codes[1]}m`
+}
