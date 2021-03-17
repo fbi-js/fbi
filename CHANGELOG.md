@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.11](https://github.com/fbi-js/fbi/compare/v2.1.10...v2.1.11) (2021-03-17)
+
+
+### Bug Fixes
+
+* showing wrong version when 'fbi -v' ([ea38fb7](https://github.com/fbi-js/fbi/commit/ea38fb760c139f750c5d7e28a77041746916e632))
+
 ### [2.1.10](https://github.com/fbi-js/fbi/compare/v2.1.9...v2.1.10) (2021-03-17)
 
 
