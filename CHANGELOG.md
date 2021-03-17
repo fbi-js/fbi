@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.3.3](https://github.com/fbi-js/fbi/compare/v3.3.2...v3.3.3) (2021-03-17)
+
+
+### Bug Fixes
+
+* change 'includes' to 'indexOf' in utils/style.js ([91ae6cf](https://github.com/fbi-js/fbi/commit/91ae6cfe726dfe90cb3fcd74d7308220c9428af3))
+
 <a name="3.3.2"></a>
 ## [3.3.2](https://github.com/fbi-js/fbi/compare/v3.3.1...v3.3.2) (2020-09-11)
 
