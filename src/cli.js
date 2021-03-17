@@ -4,9 +4,6 @@ import Template from './template'
 import opts from './config/options'
 import * as _ from './helpers/utils'
 import copy from './helpers/copy'
-import {
-  version
-} from '../package.json'
 import helpTxt from './helpers/helps'
 
 const task = new Task()
@@ -104,7 +101,8 @@ export default class Cli {
 
     if (this.argvs[0] === '-v' || this.argvs[0] === '--verison') {
       this.next = false
-      console.log(version)
+      const pkg = require('../package.json')
+      console.log(pkg.version)
     }
   }
 

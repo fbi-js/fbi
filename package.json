@@ -10,6 +10,11 @@
   "bin": {
     "fbi": "./bin/fbi"
   },
+  "files": [
+    "bin",
+    "data",
+    "lib"
+  ],
   "scripts": {
     "test": "mocha"
   },
