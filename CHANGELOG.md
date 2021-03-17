@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.10](https://github.com/fbi-js/fbi/compare/v2.1.9...v2.1.10) (2021-03-17)
+
+
+### Bug Fixes
+
+* add checkNodeVersion method ([bef465e](https://github.com/fbi-js/fbi/commit/bef465eb8e761e8d1b71c00e98d6b594d0001cce))
+
 ### 2.1.9 (2021-03-17)
 
 
