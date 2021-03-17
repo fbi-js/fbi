@@ -1,3 +1,19 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### 2.1.9 (2021-03-17)
+
+
+### Bug Fixes
+
+* colors(...).grey is not function in node v14 ([1e89687](https://github.com/fbi-js/fbi/commit/1e89687bfab6cc7f5e38281e1cee252ad2c1388c))
+
+
+### Reverts
+
+* Revert "task new" ([b028699](https://github.com/fbi-js/fbi/commit/b0286990a30af964f6eb5b650bb2d4de232854ff))
+
 ### v2.1.6
 2017-05-16
 - Update readme
